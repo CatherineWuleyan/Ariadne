@@ -1,0 +1,25 @@
+{
+  "pipeline_id": "pipeline-merge-step0",
+  "version": "0.1.0",
+  "stages": [
+    {
+      "name": "step0_select_scope",
+      "plugin": "pipeline_merge.step0:Step0SelectScopePlugin",
+      "options": {
+        "mode": "bootstrap",
+        "scope": {
+          "domain": "lottery-ticket-hypothesis",
+          "selection": [
+            "1032903864883347458",
+            "867750889056633390",
+            "867752822639165809",
+            "867757662605934651",
+            "867760083600146646",
+            "867771291879342656"
+          ]
+        }
+      }
+    }
+  ]
+}
+

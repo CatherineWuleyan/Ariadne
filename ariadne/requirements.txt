@@ -1,0 +1,14 @@
+# Ariadne runs the maintained Gaia IR harness and pipelines.
+# Install with:
+#   python3 -m venv .venv
+#   . .venv/bin/activate
+#   pip install -r ariadne/requirements.txt
+#   pip install -e agent
+gaia-lang==0.5.0a7
+jsonschema>=4.21
+
+# Optional: the paper2ir cleaner can fall back to Anthropic, but the bundled
+# single/merge stages require an OpenAI-compatible endpoint.  Ariadne's
+# supported path is DeepSeek/OpenAI-compatible, so this is not installed by
+# default.
+# anthropic>=0.40

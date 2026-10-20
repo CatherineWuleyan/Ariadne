@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gaia://schemas/formalization-snapshot/1.0.0",
+  "title": "Gaia formalization workflow snapshot",
+  "type": "object",
+  "required": [
+    "schema_name",
+    "schema_version",
+    "step",
+    "snapshot_id",
+    "inputs",
+    "knowledge",
+    "reasoning_units",
+    "operators",
+    "non_reasoning_links",
+    "source_anchors",
+    "changes"
+  ],
+  "properties": {
+    "schema_name": {"const": "gaia.formalization.snapshot"},
+    "schema_version": {"const": "1.0.0"},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "parent_artifact_id": {"type": ["string", "null"]},
+    "step": {
+      "type": "object",
+      "required": ["number", "name"],
+      "properties": {
+        "number": {"type": "integer", "minimum": 1, "maximum": 5},
+        "name": {
+          "enum": [
+            "step1_extract_evidence",
+            "step2_normalize_claims",
+            "step3_analyze_reasoning",
+            "step4_formalize_reasoning",
+            "step5_compile_gaia_ir"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputs": {"type": "array", "items": {"type": "object"}},
+    "knowledge": {"type": "array", "items": {"type": "object"}},
+    "reasoning_units": {"type": "array", "items": {"type": "object"}},
+    "operators": {"type": "array", "items": {"type": "object"}},
+    "non_reasoning_links": {"type": "array", "items": {"type": "object"}},
+    "source_anchors": {"type": "array", "items": {"type": "object"}},
+    "changes": {"type": "object"},
+    "review": {"type": "object"},
+    "validation": {
+      "type": "object",
+      "required": ["report_id", "status", "errors", "warnings"],
+      "properties": {
+        "report_id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["passed", "warning", "failed"]},
+        "errors": {"type": "integer", "minimum": 0},
+        "warnings": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "additionalProperties": true
+}

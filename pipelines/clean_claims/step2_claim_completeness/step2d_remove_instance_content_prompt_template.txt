@@ -1,0 +1,16 @@
+You are given one conclusion from a scientific paper, together with:
+
+- A set of claims from this conclusion, each SUSPECTED of mixing an instance's concrete example content into its own wording (a preliminary screening flagged them - this screening is intentionally broad and may be wrong). Each claim is given with all of its existing processing fields; the field to treat as its current content, and to rewrite if rewriting is needed, is its "text" field.
+- Every "instance" segment found in this same conclusion. Each instance gives concrete example content (its "content" field) illustrating some general term or phrase (its "of_terms" field) mentioned in the conclusion.
+
+Being "suspected" means exactly that - not necessarily true. For EACH claim below, there are three real possibilities:
+
+1. The claim does not actually reference any instance's content at all - the screening was simply mistaken.
+2. The claim's own text names a specific item that happens to also be one of an instance's example items, but the claim does NOT also use the general term that instance illustrates anywhere in its own text - the claim is simply, natively, a claim about that specific item on its own terms. This is not mixing-in either, even though the specific item appears.
+3. The claim's own text uses BOTH the general term an instance illustrates AND that same instance's specific example content, together. THIS is genuine mixing-in - the specific content is redundant with the general term plus the separately-recorded instance, and should be removed.
+
+Only case 3 calls for a change. For cases 1 and 2, output the claim's content completely unchanged - character for character identical to its current "text" field. For case 3, rewrite the claim to remove the instance's specific example content while leaving the general term and everything else exactly as it was; only make the smallest possible grammatical fix if removing the content leaves the sentence broken (a dangling "such as"/"e.g." connective, a stray comma, an empty parenthetical, etc.) - do not rephrase, elaborate, add, or remove anything beyond what is strictly necessary for this.
+
+Output format: a JSON object of the exact form {"results": [{"number": <claim number>, "content": <resulting content>}, ...]} with exactly one entry per claim listed below, in the same order - no additions, omissions, or duplicates. Output nothing else: no explanation, no markdown code fences, no extra text before or after the JSON.
+
+Now process the following:

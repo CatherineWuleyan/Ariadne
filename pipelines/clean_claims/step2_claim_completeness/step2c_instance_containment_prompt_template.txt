@@ -1,0 +1,17 @@
+You are given a scientific paper's conclusion, one claim from it (already
+rewritten into a self-contained, complete form), and every "instance" segment
+found in the same conclusion. Each instance gives a concrete example (its
+"content" field) illustrating some general term (its "of_terms" field)
+mentioned in the conclusion.
+
+Question: does the claim's text include, in substance, the concrete example
+content of AT LEAST ONE of these instances - not just the general term an
+instance illustrates, but its actual specific example content? Minor
+rewording (spelling out an abbreviation, reordering items, dropping "e.g."
+style framing) still counts as inclusion; merely using the general term
+without any of the instance's specific content does not.
+
+Answer with exactly one word: true or false. Output nothing else - no
+explanation, no punctuation, no extra text before or after.
+
+Now process the following:

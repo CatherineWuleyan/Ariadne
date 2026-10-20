@@ -1,0 +1,356 @@
+{
+ "question": {
+  "zh": "怎么完成飞机的仿真设计？",
+  "en": "How can aircraft simulation design be carried out?",
+  "domain": "aircraft simulation design (conceptual design, flight dynamics, aerodynamic modeling, MDO, HIL validation)"
+ },
+ "roots": [
+  {
+   "code": "R1",
+   "id": "answer:r1",
+   "title_zh": "集成概念设计环境",
+   "title_en": "Integrated conceptual design environment",
+   "statement": "Aircraft simulation design can be organized around an integrated conceptual-design and simulation-optimization environment that runs an end-to-end civil-airplane design case and uses an optimizer to minimize a design objective such as direct operating cost.",
+   "answer_type": "method_route",
+   "scope": "Applies when an integrated conceptual-design toolset and a simulation-integration optimizer are available for civil-airplane conceptual design.",
+   "criteria": "Evidence would include claims showing an end-to-end conceptual design system and an optimization environment minimizing a design objective within that workflow.",
+   "seed_claim_ids": [
+    "knowledge:papers:paper_aec49f8f::claim_41",
+    "knowledge:papers:paper_aec49f8f::claim_46",
+    "knowledge:papers:paper_c6f44cb4::claim_5",
+    "knowledge:papers:paper_c6f44cb4::claim_25"
+   ]
+  },
+  {
+   "code": "R2",
+   "id": "answer:r2",
+   "title_zh": "嵌套多学科优化",
+   "title_en": "Nested multidisciplinary optimization",
+   "statement": "Conceptual aircraft design can be pursued through a unified modular multidisciplinary design optimization framework with nested optimization levels that optimize configuration and wing-box design variables, while structural and static-margin constraints may materially affect the resulting design.",
+   "answer_type": "method_route",
+   "scope": "Applies when a modular MDO framework and appropriate structural or static-margin constraints are available for conceptual aircraft design.",
+   "criteria": "Evidence would include a modular MDO framework with nested optimization levels and studies showing how structural or static-margin constraints change optimized designs.",
+   "seed_claim_ids": [
+    "knowledge:papers:paper_c6f44cb4::claim_25",
+    "knowledge:papers:paper_c6f44cb4::claim_5",
+    "knowledge:papers:paper_9c2fb427::claim_11",
+    "knowledge:papers:paper_9c2fb427::claim_10",
+    "knowledge:papers:paper_9c2fb427::claim_27",
+    "knowledge:papers:paper_9c2fb427::claim_6"
+   ]
+  },
+  {
+   "code": "R3",
+   "id": "answer:r3",
+   "title_zh": "非线性飞行动力学建模",
+   "title_en": "Nonlinear flight-dynamics formulation",
+   "statement": "Aircraft simulation can be formulated as a coupled nonlinear differential-algebraic flight-dynamics model with six-degree-of-freedom equations expressed in body or wind axes, requiring state variables and parameters to be specified.",
+   "answer_type": "modeling_choice",
+   "scope": "Applies when a physics-based flight-dynamics model is needed and the equation structure, axis system, variables, and parameters can be specified.",
+   "criteria": "Evidence would include claims specifying the DAE structure, axis-system equations, and variable or parameter requirements for flight-dynamics simulation.",
+   "seed_claim_ids": [
+    "knowledge:papers:paper_014abc68::claim_1",
+    "knowledge:papers:paper_014abc68::claim_8",
+    "knowledge:papers:paper_014abc68::claim_21",
+    "knowledge:papers:paper_014abc68::claim_6"
+   ]
+  },
+  {
+   "code": "R4",
+   "id": "answer:r4",
+   "title_zh": "飞行数据模型校正",
+   "title_en": "Flight-data model calibration",
+   "statement": "Simulation-model fidelity can be improved by identifying aerodynamic delta or parameter models from flight-test or simulated doublet data and updating the original aerodynamic database, followed by checking predictions against measured flight parameters.",
+   "answer_type": "method_route",
+   "scope": "Applies when test or simulated maneuver data are available for identifying aerodynamic increments or parameters and updating an existing simulation model.",
+   "criteria": "Evidence would include identification of aerodynamic increments or parameters from test data and reported improvement of simulation predictions after updating the model.",
+   "seed_claim_ids": [
+    "knowledge:papers:paper_066432fe::claim_1",
+    "knowledge:papers:paper_066432fe::claim_6",
+    "knowledge:papers:paper_066432fe::claim_4",
+    "knowledge:papers:paper_066432fe::claim_5",
+    "knowledge:papers:paper_066432fe::claim_8",
+    "knowledge:papers:paper_53166ac1::claim_6"
+   ]
+  },
+  {
+   "code": "R5",
+   "id": "answer:r5",
+   "title_zh": "硬件在环验证",
+   "title_en": "Hardware-in-the-loop validation",
+   "statement": "Before flight test, aircraft simulation design can be validated through real-time hardware-in-the-loop testing in which a ground computer solves the aircraft dynamics and the integrated control and propulsion systems are exercised under specified tracking-error criteria.",
+   "answer_type": "validation_route",
+   "scope": "Applies when a real-time HIL test platform and integrated control or propulsion components are available for pre-flight evaluation.",
+   "criteria": "Evidence would include a real-time HIL system computing aircraft dynamics, integrated control or propulsion operation, and reported tracking or stability results supporting pre-flight evaluation.",
+   "seed_claim_ids": [
+    "knowledge:papers:paper_26dddb44::claim_4",
+    "knowledge:papers:paper_26dddb44::claim_16",
+    "knowledge:papers:paper_26dddb44::claim_14",
+    "knowledge:papers:paper_26dddb44::claim_15",
+    "knowledge:papers:paper_755906eb::claim_10"
+   ]
+  }
+ ],
+ "links": {
+  "R1": [
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_41",
+    "relation": "support",
+    "reason": "CACDS runs the CJX civil-airplane case end-to-end, evidencing an integrated conceptual-design environment."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_46",
+    "relation": "support",
+    "reason": "The CJX case uses ModelCenter's Boeing Design Explorer optimizer for DOC minimization, evidencing simulation-integration optimization."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_15",
+    "relation": "support",
+    "reason": "CACDS provides a unified geometry-to-analysis-to-optimization workflow, supporting an integrated end-to-end design route."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_36",
+    "relation": "support",
+    "reason": "CACDS is coupled with ModelCenter as optimization engine via defined inputs/outputs, supporting simulation-optimization integration."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_37",
+    "relation": "support",
+    "reason": "CACDS exposes design variables, constraints, and objectives to ModelCenter, enabling optimizer setup."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_57",
+    "relation": "support",
+    "reason": "ModelCenter includes DOC-minimization and other optimization templates, supporting objective-minimizing design workflows."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_aec49f8f::claim_47",
+    "relation": "support",
+    "reason": "The DOC-optimized concept changes wing geometry, showing the optimizer applied within the design case."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_1",
+    "relation": "support",
+    "reason": "A unified modular MDO framework integrates disciplinary modules into one optimization environment, supporting integrated aircraft optimization."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_5",
+    "relation": "support",
+    "reason": "The MDO framework's Level 2 module optimizes configuration geometry with objective functions, supporting the optimization-environment route."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_25",
+    "relation": "support",
+    "reason": "The MDO framework's Level 2 module optimizes wing layout and planform parameters, further evidencing optimization within conceptual design."
+   }
+  ],
+  "R2": [
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_3",
+    "relation": "support",
+    "reason": "States the modular MDO framework has two nested optimization levels, matching the answer's core architecture."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_1",
+    "relation": "support",
+    "reason": "Confirms a unified modular MDO framework integrating disciplinary modules was implemented for conceptual aircraft design."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_5",
+    "relation": "support",
+    "reason": "Shows the upper nested level optimizes configuration geometric variables, supporting configuration optimization in the route."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_25",
+    "relation": "support",
+    "reason": "Shows the upper nested level optimizes wing-box layout and wingtip/tip-chord variables."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_c6f44cb4::claim_4",
+    "relation": "support",
+    "reason": "Describes Level 1 performance optimizations, supporting the two-level nested optimization structure."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_9c2fb427::claim_27",
+    "relation": "support",
+    "reason": "Reports static-margin enforcement raised gross weight about 6%, showing static-margin constraints materially change optimized design."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_9c2fb427::claim_10",
+    "relation": "support",
+    "reason": "Shows plate-buckling constraints were included, supporting structural constraints in the MDO problem."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_9c2fb427::claim_6",
+    "relation": "support",
+    "reason": "Finds the wing box was primarily sized by plate-buckling constraints, supporting structural constraints materially affecting design."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_9c2fb427::claim_11",
+    "relation": "bounds",
+    "reason": "Limits the structural-constraint claim: this MDO problem omitted stress and displacement constraints."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_9c2fb427::claim_8",
+    "relation": "bounds",
+    "reason": "Shows the displacement constraint was inactive, bounding which structural constraints materially affect this design."
+   }
+  ],
+  "R3": [
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_1",
+    "relation": "support",
+    "reason": "Specifies the coupled 35-equation nonlinear DAE with 39 variables and 30 parameters."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_8",
+    "relation": "support",
+    "reason": "Gives a wind-axis force equation, showing axis-system equation structure for flight simulation."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_7",
+    "relation": "support",
+    "reason": "Gives a wind-axis scalar equation, supporting velocity-axis formulation of flight dynamics."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_9",
+    "relation": "support",
+    "reason": "Gives a wind-axis angle-of-attack equation, supporting axis-system simulation equations."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_6",
+    "relation": "support",
+    "reason": "Expresses body-axis angular rates from Euler angles, specifying state-variable relation."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_10",
+    "relation": "support",
+    "reason": "Provides body-axis rotational acceleration equations, supporting six-DOF equation structure."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_4",
+    "relation": "support",
+    "reason": "States forward-simulation input variables needed for a unique solution."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_5",
+    "relation": "bounds",
+    "reason": "Constrains input specification to inverse-simulation mode with trajectory coordinates plus one variable."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_014abc68::claim_20",
+    "relation": "bounds",
+    "reason": "Limits reduced moment equations to left-right symmetric airplanes."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_4",
+    "relation": "support",
+    "reason": "Describes real-time simulation computing aircraft dynamics differential equations."
+   }
+  ],
+  "R4": [
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_1",
+    "relation": "support",
+    "reason": "Reports estimating a delta aerodynamic model from flight data for simulation updating."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_2",
+    "relation": "support",
+    "reason": "Gives identified ΔC_X delta-model parameters from flight-test maneuvers."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_3",
+    "relation": "support",
+    "reason": "Gives identified ΔC_Z delta-model parameters from flight-test maneuvers."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_4",
+    "relation": "support",
+    "reason": "Gives identified ΔC_m delta-model parameters from flight-test maneuvers."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_5",
+    "relation": "support",
+    "reason": "Describes estimated delta aerodynamic models for longitudinal coefficients used to update simulation."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_6",
+    "relation": "support",
+    "reason": "States augmented aerodynamic database significantly improves flight-parameter predictions."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_7",
+    "relation": "support",
+    "reason": "Reports independent flight-test validation of the updated model's improvement."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_8",
+    "relation": "support",
+    "reason": "Shows updated model closely matches measured angle of attack, pitch, and altitude."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_066432fe::claim_9",
+    "relation": "support",
+    "reason": "Shows original model deviates from measured flight profiles, motivating data-based calibration."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_53166ac1::claim_6",
+    "relation": "support",
+    "reason": "Describes parameter identification from simulated elevator-doublet data reproducing longitudinal coefficients."
+   }
+  ],
+  "R5": [
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_4",
+    "relation": "support",
+    "reason": "Ground computer solving aircraft dynamics each cycle directly instantiates the real-time HIL computational core."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_16",
+    "relation": "support",
+    "reason": "HIL system running stably before flight test directly supports pre-flight validation."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_14",
+    "relation": "support",
+    "reason": "Engine control with specified permissible tracking errors directly supports tracking-error validation in HIL."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_15",
+    "relation": "support",
+    "reason": "Integrated flight control and propulsion operating effectively supports exercising integrated systems in HIL validation."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_12",
+    "relation": "support",
+    "reason": "Reported attitude stability in joint HIL supports validation via stability results."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_13",
+    "relation": "support",
+    "reason": "Successful reference trajectory tracking in joint HIL supports validation via tracking results."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_1",
+    "relation": "support",
+    "reason": "Closed-loop HIL platform integrating flight control, propulsion, simulation equipment, and database supports the validation route."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_26dddb44::claim_2",
+    "relation": "support",
+    "reason": "Hardware set including flight control computer, engine controller/simulator, and ground computer supports HIL validation setup."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_755906eb::claim_10",
+    "relation": "support",
+    "reason": "Low-cost workflow combining dynamics model, autopilot, and SITL/HITL testing supports HIL validation as a method."
+   },
+   {
+    "claim_id": "knowledge:papers:paper_755906eb::claim_11",
+    "relation": "bounds",
+    "reason": "HIL-versus-flight discrepancies around 10% bound the fidelity/accuracy claim for HIL validation."
+   }
+  ]
+ }
+}

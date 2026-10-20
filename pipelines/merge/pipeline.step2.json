@@ -1,0 +1,34 @@
+{
+  "pipeline_id": "pipeline-merge-step2",
+  "version": "0.3.0",
+  "stages": [
+    {
+      "name": "step0_select_scope",
+      "plugin": "pipeline_merge.step0:Step0SelectScopePlugin",
+      "options": {
+        "mode": "bootstrap",
+        "scope": {
+          "domain": "lottery-ticket-hypothesis",
+          "selection": [
+            "papers:paper_1032903864883347458",
+            "papers:paper_867750889056633390",
+            "papers:paper_867752822639165809",
+            "papers:paper_867757662605934651",
+            "papers:paper_867760083600146646",
+            "papers:paper_867771291879342656"
+          ]
+        }
+      }
+    },
+    {
+      "name": "step1_freeze_inputs",
+      "plugin": "pipeline_merge.step1:Step1FreezeInputsPlugin",
+      "options": {}
+    },
+    {
+      "name": "step2_retrieve_domain_local",
+      "plugin": "pipeline_merge.step2:Step2RetrieveDomainLocalPlugin",
+      "options": {}
+    }
+  ]
+}

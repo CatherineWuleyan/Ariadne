@@ -1,0 +1,18 @@
+{
+  "name": "agent-pipeline-v2",
+  "version": "0.1.0",
+  "description": "Independent zero-delta workflow guidance for the Gaia Pipeline Harness.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Pipeline V2",
+    "shortDescription": "Plan and evolve Harness pipelines without changing core contracts.",
+    "longDescription": "Guides scoped work on a separate Agent Pipeline while reusing the existing Gaia Pipeline Harness contracts.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": ["Guidance"],
+    "defaultPrompt": ["Help me design a zero-delta Agent Pipeline stage."]
+  }
+}

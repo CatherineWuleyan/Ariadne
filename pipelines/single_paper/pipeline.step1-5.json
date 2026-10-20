@@ -1,0 +1,41 @@
+{
+  "pipeline_id": "agent-pipeline-v2.1-step1-5",
+  "version": "2.1.0",
+  "stages": [
+    {
+      "name": "import-step1-inputs",
+      "plugin": "agent_pipeline_v2.step1:ClaimsFinalInputImporter",
+      "options": {}
+    },
+    {
+      "name": "step1_extract_evidence",
+      "plugin": "agent_pipeline_v2.step1:Step1ImportClaimsFinalPlugin",
+      "options": {}
+    },
+    {
+      "name": "step2_extract_observations",
+      "plugin": "agent_pipeline_v2.step2:Step2ExtractObservationsPlugin",
+      "options": {
+        "tool_plugin": "agent_pipeline_v2.step2:DeepSeekV4FlashObservationTool"
+      }
+    },
+    {
+      "name": "step3_analyze_reasoning",
+      "plugin": "agent_pipeline_v2.step3:Step3AnalyzeReasoningPlugin",
+      "options": {}
+    },
+    {
+      "name": "step4_formalize_reasoning",
+      "plugin": "agent_pipeline_v2.step4:Step4FormalizeReasoningPlugin",
+      "options": {}
+    },
+    {
+      "name": "step5_compile_gaia_ir",
+      "plugin": "pipeline_harness.domain.compiler:Step5CompileGaiaIRPlugin",
+      "options": {
+        "compiler_plugin": "pipeline_harness.domain.compiler:Gaia05OfficialCompilerTool"
+      }
+    }
+  ],
+  "view_adapter": "agent_pipeline_v2.view:V2FormalizationViewAdapter"
+}

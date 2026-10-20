@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "model": {
+    "provider": "deepseek",
+    "api_key": "",
+    "base_url": "https://api.deepseek.com/v1",
+    "model": "deepseek-v4-flash",
+    "merge_model": "deepseek-v4-flash"
+  },
+  "bohr": {
+    "profile": "ariadne",
+    "access_key": "",
+    "host": "https://open.bohrium.com",
+    "auto_approve_spend": false,
+    "payment_source": ""
+  },
+  "runtime": {
+    "python": ""
+  },
+  "retrieval": {
+    "use_query_planner": true,
+    "queries": 5,
+    "per_query": 8,
+    "candidate_limit": 16,
+    "min_papers": 2,
+    "min_graph_nodes": 3,
+    "min_relevance": 0.2,
+    "use_lkm_extract": true,
+    "max_extractions": 5
+  }
+}

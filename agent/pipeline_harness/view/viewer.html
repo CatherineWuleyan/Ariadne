@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gaia Formalization Viewer v2</title>
+  <style>
+    :root { color-scheme:light; --ink:#172033; --muted:#667085; --line:#d0d5dd; --paper:#f7f8fa; --accent:#175cd3; --error:#d92d20; --warning:#dc6803; --passed:#067647; }
+    * { box-sizing:border-box; }
+    body { min-width:1080px; margin:0; color:var(--ink); background:var(--paper); font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif; }
+    header { display:flex; gap:12px; align-items:center; height:59px; padding:12px 16px; background:white; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:3; }
+    h1 { font-size:16px; margin:0 auto 0 0; }
+    h2 { font-size:17px; margin:0 0 4px; overflow-wrap:anywhere; }
+    input,select,button.toolbar { border:1px solid var(--line); border-radius:7px; padding:7px 9px; background:white; }
+    button.toolbar { cursor:pointer; }
+    #search { width:min(360px,30vw); }
+    #file-input { display:none; }
+    #drop-file { cursor:pointer; }
+    body.file-dragging::after { content:'Drop to open formalization.json'; position:fixed; inset:12px; display:grid; place-items:center; border:3px dashed var(--accent); border-radius:16px; background:rgba(238,244,255,.94); color:var(--accent); font-size:20px; font-weight:800; z-index:20; pointer-events:none; }
+    #developer-badge { padding:5px 8px; border-radius:999px; color:#6941c6; background:#f4f3ff; font-size:12px; font-weight:700; }
+    main { display:grid; grid-template-columns:180px minmax(560px,1fr) 380px; min-height:calc(100vh - 59px); }
+    aside { background:white; padding:14px; overflow:auto; }
+    #left { border-right:1px solid var(--line); }
+    #detail { position:sticky; top:59px; height:calc(100vh - 59px); border-left:1px solid var(--line); }
+    #canvas-wrap { overflow:auto; padding:16px; }
+    svg { background:white; border:1px solid var(--line); border-radius:10px; width:100%; height:min(78vh,900px); min-width:100%; min-height:620px; aspect-ratio:1 / 1; touch-action:none; cursor:grab; }
+    svg.panning { cursor:grabbing; }
+    .zoom-note { margin:8px 0 0; color:var(--muted); font-size:11px; }
+    .edge { fill:none; stroke:#667085; stroke-width:1.7; marker-end:url(#arrow); cursor:pointer; }
+    .edge.non-reasoning { stroke:#98a2b3; stroke-dasharray:7 5; }
+    .edge.reasoning-candidate { stroke:#b54708; stroke-dasharray:2 5; }
+    .edge.infer { stroke:#667085; stroke-dasharray:8 5; }
+    .edge.relational { marker-end:none; }
+    .edge.equivalence { marker-start:url(#arrow-start); marker-end:url(#arrow); }
+    .edge.selected { stroke:var(--accent); stroke-width:3.5; }
+    .edge.validation-failed { stroke:var(--error); stroke-width:3; stroke-dasharray:7 4; }
+    .edge.validation-warning { stroke:var(--warning); stroke-width:3; }
+    .edge-label { fill:var(--muted); font-size:10px; cursor:pointer; user-select:none; paint-order:stroke; stroke:white; stroke-width:4px; }
+    .edge-label.selected { fill:var(--accent); font-weight:700; }
+    /* v2 hierarchy: domain anchors are bubbles; claim area follows visible degree. */
+    .node .node-shape { stroke-width:1.6; cursor:grab; vector-effect:non-scaling-stroke; }
+    .node.domain-bubble .node-shape { fill:#ffedd5; stroke:#ea580c; stroke-width:2.8; filter:drop-shadow(0 3px 4px rgba(234,88,12,.20)); }
+    .node.domain-bubble .node-title { font-size:14px; font-weight:800; text-anchor:middle; dominant-baseline:middle; }
+    .node.domain-bubble .node-summary { font-size:11px; text-anchor:middle; }
+    .tone-observation .node-shape { fill:#bbf7d0; stroke:#15803d; stroke-width:2.2; }
+    /* C = a cluster-level conclusion (cross-paper, but not a domain conclusion);
+       A = a summarized observation premise. Both get their own colour so they do
+       not read as ordinary paper claims. */
+    .tone-cluster .node-shape { fill:#ccfbf1; stroke:#0f766e; stroke-width:2; }
+    .tone-premise .node-shape { fill:#e2e8f0; stroke:#475569; stroke-width:1.8; }
+    .node.low-degree .node-title { font-size:12px; text-anchor:middle; dominant-baseline:middle; }
+    .node.low-degree .node-summary { display:none; }
+    .node.dragging .node-shape { cursor:grabbing; stroke:var(--accent); stroke-width:3; }
+    .node.selected .node-shape { stroke:var(--accent); stroke-width:3.5; }
+    .node text { pointer-events:none; fill:var(--ink); }
+    .node-title { font-size:13px; font-weight:750; }
+    .node-summary { font-size:11px; fill:#344054 !important; }
+    .node.hit .node-shape { stroke:#f79009; stroke-width:3; }
+    .node.validation-failed .node-shape { stroke:var(--error); stroke-width:3; }
+    .node.validation-warning .node-shape { stroke:var(--warning); stroke-width:3; }
+    .tone-claim .node-shape { fill:#e3f2fd; stroke:#1976d2; }
+    .tone-observation .node-shape { fill:#bbf7d0; stroke:#15803d; stroke-width:2.2; }
+    .node.observation-proposal .node-shape { stroke-dasharray:8 5; stroke-width:2.4; }
+    .node.relation-display .node-shape { stroke-dasharray:6 4; stroke-width:2.2; }
+    .tone-hypothesis .node-shape { fill:#f3e5f5; stroke:#7b1fa2; }
+    .tone-caveat .node-shape { fill:#fff3e0; stroke:#ef6c00; }
+    .tone-alternative .node-shape { fill:#fff1f0; stroke:#d92d20; stroke-dasharray:5 4; }
+    .tone-limit .node-shape { fill:#ffebee; stroke:#c62828; }
+    .tone-bridge .node-shape { fill:#fffde7; stroke:#f9a825; }
+    .tone-setting .node-shape { fill:#f5f5f5; stroke:#616161; stroke-dasharray:5 4; }
+    .tone-source .node-shape { fill:#f5f5f5; stroke:#757575; }
+    .tone-registry .node-shape { fill:#eceff1; stroke:#546e7a; stroke-dasharray:5 4; }
+    .tone-derived .node-shape { fill:#ede7f6; stroke:#673ab7; }
+    .tone-weakpoint .node-shape { fill:#fff9c4; stroke:#f9a825; stroke-dasharray:5 4; }
+    .operator .node-title { font-size:21px; text-anchor:middle; dominant-baseline:middle; }
+    .op-implication .node-shape { fill:#e8f1ff; stroke:#175cd3; }
+    .op-conjunction .node-shape { fill:#fff4e5; stroke:#e07912; }
+    .op-disjunction .node-shape { fill:#f4f3ff; stroke:#7f56d9; }
+    .op-equivalence .node-shape { fill:#e7f8f4; stroke:#0e9384; }
+    .op-contradiction .node-shape { fill:#fee4e2; stroke:#d92d20; }
+    .op-negation .node-shape,.op-complement .node-shape { fill:#f2f4f7; stroke:#475467; }
+    #validation-status { white-space:nowrap; font-weight:700; }
+    #validation-status.passed { color:var(--passed); }
+    #validation-status.failed { color:var(--error); }
+    #validation-status.warning { color:var(--warning); }
+    .validation-card { border-left:4px solid var(--error); background:#fef3f2; padding:8px; margin:8px 0; }
+    .validation-card.warning { border-color:var(--warning); background:#fff6ed; }
+    .property-card { padding:9px 10px; margin:7px 0; border:1px solid #eaecf0; border-radius:7px; background:#f9fafb; }
+    .property-row { display:grid; grid-template-columns:100px minmax(0,1fr); gap:7px; margin:4px 0; }
+    .property-key { color:var(--muted); }
+    .section-title { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin:12px 0 6px; }
+    .legend-item { display:flex; align-items:center; gap:8px; margin:6px 0; color:var(--muted); font-size:12px; }
+    .legend-line { display:inline-block; width:34px; border-top:2px solid #667085; }
+    .legend-line.non-reasoning { border-top-style:dashed; border-color:#98a2b3; }
+    .legend-line.candidate { border-top:2px dotted #b54708; }
+    label { display:block; margin:7px 0; }
+    button.result { width:100%; text-align:left; border:0; background:#f9fafb; border-radius:6px; padding:7px; margin:4px 0; cursor:pointer; }
+    button.result:hover { background:#eef4ff; }
+    blockquote { margin:6px 0; padding-left:9px; border-left:3px solid var(--line); color:#475467; }
+    pre { white-space:pre-wrap; word-break:break-word; font-size:12px; background:#f9fafb; padding:8px; border-radius:6px; }
+    .muted { color:var(--muted); }
+    details { margin-top:10px; }
+    .mini-graph { width:100%; min-width:0; height:auto; max-height:680px; margin:4px 0 10px; }
+    .mini-graph .node-title { font-size:9px; }
+    .mini-graph .node-summary { font-size:7.5px; }
+    .mini-graph .operator .node-title { font-size:14px; }
+    .mode-note { margin:0 0 10px; padding:8px; border-radius:7px; background:#f2f4f7; color:#475467; font-size:12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title">Gaia Formalization Viewer v2</h1>
+    <span id="developer-badge" hidden>Developer mode</span>
+    <input id="search" type="search" placeholder="Search claim ID or text…">
+    <input id="file-input" type="file" accept=".json,application/json">
+    <button id="drop-file" class="toolbar" type="button">Open formalization</button>
+    <span id="validation-status"></span>
+    <select id="stage" aria-label="Graph revision" hidden></select>
+    <select id="view-mode" aria-label="View mode" hidden><option value="standard" selected>Standard</option></select>
+    <button id="zoom-out" class="toolbar" type="button" aria-label="Zoom out">−</button><button id="zoom-in" class="toolbar" type="button" aria-label="Zoom in">＋</button><button id="fit-layout" class="toolbar" type="button">Fit to canvas</button><button id="reset-layout" class="toolbar" type="button">Reset layout</button>
+  </header>
+  <main>
+    <aside id="left">
+      <div id="mode-note" class="mode-note"></div>
+      <div class="section-title">Layers</div>
+      <div id="layers"></div>
+      <div class="section-title">Edge legend</div>
+      <div class="legend-item"><span class="legend-line"></span>Confirmed inference</div>
+      <div class="legend-item"><span class="legend-line non-reasoning"></span>Non-reasoning relation / weakpoint</div>
+      <div class="legend-item"><span class="legend-line candidate"></span>Candidate inference</div>
+      <div class="section-title">Interaction</div>
+      <div class="muted">v2：K Domain bubbles are the core; isolated non-core components are hidden automatically. Node size follows the degree in the current graph, and low-degree nodes show only their identifier. Scroll to zoom, drag the canvas to pan.</div>
+      <div class="section-title">Search results</div>
+      <div id="results" class="muted">Type a keyword to search</div>
+    </aside>
+    <section id="canvas-wrap"><svg id="graph" role="img"></svg><div class="zoom-note">Scroll to zoom · drag the canvas to pan · nodes can be dragged individually</div></section>
+    <aside id="detail"><div class="muted">Click a node or edge to inspect its properties here.</div></aside>
+  </main>
+  <script>__DAGRE_SCRIPT__</script>
+  <script id="view-data" type="application/json">__VIEW_DATA__</script>
+  <script>
+    function formalizationToView(document) {
+      const isHelperId=id => /(^|::)__|helper[_-]?relation|operator[_-]?result|disjunction[_-]?result|alternative[_-]?explanation/i.test(String(id));
+      const isGaiaIr=!document?.graph && Array.isArray(document?.knowledges);
+      const knowledges=isGaiaIr ? Object.fromEntries(document.knowledges.map(item=>[item.id,item])) : (document?.knowledges || {});
+      const graph=isGaiaIr ? {nodes:Object.keys(knowledges).filter(id=>!isHelperId(id)), operators:(document.operators || []).map(op=>({...op,type:op.type || op.operator})), strategies:document.strategies || []} : (document?.graph || {});
+      const step=4, nodes=[], edges=[], search_documents=[];
+      const ids=(Array.isArray(graph.nodes) ? graph.nodes : Object.keys(knowledges)).filter(id=>!isHelperId(id));
+      const strategyOperators=(graph.strategies || []).flatMap(strategy => (strategy.formal_expr?.operators || []).map((op,index)=>({...op,id:op.id || `${strategy.strategy_id || strategy.id || 'strategy'}:operator:${index+1}`,type:op.type || op.operator})));
+      const nodeId=id => `step:${step}:knowledge:${id}`;
+      const articleName=String(document?.package?.name || '');
+      const displayClaimLabel=id => { const value=String(id), parts=value.split('::'); return parts.length === 2 ? `${parts[0].split(':').pop()}-${parts[1]}` : (articleName ? `${articleName}-${value}` : value); };
+      ids.forEach(id => { const k=knowledges[id] || {}, content=k.content, summary=typeof content==='string' ? content : (content?.canonical || content?.text || '');
+        nodes.push({id:nodeId(id), entity_id:id, label:displayClaimLabel(id), display_label:displayClaimLabel(id), display_meta:k.type || 'claim', kind:k.type || 'claim', layer:'claims', step, summary, text:summary, details:k, min_granularity:'overview'});
+        search_documents.push({id:nodeId(id), title:displayClaimLabel(id), text:summary, tags:[k.type || 'claim'], refs:[nodeId(id)]}); });
+      [...(graph.operators || []),...strategyOperators].forEach((op,index) => { const type=String(op.type || op.operator || 'operator').toLowerCase(), vars=(op.variables || []).filter(id=>ids.includes(id)), conclusion=op.conclusion && ids.includes(op.conclusion) ? op.conclusion : null;
+        if (type !== 'equivalence' && type !== 'implication') nodes.push({id:`step:${step}:operator:${op.id || index}`, entity_id:op.id || `operator_${index}`, label:type, display_label:type, display_meta:type, kind:'operator', layer:'operators', step, summary:op.metadata?.expression || type, details:{...op,type,variables:vars,conclusion}, min_granularity:'standard'});
+        const opNode=`step:${step}:operator:${op.id || index}`;
+        if (type === 'equivalence' || type === 'implication') { if (vars.length >= 2) edges.push({id:`step:${step}:op:${op.id || index}`,source:nodeId(vars[0]),target:nodeId(vars[1]),label:'',semantic_type:type,layer:'operators',step,reasoning_state:'confirmed'}); }
+        else { vars.forEach((source,i)=>edges.push({id:`step:${step}:op:${op.id || index}:in:${i}`,source:nodeId(source),target:opNode,label:'input',semantic_type:type,layer:'operators',step,reasoning_state:'confirmed'})); if (conclusion) edges.push({id:`step:${step}:op:${op.id || index}:out`,source:opNode,target:nodeId(conclusion),label:'output',semantic_type:type,layer:'operators',step,reasoning_state:'confirmed'}); }
+      });
+      (graph.strategies || []).forEach((strategy,index) => { const premises=(strategy.premises || []).filter(id=>ids.includes(id)), conclusion=strategy.conclusion && ids.includes(strategy.conclusion) ? strategy.conclusion : null; if (!strategy.formal_expr?.operators?.length && conclusion) premises.forEach((source,i)=>edges.push({id:`step:${step}:strategy:${strategy.strategy_id || index}:${i}`,source:nodeId(source),target:nodeId(conclusion),label:'→',semantic_type:'implication',layer:'operators',step,reasoning_state:'confirmed'})); });
+      return {title:`${document?.package?.name || 'Formalization'} · Step 4`, source_artifacts:[], nodes, edges, search_documents, layers:[{id:'claims',label:'Formal nodes',default_visible:true},{id:'operators',label:'Operators',default_visible:true}], metadata:{latest_step:step, standalone_formalization:true}, stages:[{number:step,name:'formalization',validation_status:'unknown'}], source_targets:[]};
+    }
+    function openFormalization(file) { if (!file || (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json')) return; const reader=new FileReader(); reader.onload=()=>{ try { const parsed=JSON.parse(reader.result); sessionStorage.setItem('gaia-view-data', JSON.stringify(formalizationToView(parsed))); location.reload(); } catch (error) { alert(`Cannot read formalization JSON: ${error.message}`); } }; reader.readAsText(file); }
+    const fileInput=document.getElementById('file-input');
+    document.getElementById('drop-file').addEventListener('click',()=>fileInput.click());
+    fileInput.addEventListener('change',event=>openFormalization(event.target.files[0]));
+    ['dragenter','dragover'].forEach(type=>document.addEventListener(type,event=>{event.preventDefault(); document.body.classList.add('file-dragging');}));
+    ['dragleave','drop'].forEach(type=>document.addEventListener(type,event=>{event.preventDefault(); document.body.classList.remove('file-dragging');}));
+    document.addEventListener('drop',event=>openFormalization(event.dataTransfer?.files?.[0]));
+    const storedViewData=sessionStorage.getItem('gaia-view-data');
+    const rawViewData=storedViewData || document.getElementById('view-data').textContent.trim();
+    if (storedViewData) sessionStorage.removeItem('gaia-view-data');
+    if (rawViewData === '__VIEW_' + 'DATA__') {
+      document.body.innerHTML='<main style="display:block;max-width:760px;min-height:0;margin:48px auto;padding:28px;background:white;border:1px solid #d0d5dd;border-radius:12px"><h1>This is the Viewer template</h1><p>Run <code>python3 -m pipeline_harness view --run &lt;run-dir&gt;</code> first, then open the generated <code>views/viewer.html</code>.</p></main>';
+    } else {
+    const view=JSON.parse(rawViewData);
+    const devMode=new URLSearchParams(location.search).get('dev') === '1';
+    const latestStep=String(view.metadata?.latest_step ?? 'all');
+    const state={mode:'standard',step:devMode?latestStep:availableStep('4'),query:'',visibleLayers:new Set(),hits:new Set(),expandedWeakpoints:new Set(),manualPositions:new Map(),positions:new Map(),routes:new Map(),nodeMap:new Map(),degrees:new Map(),edgeMap:new Map(),selectedId:null,drag:null,pan:null,viewport:null};
+    const byId=new Map(view.nodes.map(node => [node.id,node]));
+    const sourceByKey=new Map((view.source_targets || []).map(target => [`${target.step}:${target.anchor_id}`,target]));
+    const esc=value => String(value ?? '').replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const norm=value => String(value ?? '').normalize('NFKC').toLocaleLowerCase();
+    const groupsFor=item => item?.fold_groups || (item?.fold_group ? [item.fold_group] : []);
+    document.getElementById('title').textContent=view.title;
+
+    function modeStep(mode=state.mode) {
+      if (devMode) return state.step;
+      const desired=mode === 'overview' ? '3' : '4';
+      return availableStep(desired);
+    }
+    function availableStep(desired) { return (view.stages || []).some(item => String(item.number) === String(desired)) ? String(desired) : latestStep; }
+    function knowledgeNode(step,entityId) { return byId.get(`step:${step}:knowledge:${entityId}`); }
+    function strategyNodes(step) { return view.nodes.filter(node => String(node.step) === String(step) && node.kind === 'strategy'); }
+    function operatorSymbol(type) { return ({implication:'→',equivalence:'↔',contradiction:'⊗',complement:'⊕',conjunction:'∧',disjunction:'∨',negation:'¬'})[type] || type || '?'; }
+    function operatorType(node) { return node?.details?.type || node?.display_meta || node?.label || 'operator'; }
+    function directOperatorEdges(step) { return view.edges.filter(edge => String(edge.step) === String(step) && edge.layer === 'operators' && ['implication','equivalence'].includes(edge.semantic_type)); }
+    function nodeIdentifier(node) {
+      let value=String(node.entity_id || node.display_label || node.label || node.id);
+      const sourceKind=node.details?.metadata?.source_node_kind;
+      if (sourceKind === 'conclusion') {const match=value.match(/_conclusion_(\d+)$/); if (match) return `C${match[1]}`;}
+      if (sourceKind === 'highlight') {const match=value.match(/_(H\d+)$/); if (match) return match[1];}
+      if (node.kind === 'source_anchor') {
+        const locator=node.details?.locator || {};
+        if (locator.figure) return locator.figure;
+        return String(node.details?.relevance || node.details?.source_kind || value).replaceAll('_',' ');
+      }
+      if (value.startsWith('claim_')) value=value.slice(6);
+      if (value.includes('_paper_') && value.includes('_')) value=value.split('_').at(-1);
+      return value;
+    }
+    function weakpointType(node) {
+      const details=node.details || {}, payload=details.weakpoint?.payload || {};
+      const classification=details.coarse?.classification;
+      const type=classification && classification !== 'weakpoint'
+        ? classification
+        : payload.reasoning_type || details.type || classification || 'weakpoint';
+      return String(type).replaceAll('_',' ');
+    }
+    function isObservationNode(node) {
+      const value=String(node?.entity_id || node?.display_label || node?.label || '');
+      return /(?:^|:)O(?:\d+|[_:])/i.test(value) || /^O\d+/i.test(value);
+    }
+    // Concise labels distinguish the two supporting layers: `C<n>` is a
+    // cluster-level conclusion and `A<n>` a summarized observation premise.
+    function isClusterConclusion(node) {
+      return /^C\d/i.test(String(node?.entity_id || node?.display_label || node?.label || ''));
+    }
+    function isObservationPremise(node) {
+      return /^A\d/i.test(String(node?.entity_id || node?.display_label || node?.label || ''));
+    }
+    function nodeTone(node) {
+      if (node.kind === 'operator') return `operator op-${operatorType(node)}`;
+      if (node.kind === 'strategy' || node.kind === 'weakpoint') return 'tone-weakpoint';
+      const kind=String(node.kind || ''), id=String(node.entity_id || '');
+      if (isObservationNode(node)) return 'tone-observation';
+      if (isClusterConclusion(node)) return 'tone-cluster';
+      if (isObservationPremise(node)) return 'tone-premise';
+      if (id==='AltExp'||id.startsWith('AltExp_')) return 'tone-alternative';
+      if (node.kind === 'source_anchor') return 'tone-source';
+      if (node.layer === 'registry') return 'tone-registry';
+      if (kind==='caveat') return 'tone-caveat';
+      if (kind.includes('observation') || kind==='experiment_claim') return 'tone-observation';
+      if (kind.includes('hypothesis') || kind==='author_interpretation') return 'tone-hypothesis';
+      if (kind==='alternative_placeholder') return 'tone-alternative';
+      if (kind==='bridge_claim' || kind==='scope_interpretation') return 'tone-bridge';
+      if (kind==='derived_claim') return 'tone-derived';
+      if (kind==='setting') return 'tone-setting';
+      if (kind==='limitation' || id.endsWith('_P3')) return 'tone-limit';
+      return 'tone-claim';
+    }
+    function effectiveLayer(item) { return item.layer || ''; }
+
+    function configureModeControls() {
+      const mode=document.getElementById('view-mode'), stage=document.getElementById('stage'), badge=document.getElementById('developer-badge');
+      if (!devMode) {mode.hidden=true; stage.hidden=true; badge.hidden=true; updateModeNote(); return;}
+      mode.hidden=true; stage.hidden=false; badge.hidden=false; updateDeveloperModeNote();
+      const stages=view.stages || [];
+      stages.forEach(item => {
+        const option=document.createElement('option');
+        const mark=item.validation_status === 'passed' ? '✓' : item.validation_status === 'failed' ? '✕' : item.validation_status === 'warning' ? '⚠' : '·';
+        option.value=String(item.number); option.textContent=`${mark} Revision ${item.revision || item.number} · Step ${item.number} · ${item.name}`; stage.appendChild(option);
+      });
+      stage.value=state.step;
+      stage.addEventListener('change',event => {
+        state.step=event.target.value; state.manualPositions.clear(); state.selectedId=null;
+        updateDeveloperModeNote(); updateValidationStatus(); buildLayers(true); runSearch();
+      });
+    }
+    function updateDeveloperModeNote() {
+      const notes={
+        '1':'Step 1：Evidence-ledger slice; sources are located only in the node details, registry is a non-reasoning relation.',
+        '2':'Step 2：Completed experiment claims; shows only propositions and the associations not yet promoted to inference.',
+        '3':'Step 3：Macro weakpoint graph; ↝ blocks are classified reasoning gaps that are not yet expanded.',
+        '4':'Step 4：Named Strategies are derived into Operators by the Gaia rules; infer stays a Strategy, and unexpanded weakpoints are shown too.',
+        '5':'Step 5：Compiled and validated formalization graph; validation findings appear at the top and in the object properties.',
+      };
+      document.getElementById('mode-note').textContent=`Developer mode · ${notes[state.step] || `Step ${state.step} review projection`}`;
+    }
+    function updateModeNote() {
+      document.getElementById('mode-note').textContent=state.mode === 'overview'
+        ? 'Overview：Step 3 Macro graph; ↝ marks an identified weakpoint that is not yet expanded.'
+        : 'Standard：Shows claims, experiment claims, input claims and expanded Operators; infer is drawn with dashed edges.';
+    }
+    function updateValidationStatus() {
+      const host=document.getElementById('validation-status'), target=modeStep();
+      const stage=(view.stages || []).find(item => String(item.number) === target);
+      if (!stage) {host.textContent=''; host.className=''; return;}
+      const status=stage.validation_status; host.className=status || '';
+      host.textContent=status === 'passed' ? '✓ validated' : status === 'failed' ? `✕ ${stage.validation_errors || 0} errors` : status === 'warning' ? `⚠ ${stage.validation_warnings || 0} warnings` : 'not validated';
+    }
+    function availableLayers() {
+      if (devMode) {
+        const ids={
+          '1':new Set(['claims','registry']),
+          '2':new Set(['claims','registry']),
+          '3':new Set(['claims','weakpoints','operators']),
+          '4':new Set(['claims','operators','strategies','weakpoints']),
+          '5':new Set(['claims','operators','strategies','weakpoints']),
+        }[state.step] || new Set(['claims']);
+        return view.layers.filter(layer => ids.has(layer.id));
+      }
+      // Native LKM aggregate views use a single `lkm` layer rather than the
+      // formalization-specific claims/operators split.
+      const normalLayers=new Set(['claims','weakpoints','operators','lkm']);
+      return view.layers.filter(layer => normalLayers.has(layer.id));
+    }
+    // Two display modes instead of one checkbox per layer:
+    //   Integration delta      -> the cross-paper conclusions and how they relate
+    //   Single paper reasoning -> paper knowledge and the reasoning inside a paper
+    // Both on  : the whole picture, with the single-paper nodes the integration
+    //            rests on brought in alongside the delta.
+    // Delta on : only the integration delta.
+    // Paper on : paper-level material with the cross-paper conclusions removed.
+    const DISPLAY_TOGGLES=[{id:'delta',label:'Integration delta'},{id:'paper',label:'Single paper reasoning'}];
+    function buildLayers(reset=false) {
+      const host=document.getElementById('layers'); host.innerHTML='';
+      if (reset) state.visibleLayers=new Set(DISPLAY_TOGGLES.map(item => item.id));
+      DISPLAY_TOGGLES.forEach(item => {
+        const label=document.createElement('label');
+        label.innerHTML=`<input type="checkbox" data-toggle="${item.id}" ${state.visibleLayers.has(item.id)?'checked':''}> ${esc(item.label)}`;
+        label.querySelector('input').addEventListener('change',event => {event.target.checked ? state.visibleLayers.add(item.id) : state.visibleLayers.delete(item.id); renderGraph();});
+        host.appendChild(label);
+      });
+    }
+
+    function overviewProjection(step=modeStep('overview')) {
+      const weakpoints=view.nodes.filter(node => String(node.step) === String(step) && node.kind === 'weakpoint');
+      const weakpointIds=new Set(weakpoints.map(node => node.id));
+      weakpoints.forEach(node => { const payload=node.details?.payload || {}; [...(payload.evidence_claim_ids || []),payload.target_claim_id].filter(Boolean).forEach(entity => { const knowledge=knowledgeNode(step,entity); if (knowledge) weakpointIds.add(knowledge.id); }); });
+      if (view.metadata?.standalone_formalization || weakpoints.length) return {nodes:view.nodes.filter(node => weakpointIds.has(node.id)),edges:view.edges.filter(edge => weakpointIds.has(edge.source) && weakpointIds.has(edge.target) && (edge.layer === 'weakpoints' || edge.layer === 'registry'))};
+      return {nodes:[],edges:[]};
+      step=String(step); const units=strategyNodes(step).filter(node => node.details?.form === 'coarse');
+      if (!units.length) {
+        const weakpoints=view.nodes.filter(node => String(node.step) === step && node.kind === 'weakpoint');
+        const operators=view.nodes.filter(node => String(node.step) === step && node.kind === 'operator');
+        const ids=new Set(weakpoints.map(node => node.id));
+        weakpoints.forEach(node => {
+          const payload=node.details?.payload || {};
+          [...(payload.evidence_claim_ids || []),payload.target_claim_id].filter(Boolean).forEach(entity => {
+            const knowledge=knowledgeNode(step,entity); if (knowledge) ids.add(knowledge.id);
+          });
+        });
+        operators.forEach(node => {
+          ids.add(node.id);
+          [...(node.details?.variables || []),node.details?.conclusion].filter(Boolean).forEach(entity => {
+            const knowledge=knowledgeNode(step,entity); if (knowledge) ids.add(knowledge.id);
+          });
+        });
+        directOperatorEdges(step).forEach(edge => { ids.add(edge.source); ids.add(edge.target); });
+        strategyNodes(step).filter(node => !node.details?.form && !node.details?.formal_expr).forEach(node => {
+          ids.add(node.id);
+          [...(node.details?.premises || []),node.details?.conclusion].filter(Boolean).forEach(entity => {
+            const knowledge=knowledgeNode(step,entity); if (knowledge) ids.add(knowledge.id);
+          });
+        });
+        let nodes=view.nodes.filter(node => ids.has(node.id));
+        let edges=view.edges.filter(edge => String(edge.step) === step && ['weakpoints','operators','strategies'].includes(edge.layer) && ids.has(edge.source) && ids.has(edge.target));
+        for (const strategyId of state.expandedWeakpoints) {
+          const weakpoint=weakpoints.find(node => node.entity_id === strategyId && node.details?.expanded_strategy_ids?.length); if (!weakpoint) continue;
+          nodes=nodes.filter(node => node.id !== weakpoint.id);
+          edges=edges.filter(edge => edge.source !== weakpoint.id && edge.target !== weakpoint.id);
+          const local=localFormalGraph(strategyId,true), known=new Set(nodes.map(node => node.id));
+          local.nodes.forEach(node => {if (!known.has(node.id)) {nodes.push(node); known.add(node.id);}}); edges.push(...local.edges);
+        }
+        return {nodes,edges};
+      }
+      const ids=new Set(units.map(node => node.id));
+      const interfaceEntities=new Set(units.flatMap(node => [...(node.details.premises || []),node.details.conclusion].filter(Boolean)));
+      interfaceEntities.forEach(entity => {
+        const target=knowledgeNode(step,entity); if (target) ids.add(target.id);
+      });
+      let nodes=view.nodes.filter(node => ids.has(node.id));
+      let edges=view.edges.filter(edge => String(edge.step) === step && ids.has(edge.source) && ids.has(edge.target) && edge.layer === 'weakpoints' && ['premise','conclusion','background'].includes(edge.semantic_type));
+      for (const entityId of state.expandedWeakpoints) {
+        const weakpoint=units.find(node => node.entity_id === entityId); if (!weakpoint) continue;
+        nodes=nodes.filter(node => node.id !== weakpoint.id);
+        edges=edges.filter(edge => edge.source !== weakpoint.id && edge.target !== weakpoint.id);
+        const local=localFormalGraph(entityId,true), known=new Set(nodes.map(node => node.id));
+        local.nodes.forEach(node => {if (!known.has(node.id)) {nodes.push(node); known.add(node.id);}}); edges.push(...local.edges);
+      }
+      return {nodes,edges};
+    }
+    function standardProjection(step=modeStep('standard')) {
+      step=String(step); const operators=view.nodes.filter(node => String(node.step) === step && node.kind === 'operator');
+      // Keep native LKM graph nodes visible. They are already materialized as
+      // graph nodes and do not need the formalization projection heuristics.
+      if (view.nodes.some(node => node.layer === 'lkm')) {
+        return compactFormalGraph(
+          view.nodes.filter(node => String(node.step) === step),
+          view.edges.filter(edge => String(edge.step) === step)
+        );
+      }
+      const ids=new Set(operators.map(node => node.id));
+      // Never hide domain claims merely because their reasoning expansion is
+      // unresolved; observation_claims remain visible in standard mode.
+      // Knowledge nodes may also live in the 'weakpoints' layer (the merge
+      // viewer routes its delta nodes there); include those too so they can be
+      // isolated with the layer toggles.  Step-style weakpoint nodes stay
+      // excluded here because they are handled separately below.
+      view.nodes.filter(node => String(node.step) === step && (node.layer === 'claims' || (node.layer === 'weakpoints' && node.kind !== 'weakpoint'))).forEach(node => ids.add(node.id));
+      const inferEdges=[];
+      view.nodes.filter(node => String(node.step) === step && node.kind === 'strategy' && String(node.details?.type || node.label).toLowerCase() === 'infer').forEach(node => {
+        const details=node.details || {}, premises=details.premises || [], conclusion=details.conclusion;
+        premises.map(entity => knowledgeNode(step,entity)).filter(Boolean).forEach(source => { ids.add(source.id); inferEdges.push({id:`infer:${step}:${node.entity_id}:${source.entity_id}`,semantic_id:node.entity_id,source:source.id,target:knowledgeNode(step,conclusion)?.id,label:'infer',layer:'operators',edge_class:'reasoning',semantic_type:'infer',reasoning_state:'confirmed',step,visible_at:['standard'],min_granularity:'standard',details}); });
+        const target=knowledgeNode(step,conclusion); if (target) ids.add(target.id);
+      });
+      operators.forEach(node => {
+        [...(node.details?.variables || []),node.details?.conclusion].filter(Boolean).forEach(entity => {
+          const target=knowledgeNode(step,entity); if (target) ids.add(target.id);
+        });
+      });
+      directOperatorEdges(step).forEach(edge => { ids.add(edge.source); ids.add(edge.target); });
+      view.nodes.filter(node => String(node.step) === step && node.kind === 'weakpoint').forEach(node => {
+        ids.add(node.id);
+        const details=node.details || {}, payload=details.payload || {};
+        [...(details.premises || payload.evidence_claim_ids || []),details.conclusion || payload.target_claim_id].filter(Boolean).forEach(entity => {
+          const target=knowledgeNode(step,entity); if (target) ids.add(target.id);
+        });
+      });
+      const nodes=view.nodes.filter(node => ids.has(node.id));
+      const edges=view.edges.filter(edge => String(edge.step) === step && ['operators','weakpoints'].includes(edge.layer) && ids.has(edge.source) && ids.has(edge.target)).concat(inferEdges);
+      return compactFormalGraph(nodes,edges);
+    }
+    function compactFormalGraph(inputNodes,inputEdges) {
+      let nodes=[...inputNodes], edges=[...inputEdges];
+      const nodeMap=new Map(nodes.map(node => [node.id,node])), hidden=new Set(nodes.filter(node => node.layer === 'helpers').map(node => node.id));
+      hidden.forEach(hiddenId => {
+        const incoming=edges.filter(edge => edge.target === hiddenId), outgoing=edges.filter(edge => edge.source === hiddenId), derived=[];
+        incoming.forEach(left => outgoing.forEach(right => derived.push({...right,id:`contracted:${left.id}:${right.id}`,source:left.source,target:right.target,label:'',fold_groups:[...new Set([...groupsFor(left),...groupsFor(right)])],details:{...(right.details||{}),contracted_edge_ids:[left.id,right.id],visual_contraction:true}})));
+        edges=edges.filter(edge => edge.source !== hiddenId && edge.target !== hiddenId).concat(derived);
+      });
+      nodes=nodes.filter(node => !hidden.has(node.id) && (node.kind !== 'strategy' || (!node.details?.form && !node.details?.formal_expr)));
+      // Keep every Gaia operator visible. Only formal helper Knowledge nodes are
+      // contracted; named strategies have already been lowered by the view adapter.
+      const inlineOperators=[];
+      inlineOperators.forEach(operator => {
+        const incoming=edges.filter(edge => edge.target === operator.id), outgoing=edges.filter(edge => edge.source === operator.id), operatorKind=operatorType(operator), derived=[];
+        incoming.forEach(left => outgoing.forEach(right => derived.push({
+          ...right,
+          id:`inline-operator:${operator.id}:${left.id}:${right.id}`,
+          source:left.source,
+          target:right.target,
+          label:'',
+          semantic_type:operatorKind,
+          fold_groups:[...new Set([...groupsFor(operator),...groupsFor(left),...groupsFor(right)])],
+          details:{operator:operator.details,operator_id:operator.entity_id,background:operator.details?.metadata?.background || [],contracted_edge_ids:[left.id,right.id],visual_contraction:true},
+        })));
+        edges=edges.filter(edge => edge.source !== operator.id && edge.target !== operator.id).concat(derived);
+      });
+      const inlineIds=new Set(inlineOperators.map(node => node.id));
+      nodes=nodes.filter(node => !inlineIds.has(node.id));
+      const visible=new Set(nodes.map(node => node.id)), seen=new Set();
+      edges=edges.filter(edge => visible.has(edge.source) && visible.has(edge.target)).filter(edge => {const key=`${edge.source}|${edge.target}|${edge.semantic_type}`; if (seen.has(key)) return false; seen.add(key); return true;});
+      return {nodes,edges};
+    }
+    function localFormalGraph(entityId,mapInterfaces=false) {
+      const step=availableStep('4'), strategy=strategyNodes(step).find(node => node.entity_id === entityId);
+      const weakpoint=byId.get(`step:${availableStep('3')}:weakpoint:${entityId}`);
+      const groups=strategy ? [groupsFor(strategy)[0] || strategy.fold_group] : (weakpoint?.details?.expanded_strategy_ids || []);
+      if (!groups.length) return {nodes:[],edges:[]};
+      const edges=view.edges.filter(edge => String(edge.step) === step && edge.layer === 'operators' && groupsFor(edge).some(group => groups.includes(group)));
+      const ids=new Set(edges.flatMap(edge => [edge.source,edge.target]));
+      let graph=compactFormalGraph(view.nodes.filter(node => ids.has(node.id)),edges);
+      if (!mapInterfaces) return graph;
+      const replacements=new Map();
+      graph.nodes.forEach(node => {if (node.kind !== 'operator') {const step3=knowledgeNode(availableStep('3'),node.entity_id); if (step3) replacements.set(node.id,step3.id);}});
+      graph={
+        nodes:graph.nodes.map(node => replacements.has(node.id) ? byId.get(replacements.get(node.id)) : ({...node,details:{...(node.details || {}),expanded_strategy_id:entityId}})).filter((node,index,all) => all.findIndex(item => item.id === node.id) === index),
+        edges:graph.edges.map(edge => ({...edge,id:`expanded:${entityId}:${edge.id}`,source:replacements.get(edge.source) || edge.source,target:replacements.get(edge.target) || edge.target,details:{...(edge.details || {}),strategy_id:entityId}})),
+      };
+      return graph;
+    }
+    function isBackgroundOnly(node) {
+      const id=String(node.entity_id || '');
+      return node.kind === 'setting' || node.kind === 'limitation' || id.endsWith('_P3');
+    }
+    function isInformativeNode(node) { return !(node.kind === 'note' && !String(node.summary || '').trim()); }
+    function earlyStepProjection(step) {
+      step=String(step);
+      const nodes=view.nodes.filter(node => String(node.step) === step && !isBackgroundOnly(node) && isInformativeNode(node) && ['claims','registry'].includes(node.layer));
+      const ids=new Set(nodes.map(node => node.id));
+      const edges=view.edges.filter(edge => String(edge.step) === step && edge.layer === 'registry' && ids.has(edge.source) && ids.has(edge.target));
+      return {nodes,edges};
+    }
+    function developerProjection() {
+      if (state.step === '1' || state.step === '2') return earlyStepProjection(state.step);
+      if (state.step === '3') return overviewProjection('3');
+      if (state.step === '4' || state.step === '5') return standardProjection(state.step);
+      return {nodes:[],edges:[]};
+    }
+    const DELTA_LAYER_ID='weakpoints';
+    function isDeltaNode(node) { return effectiveLayer(node) === DELTA_LAYER_ID; }
+    function displayModeAllows(node) {
+      const delta=state.visibleLayers.has('delta'), paper=state.visibleLayers.has('paper');
+      const inDelta=isDeltaNode(node), crossPaper=isDomainBubble(node);
+      if (!paper) return delta && inDelta;         // delta only: the cross-paper conclusions and their links
+      if (!delta) return !inDelta && !crossPaper;  // paper only: single-paper reasoning, cross-paper conclusions removed
+      return true;                                 // both: the single-paper nodes the delta rests on come in too
+    }
+    function filterVisibleLayers(graph) {
+      // Edges follow their endpoints: with both modes on, the paper-level nodes
+      // and the edges into the delta are therefore drawn as well.
+      const nodes=graph.nodes.filter(displayModeAllows);
+      const ids=new Set(nodes.map(node => node.id));
+      const edges=graph.edges.filter(edge => ids.has(edge.source) && ids.has(edge.target));
+      return {nodes,edges};
+    }
+    function filterIsolatedComponents(graph) {
+      const coreIds=new Set(graph.nodes.filter(isDomainBubble).map(node=>node.id));
+      if (!coreIds.size) return graph;
+      const ids=new Set(graph.nodes.map(node=>node.id)), adjacency=new Map(graph.nodes.map(node=>[node.id,new Set()]));
+      graph.edges.forEach(edge=>{if(ids.has(edge.source)&&ids.has(edge.target)){adjacency.get(edge.source).add(edge.target);adjacency.get(edge.target).add(edge.source);}});
+      const seen=new Set(), keep=new Set();
+      graph.nodes.forEach(seed=>{if(seen.has(seed.id))return;const stack=[seed.id],component=[];seen.add(seed.id);while(stack.length){const id=stack.pop();component.push(id);adjacency.get(id).forEach(next=>{if(!seen.has(next)){seen.add(next);stack.push(next);}});}if(component.some(id=>coreIds.has(id)))component.forEach(id=>keep.add(id));});
+      return {nodes:graph.nodes.filter(node=>keep.has(node.id)),edges:graph.edges.filter(edge=>keep.has(edge.source)&&keep.has(edge.target))};
+    }
+    function displayGraph() {
+      let graph=devMode ? developerProjection() : state.mode === 'overview' ? overviewProjection() : standardProjection();
+      return filterIsolatedComponents(filterVisibleLayers(graph));
+    }
+
+    function expandableStrategyId(item) {
+      if (!item) return null;
+      if (item.kind === 'weakpoint') return item.details?.expanded_strategy_ids?.length ? item.entity_id : null;
+      if (item.kind === 'strategy' && item.details?.form === 'coarse') return item.entity_id;
+      return item.details?.strategy_id || item.details?.expanded_strategy_id || null;
+    }
+    function toggleWeakpoint(item) {
+      const overviewActive=!devMode ? state.mode === 'overview' : String(state.step) === availableStep('3');
+      if (!overviewActive) return false;
+      const strategyId=expandableStrategyId(item); if (!strategyId) return false;
+      state.expandedWeakpoints.has(strategyId) ? state.expandedWeakpoints.delete(strategyId) : state.expandedWeakpoints.add(strategyId);
+      state.manualPositions.clear(); renderGraph(); return true;
+    }
+    function runSearch() {
+      const query=norm(state.query.trim()), host=document.getElementById('results'); state.hits.clear();
+      if (!query) {host.className='muted'; host.textContent='Type a keyword to search'; renderGraph(); return;}
+      const step=modeStep(), matches=view.search_documents.filter(doc => doc.metadata?.step == null || String(doc.metadata.step) === step).map(doc => {const id=norm(doc.id),hay=norm([doc.id,doc.title,doc.text,...(doc.tags || [])].join(' '));return {doc,rank:id===query?0:id.startsWith(query)?1:hay.includes(query)?2:99};}).filter(item => item.rank<99).sort((a,b)=>a.rank-b.rank||String(a.doc.title).localeCompare(String(b.doc.title)));
+      matches.forEach(({doc}) => (doc.refs || []).forEach(ref => state.hits.add(ref))); host.className=''; host.innerHTML=matches.length?'':'<span class="muted">No results</span>';
+      matches.forEach(({doc}) => {const button=document.createElement('button');button.className='result';button.innerHTML=`<strong>${esc(doc.title||doc.id)}</strong><br><span class="muted">${esc(doc.id)}</span>`;button.addEventListener('click',()=>selectItem(byId.get((doc.refs||[])[0])||doc));host.appendChild(button);}); renderGraph();
+    }
+
+    function isAlternativePlaceholder(node){const id=String(node?.entity_id||'');return node?.kind==='alternative_placeholder'||((id==='AltExp'||id.startsWith('AltExp_'))&&node?.summary==='Unknown alternative explanation (content=null)');}
+    function isDomainBubble(node) {
+      const details=node?.details || {}, role=String(node?.role || details.role || details.level || details.scope || '').toLowerCase();
+      const layer=String(node?.layer || '').toLowerCase(), kind=String(node?.kind || '').toLowerCase(), entity=String(node?.entity_id || node?.display_label || node?.label || '').trim();
+      // Merge v9 stores cross-paper conclusions as K:* labels backed by
+      // candidate_K_* knowledge IDs; the concise scheme uses a bare `K<n>`.
+      // Treat every one of those as domain-level.
+      const isKConclusion=/^(?:K(?:[:·\d]|$)|candidate_K[_:])/i.test(entity);
+      return isKConclusion || layer === 'domain' || layer === 'domains' || kind === 'domain' || kind === 'domain_root' || kind === 'domain_anchor' || role === 'domain' || role === 'domain_root' || role === 'root';
+    }
+    function degreeMap(nodes,edges) {
+      const degrees=new Map(nodes.map(node=>[node.id,0]));
+      edges.forEach(edge=>{if(degrees.has(edge.source))degrees.set(edge.source,degrees.get(edge.source)+1);if(degrees.has(edge.target))degrees.set(edge.target,degrees.get(edge.target)+1);});
+      return degrees;
+    }
+    function nodeDegree(node) { return Number(state.degrees.get(node?.id) || 0); }
+    function isLowDegree(node) { return node.kind !== 'operator' && !isDomainBubble(node) && nodeDegree(node) <= 1; }
+    function nodeSize(node,mini=false) {
+      if(node.kind==='operator')return mini?{w:34,h:28}:{w:58,h:42};
+      if(isDomainBubble(node)){const d=nodeDegree(node),diameter=(mini?58:88)+Math.min(d,14)*(mini?4:10);return {w:diameter,h:diameter};}
+      if(isAlternativePlaceholder(node))return mini?{w:62,h:26}:{w:104,h:38};
+      if(node.kind==='strategy'||node.kind==='weakpoint')return mini?{w:112,h:48}:{w:156,h:62};
+      const d=nodeDegree(node),scale=Math.max(.68,Math.min(1.4,.68+Math.log2(d+1)*.20)),base=mini?{w:98,h:45}:{w:192,h:70};
+      return {w:Math.round(base.w*scale),h:Math.round(base.h*scale)};
+    }
+    function rankedLayout(nodes,edges,mini=false,useManual=true) {
+      const ids=new Set(nodes.map(node=>node.id)),ranks=new Map(nodes.map(node=>[node.id,0])),indegree=new Map(nodes.map(node=>[node.id,0])),outgoing=new Map();
+      edges.forEach(edge=>{if(!ids.has(edge.source)||!ids.has(edge.target))return;indegree.set(edge.target,(indegree.get(edge.target)||0)+1);if(!outgoing.has(edge.source))outgoing.set(edge.source,[]);outgoing.get(edge.source).push(edge.target);});
+      const queue=nodes.filter(node=>indegree.get(node.id)===0).map(node=>node.id);let cursor=0;while(cursor<queue.length){const id=queue[cursor++];(outgoing.get(id)||[]).forEach(target=>{ranks.set(target,Math.max(ranks.get(target)||0,(ranks.get(id)||0)+1));indegree.set(target,indegree.get(target)-1);if(indegree.get(target)===0)queue.push(target);});}
+      nodes.forEach(node=>{if((indegree.get(node.id)||0)>0)ranks.set(node.id,Number(node.layout_rank||0));});
+      const rows=new Map();nodes.forEach(node=>{const rank=ranks.get(node.id)||0;if(!rows.has(rank))rows.set(rank,[]);rows.get(rank).push(node);});const rankValues=[...rows.keys()].sort((a,b)=>a-b),gapX=mini?16:42,gapY=mini?42:88;
+      rankValues.forEach(rank=>rows.get(rank).sort((a,b)=>(Number(a.layout_order||50)-Number(b.layout_order||50))||nodeIdentifier(a).localeCompare(nodeIdentifier(b))));
+      const rowWidths=rankValues.map(rank=>rows.get(rank).reduce((sum,node,index)=>sum+nodeSize(node,mini).w+(index?gapX:0),0)),width=Math.max(mini?300:980,...rowWidths.map(value=>value+(mini?20:100))),positions=new Map();let y=mini?12:50;
+      rankValues.forEach((rank,rowIndex)=>{const items=rows.get(rank),rowWidth=rowWidths[rowIndex];let x=(width-rowWidth)/2,rowHeight=Math.max(...items.map(node=>nodeSize(node,mini).h));items.forEach(node=>{const size=nodeSize(node,mini);positions.set(node.id,{x,y:y+(rowHeight-size.h)/2});x+=size.w+gapX;});y+=rowHeight+gapY;});
+      if(useManual&&!mini)nodes.forEach(node=>{const manual=state.manualPositions.get(node.id);if(manual)positions.set(node.id,{...manual});});return {positions,routes:new Map(),width,height:Math.max(mini?120:520,y-(mini?30:48)),engine:'ranked-fallback'};
+    }
+    function layoutConstraintEdges(nodes,edges) {
+      const nodeMap=new Map(nodes.map(node=>[node.id,node])),relational=new Set(['equivalence','contradiction','complement']),byOperator=new Map(),directRelational=[];
+      edges.filter(edge=>relational.has(edge.semantic_type)).forEach(edge=>{
+        const source=nodeMap.get(edge.source),target=nodeMap.get(edge.target),operator=source?.kind==='operator'&&relational.has(operatorType(source))?source:target?.kind==='operator'&&relational.has(operatorType(target))?target:null;
+        if(!operator){directRelational.push(edge);return;}const operand=operator.id===edge.source?target:source;if(!operand)return;
+        if(!byOperator.has(operator.id))byOperator.set(operator.id,{operator,operands:[]});
+        if(!byOperator.get(operator.id).operands.some(item=>item.id===operand.id))byOperator.get(operator.id).operands.push(operand);
+      });
+      const constraints=edges.filter(edge=>!relational.has(edge.semantic_type)).concat(directRelational).map(edge=>({...edge}));
+      [...byOperator.values()].sort((a,b)=>a.operator.id.localeCompare(b.operator.id)).forEach(({operator,operands})=>{
+        const variables=operator.details?.variables||[];
+        operands.sort((a,b)=>{
+          if(a.kind==='operator'&&b.kind!=='operator')return -1;if(b.kind==='operator'&&a.kind!=='operator')return 1;
+          const ai=variables.indexOf(a.entity_id),bi=variables.indexOf(b.entity_id);
+          if(ai>=0||bi>=0)return (ai<0?999:ai)-(bi<0?999:bi);
+          return nodeIdentifier(a).localeCompare(nodeIdentifier(b));
+        });
+        if(operands[0])constraints.push({id:`layout-relational:${operator.id}:left`,source:operands[0].id,target:operator.id,semantic_type:'layout_constraint'});
+        operands.slice(1).forEach((operand,index)=>constraints.push({id:`layout-relational:${operator.id}:right:${index}`,source:operator.id,target:operand.id,semantic_type:'layout_constraint'}));
+      });
+      return constraints;
+    }
+    function dagreLayout(nodes,edges,mini=false,useManual=true) {
+      if(!globalThis.dagre?.graphlib?.Graph||!globalThis.dagre?.layout)throw new Error('Dagre is unavailable');
+      const nodeMap=new Map(nodes.map(node=>[node.id,node])),units=nodes.map(node=>{const size=nodeSize(node,mini);return {id:node.id,width:size.w,height:size.h};}),constraints=layoutConstraintEdges(nodes,edges);
+      const graph=new dagre.graphlib.Graph({multigraph:true});graph.setGraph({rankdir:'TB',ranker:'network-simplex',acyclicer:'greedy',nodesep:mini?22:68,edgesep:mini?10:24,ranksep:mini?46:112,marginx:mini?16:72,marginy:mini?16:72});graph.setDefaultEdgeLabel(()=>({}));units.sort((a,b)=>a.id.localeCompare(b.id)).forEach(unit=>graph.setNode(unit.id,{width:unit.width,height:unit.height}));
+      const routeRecords=[];
+      constraints.sort((a,b)=>a.id.localeCompare(b.id)).forEach(edge=>{if(edge.source===edge.target||!graph.hasNode(edge.source)||!graph.hasNode(edge.target))return;const source=nodeMap.get(edge.source),target=nodeMap.get(edge.target),eoPair=edge.semantic_type==='equivalence'&&String(source?.entity_id||'').startsWith('claim_E')&&String(target?.entity_id||'').startsWith('claim_O'),weight=eoPair?14:groupsFor(edge).length?8:1;graph.setEdge(edge.source,edge.target,{minlen:1,weight},edge.id);if(edge.semantic_type!=='layout_constraint')routeRecords.push({edge,source:edge.source,target:edge.target});});
+      dagre.layout(graph,{useDynamic:false});
+      const positions=new Map(),routes=new Map();
+      units.forEach(unit=>{const placed=graph.node(unit.id);if(!Number.isFinite(placed?.x)||!Number.isFinite(placed?.y))throw new Error(`Dagre returned no position for ${unit.id}`);positions.set(unit.id,{x:placed.x-unit.width/2,y:placed.y-unit.height/2});});
+      routeRecords.forEach(({edge,source,target})=>{if(source!==edge.source||target!==edge.target)return;const label=graph.edge({v:source,w:target,name:edge.id});if(Array.isArray(label?.points)&&label.points.length>1)routes.set(edge.id,label.points.map(point=>({x:point.x,y:point.y})));});
+      if(useManual&&!mini)nodes.forEach(node=>{const manual=state.manualPositions.get(node.id);if(manual){positions.set(node.id,{...manual});[...routes.keys()].forEach(edgeId=>{const edge=edges.find(item=>item.id===edgeId);if(edge&&(edge.source===node.id||edge.target===node.id))routes.delete(edgeId);});}});
+      const bounds=[...positions.entries()].reduce((value,[id,position])=>{const size=nodeSize(nodeMap.get(id),mini);return {x:Math.max(value.x,position.x+size.w+(mini?12:50)),y:Math.max(value.y,position.y+size.h+(mini?12:50))};},{x:mini?300:980,y:mini?120:520});
+      return {positions,routes,width:Math.max(bounds.x,graph.graph().width||0),height:Math.max(bounds.y,graph.graph().height||0),engine:'dagre'};
+    }
+    function connectedComponents(nodes,edges) {
+      const nodeMap=new Map(nodes.map(node=>[node.id,node])),adjacency=new Map(nodes.map(node=>[node.id,new Set()]));
+      edges.forEach(edge=>{if(!adjacency.has(edge.source)||!adjacency.has(edge.target))return;adjacency.get(edge.source).add(edge.target);adjacency.get(edge.target).add(edge.source);});
+      const seen=new Set(),components=[];
+      nodes.forEach(seed=>{if(seen.has(seed.id))return;const stack=[seed.id],ids=new Set([seed.id]);seen.add(seed.id);while(stack.length){const id=stack.pop();(adjacency.get(id)||[]).forEach(next=>{if(seen.has(next))return;seen.add(next);ids.add(next);stack.push(next);});}const members=nodes.filter(node=>ids.has(node.id)),memberEdges=edges.filter(edge=>ids.has(edge.source)&&ids.has(edge.target));components.push({nodes:members,edges:memberEdges});});
+      const order=component=>Math.min(...component.nodes.flatMap(node=>(node.source_anchor_ids||[]).map(anchor=>{const match=String(anchor).match(/p(\d+)/);return match?Number(match[1]):Number.MAX_SAFE_INTEGER;})),Number.MAX_SAFE_INTEGER);
+      return components.sort((a,b)=>order(a)-order(b)||b.nodes.length-a.nodes.length||a.nodes[0].id.localeCompare(b.nodes[0].id));
+    }
+    function normalizedLayout(nodes,layout,mini=false) {
+      const pad=mini?10:24,nodeMap=new Map(nodes.map(node=>[node.id,node])),bounds=[...layout.positions.entries()].reduce((value,[id,position])=>{const size=nodeSize(nodeMap.get(id),mini);return {minX:Math.min(value.minX,position.x),minY:Math.min(value.minY,position.y),maxX:Math.max(value.maxX,position.x+size.w),maxY:Math.max(value.maxY,position.y+size.h)};},{minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}),dx=pad-bounds.minX,dy=pad-bounds.minY,positions=new Map([...layout.positions].map(([id,position])=>[id,{x:position.x+dx,y:position.y+dy}])),routes=new Map([...layout.routes].map(([id,points])=>[id,points.map(point=>({x:point.x+dx,y:point.y+dy}))]));
+      return {positions,routes,width:bounds.maxX-bounds.minX+pad*2,height:bounds.maxY-bounds.minY+pad*2};
+    }
+    function coreRadialLayout(nodes,edges,mini=false,useManual=true) {
+      const core=nodes.filter(isDomainBubble), ids=new Set(nodes.map(node=>node.id)), adjacency=new Map(nodes.map(node=>[node.id,new Set()]));
+      edges.forEach(edge=>{if(ids.has(edge.source)&&ids.has(edge.target)){adjacency.get(edge.source).add(edge.target);adjacency.get(edge.target).add(edge.source);}});
+      const distances=new Map(core.map(node=>[node.id,0])), queue=core.map(node=>node.id);
+      for(let cursor=0;cursor<queue.length;cursor++){const id=queue[cursor],distance=distances.get(id);adjacency.get(id).forEach(next=>{if(!distances.has(next)){distances.set(next,distance+1);queue.push(next);}});}
+      const others=nodes.filter(node=>!isDomainBubble(node)).sort((a,b)=>(distances.get(a.id)||99)-(distances.get(b.id)||99)||nodeIdentifier(a).localeCompare(nodeIdentifier(b)));
+      const positions=new Map(), center={x:0,y:0}, coreSize=Math.max(...core.map(node=>nodeSize(node,mini).w),mini?58:88), coreRadius=core.length<=1?0:Math.max(coreSize*1.9,core.length*(mini?28:42));
+      core.forEach((node,index)=>{const angle=-Math.PI/2+(index/Math.max(core.length,1))*Math.PI*2,size=nodeSize(node,mini);positions.set(node.id,{x:center.x+Math.cos(angle)*coreRadius-size.w/2,y:center.y+Math.sin(angle)*coreRadius-size.h/2});});
+      const ringCount=Math.max(2,Math.ceil(others.length/(mini?14:34))), perRing=Math.ceil(others.length/ringCount), ringGap=mini?160:280, firstRadius=Math.max(coreRadius+coreSize*1.9,mini?230:450);
+      for(let ring=0;ring<ringCount;ring++){const group=others.slice(ring*perRing,(ring+1)*perRing),radius=firstRadius+ring*ringGap;group.forEach((node,index)=>{const angle=-Math.PI/2+(index/Math.max(group.length,1))*Math.PI*2+(ring%2)*0.08,size=nodeSize(node,mini);positions.set(node.id,{x:center.x+Math.cos(angle)*radius-size.w/2,y:center.y+Math.sin(angle)*radius-size.h/2});});}
+      const outerRadius=firstRadius+Math.max(0,ringCount-1)*ringGap, padding=mini?40:120, width=outerRadius*2+padding*2, height=width, dx=width/2, dy=height/2;
+      const normalized=new Map([...positions].map(([id,position])=>[id,{x:position.x+dx,y:position.y+dy}]));
+      if(useManual&&!mini)nodes.forEach(node=>{const manual=state.manualPositions.get(node.id);if(manual)normalized.set(node.id,{...manual});});
+      return {positions:normalized,routes:new Map(),width,height,engine:'core-ring'};
+    }
+
+    function componentLayout(nodes,edges,mini=false,useManual=true) {
+      const components=connectedComponents(nodes,edges);
+      if(mini || (components.length<=1 && !nodes.some(isDomainBubble)))return dagreLayout(nodes,edges,mini,useManual);
+      const layouts=components.map(component=>({component,layout:(!mini&&component.nodes.some(isDomainBubble)) ? coreRadialLayout(component.nodes,component.edges,false,false) : normalizedLayout(component.nodes,dagreLayout(component.nodes,component.edges,mini,false),mini)})),positions=new Map(),routes=new Map(),outer=52,gap=88,smallGap=42,smallLimit=5,smallColumns=4;
+      const place=(entry,x,top)=>{entry.layout.positions.forEach((position,id)=>positions.set(id,{x:position.x+x,y:position.y+top}));entry.layout.routes.forEach((points,id)=>routes.set(id,points.map(point=>({x:point.x+x,y:point.y+top}))));maxWidth=Math.max(maxWidth,x+entry.layout.width+outer);};
+      // Native LKM contains many independent article components. Pack those
+      // components into a rectangular multi-column sheet instead of one long
+      // vertical strip, which keeps the initial view readable and scrollable.
+      let maxWidth=980;
+      if (!mini && view.nodes.some(node=>node.layer==='lkm')) {
+        const columns=4, columnWidths=Array(columns).fill(0), rowHeights=[];
+        layouts.forEach((entry,index)=>{const column=index%columns,row=Math.floor(index/columns);columnWidths[column]=Math.max(columnWidths[column],entry.layout.width);rowHeights[row]=Math.max(rowHeights[row]||0,entry.layout.height);});
+        const columnX=columnWidths.map((_,index)=>outer+columnWidths.slice(0,index).reduce((sum,width)=>sum+width+smallGap,0));
+        let rowY=outer; rowHeights.forEach((height,row)=>{layouts.slice(row*columns,(row+1)*columns).forEach((entry,index)=>place(entry,columnX[index],rowY));rowY+=height+gap;});
+        if(useManual)nodes.forEach(node=>{const manual=state.manualPositions.get(node.id);if(manual)positions.set(node.id,{...manual});});
+        return {positions,routes,width:columnX.at(-1)+columnWidths.at(-1)+outer,height:Math.max(520,rowY-gap+outer),engine:'dagre-lkm-grid'};
+      }
+      let y=outer,smallRow=[];
+      const flushSmall=()=>{if(!smallRow.length)return;let x=outer,rowHeight=0;smallRow.forEach(entry=>{place(entry,x,y);x+=entry.layout.width+smallGap;rowHeight=Math.max(rowHeight,entry.layout.height);});y+=rowHeight+gap;smallRow=[];};
+      layouts.forEach(entry=>{if(entry.component.nodes.length<=smallLimit){smallRow.push(entry);if(smallRow.length===smallColumns)flushSmall();return;}flushSmall();place(entry,outer,y);y+=entry.layout.height+gap;});flushSmall();
+      if(useManual)nodes.forEach(node=>{const manual=state.manualPositions.get(node.id);if(!manual)return;positions.set(node.id,{...manual});[...routes.keys()].forEach(edgeId=>{const edge=edges.find(item=>item.id===edgeId);if(edge&&(edge.source===node.id||edge.target===node.id))routes.delete(edgeId);});});
+      return {positions,routes,width:maxWidth,height:Math.max(520,y-gap+outer),engine:'dagre-components'};
+    }
+    function automaticLayout(nodes,edges,mini=false,useManual=true) {
+      try{return componentLayout(nodes,edges,mini,useManual);}catch(error){console.warn('Dagre layout failed; using ranked fallback.',error);return rankedLayout(nodes,layoutConstraintEdges(nodes,edges),mini,useManual);}
+    }
+    function edgeGeometry(a,b,source,target,mini=false,route=null) {
+      if(Array.isArray(route)&&route.length>1){const middle=route[Math.floor(route.length/2)],d=route.map((point,index)=>`${index?'L':'M'} ${point.x} ${point.y}`).join(' ');return {d,lx:middle.x+4,ly:middle.y-4};}
+      const as=nodeSize(source,mini),bs=nodeSize(target,mini);if(Math.abs(a.y-b.y)<Math.max(as.h,bs.h)*.55){const forward=b.x>=a.x,x1=forward?a.x+as.w:a.x,x2=forward?b.x:b.x+bs.w,y1=a.y+as.h/2,y2=b.y+bs.h/2;return {d:`M ${x1} ${y1} C ${(x1+x2)/2} ${y1}, ${(x1+x2)/2} ${y2}, ${x2} ${y2}`,lx:(x1+x2)/2,ly:y1-6};}const downward=b.y>a.y,x1=a.x+as.w/2,y1=downward?a.y+as.h:a.y,x2=b.x+bs.w/2,y2=downward?b.y:b.y+bs.h,mid=(y1+y2)/2;return {d:`M ${x1} ${y1} C ${x1} ${mid}, ${x2} ${mid}, ${x2} ${y2}`,lx:(x1+x2)/2+4,ly:mid-4};
+    }
+    function splitText(value,limit=36,maxLines=2){let rest=String(value||'').replace(/\s+/g,' ').trim();const lines=[];while(rest&&lines.length<maxLines){if(rest.length<=limit){lines.push(rest);rest='';break;}const sample=rest.slice(0,limit+1),space=sample.lastIndexOf(' '),cut=space>=Math.floor(limit*.55)?space:limit;lines.push(rest.slice(0,cut).trim());rest=rest.slice(cut).trim();}if(rest&&lines.length)lines[lines.length-1]=`${lines.at(-1).replace(/[.…]+$/,'')}…`;return lines;}
+    function shapeMarkup(node,size){const type=operatorType(node),w=size.w,h=size.h;if(isDomainBubble(node))return `<circle class="node-shape" cx="${w/2}" cy="${h/2}" r="${Math.max(1,w/2-2)}"></circle>`;if(node.kind!=='operator')return `<rect class="node-shape" width="${w}" height="${h}" rx="${node.kind==='strategy'||node.kind==='weakpoint'?26:9}"></rect>`;if(type==='conjunction')return `<polygon class="node-shape" points="${w/2},0 ${w},${h/2} ${w/2},${h} 0,${h/2}"></polygon>`;if(type==='disjunction')return `<polygon class="node-shape" points="${w*.22},0 ${w*.78},0 ${w},${h/2} ${w*.78},${h} ${w*.22},${h} 0,${h/2}"></polygon>`;if(type==='contradiction')return `<polygon class="node-shape" points="${w*.22},0 ${w*.78},0 ${w},${h*.25} ${w},${h*.75} ${w*.78},${h} ${w*.22},${h} 0,${h*.75} 0,${h*.25}"></polygon>`;return `<rect class="node-shape" width="${w}" height="${h}" rx="${h/2}"></rect>`;}
+    function nodeMarkup(node,position,mini=false,interactive=true){const size=nodeSize(node,mini),tone=nodeTone(node),domain=isDomainBubble(node),low=isLowDegree(node),proposal=node.kind==='observation_proposal'?' observation-proposal':'',relationDisplay=node.kind==='relation_display'?' relation-display':'',hit=state.hits.has(node.id)?' hit':'',selected=state.selectedId===node.id?' selected':'',validation=node.validation_status==='failed'?' validation-failed':node.validation_status==='warning'?' validation-warning':'',classes=`node ${tone}${domain?' domain-bubble':''}${low?' low-degree':''}${proposal}${relationDisplay}${hit}${selected}${validation}`,data=interactive?` data-node=\"${esc(node.id)}\"`:'';const titleLimit=Math.max(8,Math.floor(size.w/(mini?5.8:7.2))),summaryLimit=Math.max(10,Math.floor(size.w/(mini?5.4:6.6)));let text='';if(node.kind==='operator')text=`<text class=\"node-title\" x=\"${size.w/2}\" y=\"${size.h/2+1}\">${esc(operatorSymbol(operatorType(node)))}</text>`;else if(domain){const title=splitText(nodeIdentifier(node),titleLimit,1)[0]||nodeIdentifier(node),lines=splitText(node.summary,summaryLimit,mini?2:3),lineHeight=mini?9:14,startY=size.h/2-(lines.length*lineHeight)/2+8;text=`<text class=\"node-title\" x=\"${size.w/2}\" y=\"${Math.max(16,startY-lineHeight)}\">${esc(title)}</text>${lines.map((line,index)=>`<text class=\"node-summary\" x=\"${size.w/2}\" y=\"${startY+index*lineHeight}\">${esc(line)}</text>`).join('')}`;}else if(isAlternativePlaceholder(node)||low)text=`<text class=\"node-title\" x=\"${size.w/2}\" y=\"${size.h/2+1}\">${esc(splitText(nodeIdentifier(node),titleLimit,1)[0]||nodeIdentifier(node))}</text>`;else if(node.kind==='strategy'||node.kind==='weakpoint'){const title=splitText(node.kind==='weakpoint'?'weakpoint':nodeIdentifier(node),titleLimit,1)[0],lines=splitText(node.kind==='weakpoint'?'evidence / example':weakpointType(node),summaryLimit,1);text=`<text class=\"node-title\" x=\"12\" y=\"23\">↝ ${esc(title)}</text><text class=\"node-summary\" x=\"12\" y=\"44\">${esc(lines[0]||'')}</text>`;}else{const title=splitText(nodeIdentifier(node),titleLimit,1)[0]||nodeIdentifier(node),lines=splitText(node.summary,summaryLimit,mini?2:2);text=`<text class=\"node-title\" x=\"${mini?7:12}\" y=\"${mini?17:24}\">${esc(title)}</text>${lines.map((line,index)=>`<text class=\"node-summary\" x=\"${mini?7:12}\" y=\"${(mini?33:51)+index*(mini?11:17)}\">${esc(line)}</text>`).join('')}`;}return `<g class=\"${classes}\"${data} transform=\"translate(${position.x},${position.y})\"><title>${esc([node.entity_id,node.summary].filter(Boolean).join('\\n'))}</title>${shapeMarkup(node,size)}${text}</g>`;}
+    function edgeMarkup(edge,positions,nodeMap,mini=false,interactive=true,routes=new Map()){const source=nodeMap.get(edge.source),target=nodeMap.get(edge.target),a=positions.get(edge.source),b=positions.get(edge.target);if(!source||!target||!a||!b)return '';const geometry=edgeGeometry(a,b,source,target,mini,routes.get(edge.id)),non=edge.edge_class==='non_reasoning'?' non-reasoning':'',candidate=edge.edge_class==='reasoning'&&edge.reasoning_state==='candidate'?' reasoning-candidate':'',infer=edge.semantic_type==='infer'?' infer':'',relational=['contradiction','complement'].includes(edge.semantic_type)?' relational':'',equivalence=edge.semantic_type==='equivalence'?' equivalence':'',arrows=edge.semantic_type==='equivalence'?` marker-start="url(#${mini?'mini-':''}arrow-start)" marker-end="url(#${mini?'mini-':''}arrow)"`:` marker-end="url(#${mini?'mini-':''}arrow)"`,validation=edge.validation_status==='failed'?' validation-failed':edge.validation_status==='warning'?' validation-warning':'',selected=state.selectedId===edge.id?' selected':'',data=interactive?` data-edge="${esc(edge.id)}" data-source="${esc(edge.source)}" data-target="${esc(edge.target)}"`:'',showAuditLabel=devMode&&['1','2'].includes(state.step),label=showAuditLabel?(edge.details?.metadata?.relation_id||edge.label):edge.semantic_type==='background'||edge.semantic_type==='infer'?edge.label:'';return `<path class="edge${non}${candidate}${infer}${relational}${equivalence}${validation}${selected}"${arrows}${data} d="${geometry.d}"></path>${label?`<text class="edge-label${selected}"${data} x="${geometry.lx}" y="${geometry.ly}">${esc(label)}</text>`:''}`;}
+    function updateConnectedEdges(nodeId){document.querySelectorAll('#graph [data-edge]').forEach(element=>{if(element.dataset.source!==nodeId&&element.dataset.target!==nodeId)return;const source=state.nodeMap.get(element.dataset.source),target=state.nodeMap.get(element.dataset.target),a=state.positions.get(element.dataset.source),b=state.positions.get(element.dataset.target);if(!source||!target||!a||!b)return;const geometry=edgeGeometry(a,b,source,target,false);if(element.tagName.toLowerCase()==='path')element.setAttribute('d',geometry.d);else{element.setAttribute('x',geometry.lx);element.setAttribute('y',geometry.ly);}});}
+    function svgPoint(event,svg){const point=svg.createSVGPoint();point.x=event.clientX;point.y=event.clientY;return point.matrixTransform(svg.getScreenCTM().inverse());}
+    function bindDragging(svg){svg.querySelectorAll('.node[data-node]').forEach(element=>{element.addEventListener('pointerdown',event=>{const id=element.dataset.node,origin=state.positions.get(id),point=svgPoint(event,svg);state.drag={id,element,dx:point.x-origin.x,dy:point.y-origin.y};element.classList.add('dragging');element.setPointerCapture(event.pointerId);event.preventDefault();});element.addEventListener('pointermove',event=>{if(!state.drag||state.drag.id!==element.dataset.node)return;const point=svgPoint(event,svg),next={x:Math.max(10,point.x-state.drag.dx),y:Math.max(10,point.y-state.drag.dy)};state.positions.set(state.drag.id,next);state.manualPositions.set(state.drag.id,next);element.setAttribute('transform',`translate(${next.x},${next.y})`);updateConnectedEdges(state.drag.id);});const finish=()=>{if(state.drag?.element===element){element.classList.remove('dragging');state.drag=null;}};element.addEventListener('pointerup',finish);element.addEventListener('pointercancel',finish);});}
+    function selectItem(item){if(!item)return;state.selectedId=item.id||null;showDetail(item);if((item.kind==='weakpoint'||(item.kind==='strategy'&&item.details?.form==='coarse'))&&toggleWeakpoint(item))return;renderGraph();}
+    function applyViewport(svg) {
+      const viewport=state.viewport;
+      if (!viewport) return;
+      svg.setAttribute('viewBox',`${viewport.x} ${viewport.y} ${viewport.w} ${viewport.h}`);svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    }
+    function fitViewport() {
+      const svg=document.getElementById('graph');
+      if (!svg?.dataset.baseWidth) return;
+      state.viewport={x:0,y:0,w:Number(svg.dataset.baseWidth),h:Number(svg.dataset.baseHeight),baseWidth:Number(svg.dataset.baseWidth),baseHeight:Number(svg.dataset.baseHeight)};
+      applyViewport(svg);
+    }
+    function zoomViewport(factor,cx=null,cy=null) {
+      const svg=document.getElementById('graph'),v=state.viewport;
+      if (!svg||!v) return;
+      const centerX=cx==null?v.x+v.w/2:cx,centerY=cy==null?v.y+v.h/2:cy,scale=1/factor;
+      const width=Math.max(Number(svg.dataset.baseWidth)/120,Math.min(Number(svg.dataset.baseWidth),v.w*scale)),height=Math.max(Number(svg.dataset.baseHeight)/120,Math.min(Number(svg.dataset.baseHeight),v.h*scale));
+      state.viewport={x:centerX-(centerX-v.x)*(width/v.w),y:centerY-(centerY-v.y)*(height/v.h),w:width,h:height};
+      state.viewport.x=Math.max(0,Math.min(Number(svg.dataset.baseWidth)-width,state.viewport.x));
+      state.viewport.y=Math.max(0,Math.min(Number(svg.dataset.baseHeight)-height,state.viewport.y));
+      applyViewport(svg);
+    }
+    function bindViewportInteractions(svg) {
+      if (svg.dataset.viewportBound) return;
+      svg.dataset.viewportBound='1';
+      svg.addEventListener('wheel',event=>{event.preventDefault();const point=svgPoint(event,svg),factor=event.deltaY<0?1.18:1/1.18;zoomViewport(factor,point.x,point.y);},{passive:false});
+      svg.addEventListener('pointerdown',event=>{if(event.target!==svg)return;const point=svgPoint(event,svg);state.pan={point,x:state.viewport.x,y:state.viewport.y};svg.classList.add('panning');svg.setPointerCapture(event.pointerId);});
+      svg.addEventListener('pointermove',event=>{if(!state.pan)return;const point=svgPoint(event,svg),dx=point.x-state.pan.point.x,dy=point.y-state.pan.point.y;state.viewport.x=Math.max(0,Math.min(Number(svg.dataset.baseWidth)-state.viewport.w,state.pan.x-dx));state.viewport.y=Math.max(0,Math.min(Number(svg.dataset.baseHeight)-state.viewport.h,state.pan.y-dy));applyViewport(svg);});
+      const finish=()=>{state.pan=null;svg.classList.remove('panning');};
+      svg.addEventListener('pointerup',finish);svg.addEventListener('pointercancel',finish);
+    }
+    function renderGraph(){const svg=document.getElementById('graph'),graph=displayGraph();state.degrees=degreeMap(graph.nodes,graph.edges);const layout=automaticLayout(graph.nodes,graph.edges,false,true);state.positions=layout.positions;state.routes=layout.routes||new Map();state.nodeMap=new Map(graph.nodes.map(node=>[node.id,node]));state.edgeMap=new Map(graph.edges.map(edge=>[edge.id,edge]));svg.dataset.layoutEngine=layout.engine;svg.dataset.baseWidth=layout.width;svg.dataset.baseHeight=layout.height;const viewportChanged=!state.viewport||state.viewport.baseWidth!==layout.width||state.viewport.baseHeight!==layout.height;const nativeLkm=view.nodes.some(node=>node.layer==='lkm');if(viewportChanged){const initialZoom=nativeLkm?21.15:1;state.viewport={x:0,y:0,w:layout.width/initialZoom,h:layout.height/initialZoom,baseWidth:layout.width,baseHeight:layout.height};}else{state.viewport.baseWidth=layout.width;state.viewport.baseHeight=layout.height;}svg.setAttribute('height',Math.min(layout.height,Math.max(620,window.innerHeight-130)));applyViewport(svg);const defs='<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#667085"></path></marker><marker id="arrow-start" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#667085"></path></marker></defs>';svg.innerHTML=defs+graph.edges.map(edge=>edgeMarkup(edge,layout.positions,state.nodeMap,false,true,state.routes)).join('')+graph.nodes.map(node=>nodeMarkup(node,layout.positions.get(node.id))).join('');if(!graph.nodes.length)svg.innerHTML=defs+'<text x="24" y="40" class="muted">No nodes under the current mode and layers</text>';svg.dataset.baseWidth=layout.width;svg.dataset.baseHeight=layout.height;applyViewport(svg);svg.querySelectorAll('[data-node]').forEach(element=>{element.addEventListener('click',()=>selectItem(state.nodeMap.get(element.dataset.node)));});svg.querySelectorAll('[data-edge]').forEach(element=>{element.addEventListener('click',()=>selectItem(state.edgeMap.get(element.dataset.edge)));});bindViewportInteractions(svg);bindDragging(svg);}
+
+    function propertyRow(key,value){if(value==null||value===''||(Array.isArray(value)&&!value.length))return '';const rendered=typeof value==='object'?JSON.stringify(value):String(value);return `<div class="property-row"><div class="property-key">${esc(key)}</div><div>${esc(rendered)}</div></div>`;}
+    function clearDetail(){document.getElementById('detail').innerHTML='<div class="muted">Click a node or edge to inspect its properties here.</div>';}
+    function weakpointCard(item){if(item.kind!=='strategy'||item.details?.form!=='coarse')return '';const details=item.details||{},proposal=details.weakpoint||{},payload=proposal.payload||{},review=proposal.review||{},type=weakpointType(item),reasoningType=String(payload.reasoning_type||details.type||'').replaceAll('_',' ');return `<div class="section-title">Weakpoint</div><div class="property-card">${propertyRow('status',details.review_status)}${propertyRow('type',type)}${reasoningType&&reasoningType!==type?propertyRow('reasoning type',reasoningType):''}${propertyRow('gap type',payload.gap_type)}${propertyRow('premises',details.premises)}${propertyRow('conclusion',details.conclusion)}${propertyRow('background',details.background)}${propertyRow('rationale',payload.rationale||details.coarse?.necessity_test?.rationale)}${propertyRow('review',review.decision||review.status)}</div>`;}
+    function miniGraphMarkup(item){const strategyId=expandableStrategyId(item);if(!strategyId)return '';const graph=localFormalGraph(strategyId,false);if(!graph.nodes.length)return '<div class="muted">No corresponding local expansion graph in Step 4.</div>';const layout=automaticLayout(graph.nodes,graph.edges,true,false),nodeMap=new Map(graph.nodes.map(node=>[node.id,node])),defs='<defs><marker id="mini-arrow" markerWidth="7" markerHeight="7" refX="6" refY="2.5" orient="auto"><path d="M0,0 L0,5 L7,2.5 z" fill="#667085"></path></marker><marker id="mini-arrow-start" markerWidth="7" markerHeight="7" refX="6" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L0,5 L7,2.5 z" fill="#667085"></path></marker></defs>',edges=graph.edges.map(edge=>edgeMarkup(edge,layout.positions,nodeMap,true,false,layout.routes).replaceAll('url(#arrow-start)','url(#mini-arrow-start)').replaceAll('url(#arrow)','url(#mini-arrow)')).join(''),nodes=graph.nodes.map(node=>nodeMarkup(node,layout.positions.get(node.id),true,false)).join('');return `<div class="section-title">Step 4 local reasoning</div><svg class="mini-graph" data-layout-engine="${esc(layout.engine)}" viewBox="0 0 ${layout.width} ${layout.height}" aria-label="${esc(strategyId)} — Step 4 local reasoning graph">${defs}${edges}${nodes}</svg>`;}
+    function showDetail(item){if(!item)return;const details=item.details||item.metadata||item,isCoarseWeakpoint=item.kind==='strategy'&&details.form==='coarse',sourceLink=details?.href?`<p><a href="${esc(details.href)}" target="_blank">Open the frozen source artifact</a></p>`:'',anchorIds=item.source_anchor_ids||details?.source_anchor_ids||[],sourceCards=anchorIds.map(anchorId=>sourceByKey.get(`${item.step}:${anchorId}`)).filter(Boolean).map(target=>`<div class="property-card"><a href="${esc(target.href||'#')}" target="_blank">${esc(target.source_kind)} · ${esc(target.anchor_id)}</a><div class="muted">${esc(JSON.stringify(target.locator))}</div>${target.quote?`<blockquote>${esc(target.quote)}</blockquote>`:''}</div>`).join(''),sources=sourceCards?`<div class="section-title">Source location</div>${sourceCards}`:'',findings=item.validation_findings||(item.kind==='validation_finding'?[details]:[]),validation=findings.length?`<div class="section-title">Validation</div>${findings.map(finding=>`<div class="validation-card ${finding.severity==='warning'?'warning':''}"><strong>${esc(finding.rule)}</strong><div>${esc(finding.message)}</div><div class="muted">Target: ${esc(finding.target?.type)} · ${esc(finding.target?.id)}</div><div class="muted">Location: ${esc(finding.location?.json_pointer)}</div><div>Suggested: ${esc(finding.suggested_action)}</div></div>`).join('')}`:'',kind=item.kind||item.semantic_type||item.edge_class||'property',background=details.background||details.metadata?.background||details.operator?.metadata?.background,reasoningType=details.payload?.reasoning_type,basics=`<div class="section-title">Properties</div><div class="property-card">${propertyRow('step',item.step)}${propertyRow('entity ID',item.entity_id)}${propertyRow('operator ID',details.operator_id||details.id)}${isCoarseWeakpoint?'':propertyRow('type',details.type||item.semantic_type||item.kind)}${propertyRow('reasoning type',reasoningType)}${isCoarseWeakpoint?'':propertyRow('background',background)}${propertyRow('layer',item.layer)}${propertyRow('edge class',item.edge_class)}${propertyRow('reasoning',item.reasoning_state)}${propertyRow('fold groups',item.fold_groups||item.fold_group)}</div>`;document.getElementById('detail').innerHTML=`<h2>${esc(nodeIdentifier(item))}</h2><div class="muted">${esc(kind)} · ${esc(item.id||'')}</div><p>${esc(item.summary||item.text||'')}</p>${basics}${weakpointCard(item)}${miniGraphMarkup(item)}${validation}${sources}${sourceLink}<details ${devMode?'open':''}><summary>Full properties</summary><pre>${esc(JSON.stringify(details,null,2))}</pre></details>`;}
+
+    document.getElementById('view-mode').addEventListener('change',event=>{state.mode=event.target.value;state.step=modeStep();state.expandedWeakpoints.clear();state.manualPositions.clear();state.selectedId=null;clearDetail();updateModeNote();updateValidationStatus();buildLayers(true);runSearch();});
+    document.getElementById('search').addEventListener('input',event=>{state.query=event.target.value;runSearch();});
+    document.getElementById('zoom-in').addEventListener('click',()=>zoomViewport(1.25));document.getElementById('zoom-out').addEventListener('click',()=>zoomViewport(1/1.25));document.getElementById('fit-layout').addEventListener('click',fitViewport);document.getElementById('reset-layout').addEventListener('click',()=>{state.manualPositions.clear();renderGraph();fitViewport();});
+    configureModeControls();updateValidationStatus();buildLayers(true);renderGraph();
+    }
+  </script>
+</body>
+</html>

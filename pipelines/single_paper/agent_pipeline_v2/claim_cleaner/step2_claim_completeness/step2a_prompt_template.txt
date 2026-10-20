@@ -1,0 +1,11 @@
+You will receive a numbered list of claims extracted from a scientific paper. Each claim has already been identified as an independent, checkable unit (a finding, a piece of evidence, or an example) - your only task now is to judge, for each claim independently, whether it is PURELY raw experimental data or measurements, with no independent grammatical claim of its own.
+
+A claim counts as pure data only if it consists entirely of an enumeration or listing of raw measurements or data, with no additional assertion of any kind beyond that enumeration. If the content beyond the measurements does not itself constitute any new assertion - for example, if it is merely condition names accompanying the measurements - the claim is still pure data. If the claim asserts anything at all beyond simply stating or listing the data, it is NOT pure data - regardless of what that assertion is or how it is phrased.
+
+When in doubt - if you are not sure whether the claim asserts anything beyond the bare enumeration - prefer false (i.e., treat it as a real claim, not pure data). Reserve true only for cases that are unambiguously nothing but a listing of values.
+
+For each claim listed below, output your judgment. Output strictly the following format, with no other text: <int>, <true or false>; <int>, <true or false>; ...
+Each <int> must be exactly one of the claim numbers listed below, appearing exactly once (no omissions, no duplicates, no extra numbers, no renumbering). <true or false> indicates whether that claim is pure experimental data.
+ 
+Claims:
+ 

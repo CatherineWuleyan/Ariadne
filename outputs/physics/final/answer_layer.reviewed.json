@@ -1,0 +1,5131 @@
+{
+  "question": {
+    "zh": "在块体 4Hₐ-NbSe₂（非中心对称多型）中，面内上临界场 B_c2∥ 由哪条对破缺通道决定？",
+    "en": "In bulk 4H_a-NbSe2 (the non-centrosymmetric polytype), which pair-breaking channel determines the in-plane upper critical field B_c2_parallel?",
+    "subtitle": "R1 与 R2 都把轨道通道放在决定位置；分歧在于 Ising SOC 是否是必要保护机制。有限动量态作为普通待测机制节点保留在图中。",
+    "gold_note": "待检验命题：4H_a-NbSe₂ 的面内 B_c2∥≈31 T（或 WHH 外推≈24 T）主要由轨道/层间通道设定，或在 γ≥5.6 时由纯轨道通道自足设定；Ising SOC 是否仅抬高塞曼上限仍需定量区分。",
+    "title_html": "在块体 4H<sub>a</sub>-NbSe₂（非中心对称多型）中，面内上临界场 <em>B</em><sub>c2∥</sub> 由哪条对破缺通道决定？"
+  },
+  "bridge": [
+    {
+      "id": "L1a",
+      "label_zh": "面内 B_c2 超过裸 Pauli 标尺",
+      "zh": "4H_a-NbSe₂ 的面内上临界场 B_c2∥≈31 T，约为裸 Pauli 极限 B_P≈11.15 T 的 2.8 倍。",
+      "en": "For bulk 4H_a-NbSe2, the in-plane upper critical field is about 31 T, approximately 2.8 times the bare Pauli limit of 11.15 T.",
+      "kind": "claim",
+      "subkind": "条件/约束",
+      "basis": "图内 O16-7（paper_db13a75e::claim_3）与 C16-5（claim_2）。",
+      "math_note": "B_P=1.86T_c，T_c≈6 K。",
+      "conclusion": "4H_a-NbSe₂ 的面内上临界场 B_c2∥≈31 T，约为裸 Pauli 极限 B_P≈11.15 T 的 2.8 倍。",
+      "derivation": "O16-7 reports a 31 T linear extrapolation (24 T WHH extrapolation); T_c≈6 K gives B_P≈11.15 T.",
+      "motivation": "这是 R1 的面内超 Pauli 观测前提，也是 R2 数值比值的分子。",
+      "symbol_defs": "B_c2∥ 为面内上临界场；B_P 为裸 Pauli 极限。",
+      "atomicity_status": "atomic"
+    },
+    {
+      "id": "L1b",
+      "label_zh": "面外 B_c2 低于裸 Pauli 标尺",
+      "zh": "4H_a-NbSe₂ 的面外上临界场 B_c2⊥≈5.5 T，约为裸 Pauli 极限 B_P≈11.15 T 的 0.49 倍。",
+      "en": "For bulk 4H_a-NbSe2, the out-of-plane upper critical field is about 5.5 T, approximately 0.49 times the bare Pauli limit of 11.15 T.",
+      "kind": "claim",
+      "subkind": "条件/约束",
+      "basis": "图内 C16-13（paper_db13a75e::claim_4）。",
+      "math_note": "B_P=1.86T_c，T_c≈6 K。",
+      "conclusion": "4H_a-NbSe₂ 的面外上临界场 B_c2⊥≈5.5 T，约为裸 Pauli 极限 B_P≈11.15 T 的 0.49 倍。",
+      "derivation": "C16-13 reports B_c2⊥≈5.5 T; T_c≈6 K gives B_P≈11.15 T.",
+      "motivation": "这是 R2 将面外场作为轨道标尺的观测前提。",
+      "symbol_defs": "B_c2⊥ 为面外上临界场；B_P 为裸 Pauli 极限。",
+      "atomicity_status": "atomic"
+    },
+    {
+      "id": "L4",
+      "label_zh": "2H_a/4H_a 面外场标尺比较（外部来源）",
+      "zh": "2H_a-NbSe₂ 与 4H_a-NbSe₂ 的面外上临界场分别约为 5.0 T 与 5.5 T。",
+      "en": "The reported out-of-plane upper critical fields are about 5.0 T for 2H_a-NbSe2 and 5.5 T for 4H_a-NbSe2.",
+      "kind": "claim",
+      "subkind": "同族对照",
+      "basis": "Zhou et al., PRB 108, 224518 (2023) 与图内 C16-13；2H_a 外部来源未在当前 18 篇图内节点物化。",
+      "math_note": "面内相干长度 ξ_a 由垂直轨道极限 Φ₀/(2πξ_a²) 反推，两型的 ξ_a 均约为 7.7 nm。 两者在实验误差内接近，说明两型的面外轨道能标同源。",
+      "conclusion": "2H_a-NbSe₂ 与 4H_a-NbSe₂ 的面外上临界场分别约为 5.0 T 与 5.5 T。",
+      "derivation": "两者在实验误差内接近，说明两型的面外轨道能标同源。",
+      "motivation": "这给出两种多型面内相干长度的共同量级基准；面内场的机制仍需另行判定。",
+      "symbol_defs": "面内相干长度 ξ_a 由垂直轨道极限 Φ₀/(2πξ_a²) 反推，两型的 ξ_a 均约为 7.7 nm。",
+      "atomicity_status": "atomic",
+      "evidence_status": "external_source_not_materialized",
+      "claim_boundary": "仅作为同族类比；不能单独推出 4H_a 的面内限速机制。"
+    },
+    {
+      "id": "L5",
+      "label_zh": "4H_a 面内 B_c2(T) 未见低温上翘",
+      "zh": "在本图检索的 0.7 K 至 T_c 数据中，4H_a-NbSe₂ 的 B_c2∥(T) 未见低温上翘或内部相界。",
+      "en": "在本图检索的 0.7 K 至 T_c 数据中，4H_a-NbSe₂ 的 B_c2∥(T) 未见低温上翘或内部相界。",
+      "kind": "claim",
+      "subkind": "形态学判别（指纹缺失已定论；六重指纹本身亦有 Rashba 混淆源；Lebed/Maki 两口径相反）",
+      "basis": "本图检索的 4H_a 热容 B_c2(T) 曲线；未把 l_orb(H)/s_layer 对照值当作该形态事实的来源。",
+      "math_note": "内部相界 B* 与超导—正常态 B_c2 是不同物理量。",
+      "conclusion": "在本图检索的 0.7 K 至 T_c 数据中，4H_a-NbSe₂ 的 B_c2∥(T) 未见低温上翘或内部相界。",
+      "derivation": "该区间内没有低温上翘，也没有内部相变。",
+      "motivation": "这是对有限动量内部相的形态学约束，不是对其已被否定的证明。",
+      "symbol_defs": "",
+      "atomicity_status": "atomic"
+    },
+    {
+      "id": "L6",
+      "label_zh": "单带/斜率路线的轨道场估计",
+      "zh": "在单带斜率与各向异性 GL 估计下，4H_a-NbSe₂ 的面内轨道场约为 20.5–22.4 T。",
+      "en": "在单带斜率与各向异性 GL 估计下，4H_a-NbSe₂ 的面内轨道场约为 20.5–22.4 T。",
+      "kind": "claim",
+      "subkind": "不确定性",
+      "basis": "图内 O16-7 与 TH2 的斜率/各向异性 GL 计算；本节点是复核计算结果，不是论文原文 observation。",
+      "math_note": "γ=ξ_a/ξ_c；无顺磁限制时由 T_c 处斜率估计 B_c2,orb∥≈20.5–22.4 T。",
+      "conclusion": "在单带斜率与各向异性 GL 估计下，4H_a-NbSe₂ 的面内轨道场约为 20.5–22.4 T。",
+      "derivation": "本复核采用的单带斜率与各向异性 GL 路线给出约 20.5–22.4 T；较低的约 17 T 路线依赖不同外推口径，未纳入该保守区间；它们都没有独立测量 ξ_c 或 γ。",
+      "motivation": "这是保守估计，不是严格上界；若 γ≥5.6（约5.64） 或层错改变 ξ_c，轨道场可更高。",
+      "symbol_defs": "各向异性比 γ = ξ_a/ξ_c；无顺磁限制的轨道场由 T_c 处斜率给出，等于 0.693·T_c·|dB_c2/dT|。",
+      "atomicity_status": "atomic",
+      "evidence_status": "derived_from_graph_inputs"
+    },
+    {
+      "id": "L7",
+      "label_zh": "4H_a 的面外散射较强",
+      "zh": "4H_a-NbSe₂ 的面外平均自由程上界小于 1 nm。",
+      "en": "4H_a-NbSe₂ 的面外平均自由程上界小于 1 nm。",
+      "kind": "claim",
+      "subkind": "混淆因素",
+      "basis": "npj 2D Mater. Appl. 9 (2025) 的 4H_a 输运/结构审计；该来源未物化为当前图内 claim 节点。",
+      "math_note": "ℓ_mfp,c 表示面外平均自由程；s_layer 表示层间距。",
+      "conclusion": "4H_a-NbSe₂ 的面外平均自由程上界小于 1 nm。",
+      "derivation": "该上界与层间距 s_layer≈0.62 nm 同量级，但不能推出 ℓ_mfp,c<s_layer。",
+      "motivation": "它提示层间输运与轨道极限可能受无序影响；是否达到准二维条件仍待测量。",
+      "symbol_defs": "",
+      "atomicity_status": "atomic",
+      "evidence_status": "external_source_not_materialized"
+    },
+    {
+      "id": "L8",
+      "label_zh": "本图检索中的判别性测量缺口",
+      "zh": "在本图检索的 4H_a-NbSe₂ 文献中，未见面内方位角分辨的 B_c2 测量。",
+      "en": "在本图检索的 4H_a-NbSe₂ 文献中，未见面内方位角分辨的 B_c2 测量。",
+      "kind": "claim",
+      "subkind": "元层：证据缺口",
+      "basis": "对当前检索语料的缺测审计；这是 corpus-level absence 记录，不是某篇论文的正向 observation。",
+      "math_note": "同样缺失的还有磁转矩测量与磁场下的隧穿谱。",
+      "terminal": true,
+      "conclusion": "在本图检索的 4H_a-NbSe₂ 文献中，未见面内方位角分辨的 B_c2 测量。",
+      "derivation": "同样缺失的还有磁转矩测量与磁场下的隧穿谱。",
+      "motivation": "该缺口使 Ising、纯轨道与有限动量候选不能仅凭现有图谱完全区分。",
+      "symbol_defs": "",
+      "atomicity_status": "atomic",
+      "evidence_status": "corpus_absence_audit"
+    },
+    {
+      "id": "M1",
+      "kind": "relation",
+      "label_zh": "判定分支：Ising 抬高塞曼，轨道设定量级",
+      "zh": "若有效 Ising 场 B_t 远高于 31 T，且含 ξ_c/γ、层错与多带修正的轨道模型可达约 31 T，则塞曼通道不是主限速，轨道/层间结构设定面内场尺度。",
+      "en": "If the effective Ising field is well above 31 T and a corrected orbital model reaches about 31 T, orbital/interlayer structure sets the in-plane field scale.",
+      "subkind": "判定分支",
+      "basis": "TH3 + L1a + L1b + L6（L4/L4p 仅作类比对照）",
+      "math_note": "B_t 远高于 31 T；L6 给出 20.5–22.4 T 的保守轨道基线，未独立测量 ξ_c/γ。",
+      "conclusion": "若有效 Ising 场 B_t 远高于 31 T，且含 ξ_c/γ、层错与多带修正的轨道模型可达约 31 T，则塞曼通道不是主限速，轨道/层间结构设定面内场尺度。",
+      "derivation": "(AX3a ∧ AX3)→TH3；再将 TH3、L1a、L1b 与 L6 合取，得到条件性限速判断。",
+      "motivation": "这是 R1 的条件性判定分支；R2 仍可在 γ≥5.6 时自足拟合场值。",
+      "symbol_defs": "",
+      "premises": [
+        "theory:AX3a",
+        "theory:AX3",
+        "theory:L1a",
+        "theory:L1b",
+        "theory:L6"
+      ],
+      "operator_id": "conjunction",
+      "atomicity_status": "relation"
+    },
+    {
+      "id": "M2",
+      "kind": "relation",
+      "label_zh": "判定分支：γ 阈值决定纯轨道是否自足",
+      "zh": "若把 B_c2⊥≈5.5 T 作为三维各向异性轨道标尺且 γ=ξ_a/ξ_c≥5.6，则纯轨道模型可达到 B_c2∥≈31 T。",
+      "en": "If B_c2⊥≈5.5 T is an orbital reference in the 3D anisotropic regime and γ≥5.6, a pure-orbital model reaches B_c2∥≈31 T.",
+      "subkind": "判定分支",
+      "basis": "L1a ∧ L1b ∧ TH2；TH5a 给出适用边界。",
+      "math_note": "γ=ξ_a/ξ_c；阈值 γ≈31/5.5≈5.64，尚未独立测量。",
+      "conclusion": "若把 B_c2⊥≈5.5 T 作为三维各向异性轨道标尺且 γ=ξ_a/ξ_c≥5.6，则纯轨道模型可达到 B_c2∥≈31 T。",
+      "derivation": "由 TH2 的 B_c2,orb∥/B_c2⊥=γ 与 L1a、L1b 的场值，得到 γ≈31/5.5≈5.6；TH5a 给出 s_layer≪ξ_c 的适用边界。",
+      "motivation": "这条关系是候选一与候选二之间唯一的判决点，判决量是 γ。",
+      "symbol_defs": "γ=ξ_a/ξ_c。",
+      "premises": [
+        "theory:L1a",
+        "theory:L1b",
+        "theory:TH2",
+        "theory:TH5a"
+      ],
+      "operator_id": "conjunction",
+      "atomicity_status": "relation"
+    },
+    {
+      "id": "L4p",
+      "label_zh": "2H_a 面内场低于其 Pauli 标尺",
+      "zh": "2H_a-NbSe₂ 的面内上临界场约为 11.2 T，低于其弱耦合 Pauli 标尺约 13 T。",
+      "en": "2H_a-NbSe₂ 的面内上临界场约为 11.2 T，低于其弱耦合 Pauli 标尺约 13 T。",
+      "kind": "claim",
+      "subkind": "bridge",
+      "basis": "C8-9",
+      "math_note": "面内相干长度 ξ_a 由垂直轨道极限 Φ₀/(2πξ_a²) 反推，两型的 ξ_a 均约为 7.7 nm。 两者在实验误差内接近，说明两型的面外轨道能标同源。",
+      "conclusion": "2H_a-NbSe₂ 的面内上临界场约为 11.2 T，低于其弱耦合 Pauli 标尺约 13 T。",
+      "derivation": "C8-9 的 2H_a 面内场与弱耦合 Pauli 标尺分别为约 11.2 T 与 13 T。",
+      "motivation": "这是同族面内场对照，不直接决定 4H_a 的机制。",
+      "symbol_defs": "面内相干长度 ξ_a 由垂直轨道极限 Φ₀/(2πξ_a²) 反推，两型的 ξ_a 均约为 7.7 nm。",
+      "atomicity_status": "atomic"
+    }
+  ],
+  "roots": [
+    {
+      "id": "theory:R1",
+      "verdict": "主结论（本图给出）",
+      "verdict_class": "primary",
+      "label_zh": "回答一：Ising 自旋保护与轨道/层间通道",
+      "one_liner": "在块体 4H_a-NbSe₂ 中，面内上临界场由 Ising SOC 自旋保护与轨道/层间通道共同决定。",
+      "zh": "在块体 4H_a-NbSe₂ 中，面内上临界场由 Ising SOC 自旋保护与轨道/层间通道共同决定。",
+      "en": "In bulk 4H_a-NbSe2, the in-plane upper critical field is jointly determined by Ising SOC spin protection and orbital/interlayer channels.",
+      "caveat": "这是当前证据下的联合机制归因，不是已被独立实验分解的定理；自旋保护与轨道限速的定量份额仍未分开。",
+      "reply_to": "与 R2 相容；R1 是含 Ising 保护的实际机制归因，R2 是纯轨道通道的条件性充分性检验。",
+      "sources": [
+        "arXiv:2501.08867",
+        "PRL 136, 016002 (2026)",
+        "arXiv:2506.09413",
+        "arXiv:2201.09428",
+        "New J. Phys. 24, 083001 (2022)",
+        "npj 2D Mater. Appl. (2025)",
+        "PRB 111, 024513 (2025)"
+      ],
+      "title_zh": "回答一：Ising 自旋保护与轨道/层间通道",
+      "plain": [
+        [
+          "一句话",
+          "当前主回答是：Ising SOC 抑制面内塞曼对破缺，轨道与层间通道设定 B_c2∥ 的主要量级。"
+        ],
+        [
+          "为什么这样判断",
+          "4H_a 的面内场约 31 T 高于裸 Pauli 标尺约 11.15 T，理论有效场可到更高量级，而保守轨道估计约 20.5–22.4 T。"
+        ],
+        [
+          "怎么证伪或区分",
+          "独立测量 ξ_c/γ、层错和多带贡献；若 γ≥5.6，纯轨道通道也可单独设定 31 T。"
+        ]
+      ],
+      "en_full": "For bulk 4H_a-NbSe2, Ising SOC suppresses in-plane Zeeman pair breaking, so orbital and interlayer channels set the main B_c2,parallel scale in the current answer. A conservative orbital estimate is about 20.5–22.4 T, and the remaining quantitative gap is unresolved.",
+      "kind": "claim",
+      "conclusion": "在块体 4H_a-NbSe₂ 中，面内上临界场由 Ising SOC 自旋保护与轨道/层间通道共同决定。",
+      "derivation": "TH3 的有效场量级远高于观测场；L1a/L1b 给出方向组合；L6 给出 20.5–22.4 T 的保守轨道基线。",
+      "motivation": "",
+      "math_note": "B_t 对 T₀≈10–20 meV 给出约 1.5–3.1×10² T；保守轨道估计约 20.5–22.4 T。",
+      "claim_zh": "在块体 4H_a-NbSe₂ 中，面内上临界场由 Ising SOC 自旋保护与轨道/层间通道共同决定。",
+      "symbol_defs": "B_c2∥/B_c2⊥ 为面内/面外上临界场；γ=ξ_a/ξ_c。",
+      "stats": {
+        "chains_total": 23,
+        "chains_to_axiom": 0,
+        "chains_deep_via_bridge": 23,
+        "chains_direct_bridge": 0,
+        "chains_closed_at_formula": 0,
+        "chains_shown": 23,
+        "leaf_count": 22,
+        "truncated": false,
+        "oppose_count": 0,
+        "oppose_ids": [],
+        "oppose_codes": [],
+        "boundary_count": 3,
+        "boundary_ids": [
+          "theory:L6",
+          "theory:L7",
+          "theory:M2"
+        ],
+        "boundary_codes": [
+          "L6",
+          "L7",
+          "M2"
+        ],
+        "complete_arguments_total": 1,
+        "single_edge_paths_are_not_independent": true,
+        "analogy_paths": 3
+      },
+      "chains": [
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_9",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_9",
+            "theory:AX3a",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_10",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_10",
+            "theory:AX3a",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_28",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_28",
+            "theory:AX3a",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_7",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_7",
+            "theory:AX3a",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_27",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_27",
+            "theory:AX3a",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_14",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_14",
+            "theory:AX3",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_15",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_15",
+            "theory:AX3",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_17",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_17",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_18",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_18",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_20",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_20",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_21",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_21",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_22",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_22",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_24",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_24",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_12",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_12",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_13",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_13",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_16",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_16",
+            "theory:TH3",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_3",
+            "theory:L1a",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_4",
+            "theory:L1b",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "theory:L6",
+          "leaf_kind": "bridge",
+          "path": [
+            "theory:L6",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_2",
+            "theory:L1a",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_6",
+            "theory:L1a",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_5",
+            "theory:L1a",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_5",
+            "theory:L1b",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        }
+      ],
+      "analogy_chains": [
+        {
+          "leaf": "theory:L4",
+          "leaf_kind": "bridge",
+          "path": [
+            "theory:L4",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "analogy",
+          "relation": "类比"
+        },
+        {
+          "leaf": "theory:L4p",
+          "leaf_kind": "bridge",
+          "path": [
+            "theory:L4p",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "analogy",
+          "relation": "类比"
+        },
+        {
+          "leaf": "knowledge:papers:paper_a54932bd::claim_5",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_a54932bd::claim_5",
+            "theory:L4p",
+            "theory:M1",
+            "theory:R1"
+          ],
+          "route_kind": "analogy",
+          "relation": "类比"
+        }
+      ],
+      "leaves": [
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_9",
+          "code": "O16-9",
+          "label_zh": "研磨样品的X射线衍射与4H$_{a}$-NbSe$_{2}$的Rietveld精修剖面相符。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_10",
+          "code": "O16-1",
+          "label_zh": "拉曼光谱显示出 $D_{3h}$ 点群所预期的更大一组拉曼活性模式。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_28",
+          "code": "O16-6",
+          "label_zh": "拉曼光谱显示出所观测到的更大的一组$A_{1}^{\\prime}$和$E^{\\prime}$模式",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_7",
+          "code": "C16-16",
+          "label_zh": "所研究的晶体被确认为具有块体化学计量比的非中心对称4H$_{a}$多型NbSe$_{2}$。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_27",
+          "code": "C16-12",
+          "label_zh": "4H\\(_{a}\\)堆垛的反演对称性破缺，在无需插层引起的电子去耦合的情况下，即可在块体NbSe",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_14",
+          "code": "O16-4",
+          "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(ii)在K（及K'）点",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_15",
+          "code": "C16-2",
+          "label_zh": "K（及K'）点处Nb派生能带对的自旋–轨道劈裂具有半劈裂ζ≈75 meV。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_17",
+          "code": "C16-3",
+          "label_zh": "从计算得到的色散中提取出面外（层间）跳跃/色散尺度t_0，其定义为沿面外方向的带宽的四分之一，为",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_18",
+          "code": "C16-4",
+          "label_zh": "在反演对称性破缺的双层（或多层）NbSe_2环境中，保护库珀对自旋免受外部面内磁场影响的本征有效",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_20",
+          "code": "C16-6",
+          "label_zh": "量B_t（本征有效磁场）是一种本征的、依赖于能带参数的有效类塞曼场。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_21",
+          "code": "C16-7",
+          "label_zh": "量B_t（本征有效磁场）对库珀对内具有相反动量的电子起相反作用。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_22",
+          "code": "C16-8",
+          "label_zh": "当B_t≳B_P时，量B_t（本征有效磁场）可以保护伊辛配对免受外部面内塞曼场的影响。",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_24",
+          "code": "C16-9",
+          "label_zh": "本征有效场计算为B_t≈154.3 T，对于T_c≈6 K（B_P≈11.15 T）而言，约为1",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_12",
+          "code": "O16-2",
+          "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有 (i) ",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_13",
+          "code": "O16-3",
+          "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有显著的层间",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_16",
+          "code": "O16-5",
+          "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(iii)晶胞内四个自旋",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_3",
+          "code": "O16-7",
+          "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_4",
+          "code": "C16-13",
+          "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "theory:L6",
+          "code": "L6",
+          "label_zh": "单带/斜率路线的轨道场估计",
+          "kind": "bridge",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_2",
+          "code": "C16-5",
+          "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_6",
+          "code": "C16-15",
+          "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_5",
+          "code": "C16-14",
+          "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+          "kind": "evidence",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "theory:R2",
+      "verdict": "条件候选，需独立测量 γ",
+      "verdict_class": "partial",
+      "label_zh": "回答二：纯轨道通道",
+      "one_liner": "在块体 4H_a-NbSe₂ 中，面内上临界场由纯轨道通道决定。",
+      "zh": "在块体 4H_a-NbSe₂ 中，面内上临界场由纯轨道通道决定。",
+      "en": "In bulk 4H_a-NbSe2, the in-plane upper critical field is determined by a pure orbital channel.",
+      "caveat": "该候选可以同时拟合面内与面外场值，但成立依赖独立测得 γ≥5.6；它不解释为何 γ 这么大，也不能排除 Ising SOC；双带拟合所需外部数据不在本图判定内。",
+      "sources": [
+        "arXiv:2501.08867",
+        "arXiv:2506.09413",
+        "arXiv:2201.09428",
+        "PRB 108, 224518 (2023)",
+        "npj 2D Mater. Appl. (2025)"
+      ],
+      "title_zh": "回答二：纯轨道通道",
+      "plain": [
+        [
+          "一句话",
+          "面内上临界场由纯轨道通道决定。"
+        ],
+        [
+          "成立条件",
+          "需要 γ≥5.6 且需独立测量 γ=ξ_a/ξ_c；不能把阈值当成已知材料常数。"
+        ],
+        [
+          "怎么区分",
+          "测量 ξ_c/γ，并同时检验双带与 Ising 自旋机制。"
+        ]
+      ],
+      "en_full": "A pure orbital calculation can fit the observed in-plane and perpendicular fields if an independently measured anisotropy γ≥5.6 (approximately 5.64) is supplied. This conditional fit accounts for the field-value ratio but does not establish why γ is so large or whether Ising SOC also contributes.",
+      "kind": "claim",
+      "conclusion": "在块体 4H_a-NbSe₂ 中，面内上临界场由纯轨道通道决定。",
+      "derivation": "TH2 与 L1a/L1b 给出 γ≈31/5.5≈5.6；TH5a 是适用边界，L8 记录了 γ/ξ_c 尚未独立测量。",
+      "motivation": "",
+      "math_note": "γ=ξ_a/ξ_c；由 31/5.5 得阈值 γ≈5.64，尚未独立测量。",
+      "claim_zh": "在块体 4H_a-NbSe₂ 中，面内上临界场由纯轨道通道决定。",
+      "symbol_defs": "ξ_a、ξ_c 为面内与面外相干长度。",
+      "reply_to": "与 R1 相容；R2 只检验纯轨道通道是否足以闭合数值，不断言 Ising SOC 不存在。",
+      "stats": {
+        "chains_total": 7,
+        "chains_to_axiom": 0,
+        "chains_deep_via_bridge": 7,
+        "chains_direct_bridge": 0,
+        "chains_closed_at_formula": 1,
+        "chains_shown": 7,
+        "leaf_count": 6,
+        "truncated": false,
+        "oppose_count": 0,
+        "oppose_ids": [],
+        "oppose_codes": [],
+        "boundary_count": 5,
+        "boundary_ids": [
+          "theory:L1a",
+          "theory:L1b",
+          "theory:L6",
+          "theory:L8",
+          "theory:TH5a"
+        ],
+        "boundary_codes": [
+          "L1a",
+          "L1b",
+          "L6",
+          "L8",
+          "TH5a"
+        ],
+        "complete_arguments_total": 1,
+        "single_edge_paths_are_not_independent": true
+      },
+      "chains": [
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_3",
+            "theory:L1a",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_4",
+            "theory:L1b",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "theory:TH2",
+          "leaf_kind": "formula",
+          "path": [
+            "theory:TH2",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_2",
+            "theory:L1a",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_6",
+            "theory:L1a",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_5",
+            "theory:L1a",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        },
+        {
+          "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+          "leaf_kind": "evidence",
+          "path": [
+            "knowledge:papers:paper_db13a75e::claim_5",
+            "theory:L1b",
+            "theory:M2",
+            "theory:R2"
+          ],
+          "route_kind": "support",
+          "relation": "支撑"
+        }
+      ],
+      "analogy_chains": [],
+      "leaves": [
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_3",
+          "code": "O16-7",
+          "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_4",
+          "code": "C16-13",
+          "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "theory:TH2",
+          "code": "TH2",
+          "label_zh": "轨道通道 → WHH / 薄膜极限",
+          "kind": "formula",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_2",
+          "code": "C16-5",
+          "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_6",
+          "code": "C16-15",
+          "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+          "kind": "evidence",
+          "count": 1
+        },
+        {
+          "id": "knowledge:papers:paper_db13a75e::claim_5",
+          "code": "C16-14",
+          "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+          "kind": "evidence",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "edges_to_existing": [
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_3",
+      "target": "theory:L1a",
+      "relation": "supports",
+      "expression": "O16-7 给出 4H_a 的面内 B_c2∥ 外推值 31 T（WHH 外推 24 T）。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_2",
+      "target": "theory:L1a",
+      "relation": "supports",
+      "expression": "C16-5 直接报告 4H_a 面内 B_c2∥ 显著超过 B_P≈11.15 T。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_6",
+      "target": "theory:L1a",
+      "relation": "supports",
+      "expression": "C16-15 报告 Pauli 极限破坏只出现在面内方向。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_5",
+      "target": "theory:L1a",
+      "relation": "supports",
+      "expression": "C16-14 报告上临界场具有强各向异性，支持面内/面外观测必须分开。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_4",
+      "target": "theory:L1b",
+      "relation": "supports",
+      "expression": "C16-13 给出 4H_a 的 B_c2⊥≈5.5 T。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_5",
+      "target": "theory:L1b",
+      "relation": "supports",
+      "expression": "C16-14 报告上临界场具有强各向异性，支持面内/面外观测必须分开。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_9",
+      "target": "theory:AX3a",
+      "relation": "supports",
+      "expression": "O16-9 提供 4H_a 非中心对称结构的 XRD、Raman 或样品确认依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_10",
+      "target": "theory:AX3a",
+      "relation": "supports",
+      "expression": "O16-1 提供 4H_a 非中心对称结构的 XRD、Raman 或样品确认依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_28",
+      "target": "theory:AX3a",
+      "relation": "supports",
+      "expression": "O16-6 提供 4H_a 非中心对称结构的 XRD、Raman 或样品确认依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_7",
+      "target": "theory:AX3a",
+      "relation": "supports",
+      "expression": "C16-16 提供 4H_a 非中心对称结构的 XRD、Raman 或样品确认依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_27",
+      "target": "theory:AX3a",
+      "relation": "supports",
+      "expression": "C16-12 提供 4H_a 非中心对称结构的 XRD、Raman 或样品确认依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_14",
+      "target": "theory:AX3",
+      "relation": "supports",
+      "expression": "O16-4 提供 K 点 Nb 派生能带自旋轨道劈裂/半劈裂的 DFT 数值依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_15",
+      "target": "theory:AX3",
+      "relation": "supports",
+      "expression": "C16-2 提供 K 点 Nb 派生能带自旋轨道劈裂/半劈裂的 DFT 数值依据。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_17",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "C16-3 提供 TH3 所需的层间参数、有效场公式、保护机制或数值评估。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_18",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "C16-4 提供 TH3 所需的层间参数、有效场公式、保护机制或数值评估。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_20",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "C16-6 提供 TH3 所需的层间参数、有效场公式、保护机制或数值评估。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_21",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "C16-7 提供 TH3 所需的层间参数、有效场公式、保护机制或数值评估。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_22",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "C16-8 提供 TH3 所需的层间参数、有效场公式、保护机制或数值评估。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_24",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "C16-9 提供 TH3 所需的层间参数、有效场公式、保护机制或数值评估。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_12",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "O16-2 的经结构验证 DFT 给出 Γ–A 约 600 meV 带宽，物化 TH3 的 t0/层间色散输入。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_13",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "O16-3 直接报告显著层间色散，物化 TH3 的层间参数；不单独证明 Ising 保护。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_16",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "O16-5 报告晶胞内层依赖能移约 20–56 meV，物化 TH3 的层依赖/多层修正输入。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_8",
+      "target": "theory:AX3a",
+      "relation": "boundary",
+      "expression": "O16-8 的 EDS 化学计量比只验证样品身份/纯度；不能单独推出 P6̄m2。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_11",
+      "target": "theory:AX3a",
+      "relation": "boundary",
+      "expression": "C16-1 的 2H 污染 <1% 限定结构归因的样品纯度；不能单独推出 P6̄m2。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_3",
+      "target": "theory:L6",
+      "relation": "supports",
+      "expression": "O16-7 提供热容 B_c2(T) 数据与斜率输入；L6 是据此复核的轨道场估计。"
+    },
+    {
+      "source": "theory:TH2",
+      "target": "theory:L6",
+      "relation": "supports",
+      "expression": "TH2 提供各向异性 GL 的轨道场关系；L6 将其与 O16-7 数据合并复核。"
+    },
+    {
+      "source": "knowledge:papers:paper_db13a75e::claim_4",
+      "target": "theory:L4",
+      "relation": "supports",
+      "expression": "C16-13 物化 4H_a 的面外 5.5 T 半边；L4 的 2H_a 对照来自外部来源。"
+    },
+    {
+      "source": "knowledge:papers:paper_a54932bd::claim_5",
+      "target": "theory:L4p",
+      "relation": "supports",
+      "expression": "C8-9 物化 2H_a 的面内 Pauli 对照；L4p 仅用于同族类比。"
+    },
+    {
+      "source": "theory:AX3a",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "AX3a 提供反演破缺这一 Ising 通道的对称性前提。"
+    },
+    {
+      "source": "theory:AX3",
+      "target": "theory:TH3",
+      "relation": "supports",
+      "expression": "AX3 提供 K 点自旋轨道劈裂这一 Ising 通道的能带输入。"
+    },
+    {
+      "source": "theory:TH3",
+      "target": "theory:M1",
+      "relation": "supports",
+      "expression": "TH3 给出远高于观测场的有效 Ising 场分支。"
+    },
+    {
+      "source": "theory:L1a",
+      "target": "theory:M1",
+      "relation": "supports",
+      "expression": "L1a 给出面内场超过裸 Pauli 标尺的观测。"
+    },
+    {
+      "source": "theory:L1b",
+      "target": "theory:M1",
+      "relation": "supports",
+      "expression": "L1b 给出面外场低于裸 Pauli 标尺的方向对照。"
+    },
+    {
+      "source": "theory:L6",
+      "target": "theory:M1",
+      "relation": "supports",
+      "expression": "L6 给出保守轨道场基线；它是条件判断输入而非严格上界。"
+    },
+    {
+      "source": "theory:L4",
+      "target": "theory:M1",
+      "relation": "analogy",
+      "expression": "L4 只提供 2H_a/4H_a 面外场标尺类比，不单独推出 4H_a 限速机制。"
+    },
+    {
+      "source": "theory:L4p",
+      "target": "theory:M1",
+      "relation": "analogy",
+      "expression": "L4p 是中心对称 2H_a 的面内 Pauli 对照，只作类比。"
+    },
+    {
+      "source": "theory:M1",
+      "target": "theory:R1",
+      "relation": "induction",
+      "expression": "M1 是 R1 的条件性判定：Ising 抑制塞曼后，轨道/层间结构设定主要场尺度。"
+    },
+    {
+      "source": "theory:TH2",
+      "target": "theory:M2",
+      "relation": "supports",
+      "expression": "TH2 给出三维各向异性轨道极限关系。"
+    },
+    {
+      "source": "theory:L1a",
+      "target": "theory:M2",
+      "relation": "supports",
+      "expression": "L1a 提供 B_c2∥≈31 T。"
+    },
+    {
+      "source": "theory:L1b",
+      "target": "theory:M2",
+      "relation": "supports",
+      "expression": "L1b 提供 B_c2⊥≈5.5 T。"
+    },
+    {
+      "source": "theory:TH5a",
+      "target": "theory:M2",
+      "relation": "bounds",
+      "expression": "TH5a 限定 γ 比值只适用于 s_layer≪ξ_c 的三维各向异性极限。"
+    },
+    {
+      "source": "theory:M2",
+      "target": "theory:R2",
+      "relation": "induction",
+      "expression": "M2 说明在 γ≥5.6 条件下纯轨道模型可以数值闭合。"
+    },
+    {
+      "source": "theory:M2",
+      "target": "theory:R1",
+      "relation": "bounds",
+      "expression": "M2 是 R1 的反事实边界：若 γ≥5.6，纯轨道通道也可自足拟合 31 T。"
+    },
+    {
+      "source": "theory:L6",
+      "target": "theory:R1",
+      "relation": "bounds",
+      "expression": "L6 的 20.5–22.4 T 是保守基线，不是严格上界。"
+    },
+    {
+      "source": "theory:L7",
+      "target": "theory:R1",
+      "relation": "bounds",
+      "expression": "L7 提示无序/层间结构可能改变轨道限速，但未给出独立 ξ_c 测量。"
+    },
+    {
+      "source": "theory:L6",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L6 说明未修正的单带轨道基线低于 31 T，R2 仍依赖 γ/多带修正。"
+    },
+    {
+      "source": "theory:L8",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L8 记录 ξ_c/γ 尚无独立测量，因此 R2 仍是条件候选。"
+    },
+    {
+      "source": "theory:L1a",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L1a 的超 Pauli 面内值本身不能区分 Ising 与 γ≥5.6 的纯轨道拟合。"
+    },
+    {
+      "source": "theory:L1b",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L1b 的面外标尺只有在 TH5a 条件下才能用于纯轨道阈值。"
+    },
+    {
+      "source": "theory:TH4",
+      "target": "theory:CAND_FFLO",
+      "relation": "supports",
+      "expression": "TH4 只支持有限动量内部相在模型中的可行性，不等同于 4H_a 的 B_c2。"
+    },
+    {
+      "source": "theory:TH5b",
+      "target": "theory:CAND_FFLO",
+      "relation": "supports",
+      "expression": "TH5b 给出准二维/层间解耦的适用条件。"
+    },
+    {
+      "source": "theory:L5",
+      "target": "theory:CAND_FFLO",
+      "relation": "bounds",
+      "expression": "L5 在当前 4H_a 曲线审计中未见低温上翘或内部相界；这削弱但不证伪有限动量候选。"
+    },
+    {
+      "source": "theory:L8",
+      "target": "theory:CAND_FFLO",
+      "relation": "bounds",
+      "expression": "L8 记录了当前缺少方位角、转矩与场下谱学等判别性测量。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_8",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_9",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_12",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_23",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_28",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_31",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_2eff6d41::claim_18",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "Ba6Ta11S28 的有限动量实验/解释是跨材料类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_2eff6d41::claim_28",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "Ba6Ta11S28 的有限动量实验/解释是跨材料类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_27",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_28",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_30",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_31",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_1",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_18",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_20",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_42",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    }
+  ],
+  "edges_to_roots": [
+    {
+      "source": "theory:M1",
+      "target": "theory:R1",
+      "relation": "induction",
+      "expression": "M1 是 R1 的条件性判定：Ising 抑制塞曼后，轨道/层间结构设定主要场尺度。"
+    },
+    {
+      "source": "theory:M2",
+      "target": "theory:R2",
+      "relation": "induction",
+      "expression": "M2 说明在 γ≥5.6 条件下纯轨道模型可以数值闭合。"
+    },
+    {
+      "source": "theory:M2",
+      "target": "theory:R1",
+      "relation": "bounds",
+      "expression": "M2 是 R1 的反事实边界：若 γ≥5.6，纯轨道通道也可自足拟合 31 T。"
+    },
+    {
+      "source": "theory:L6",
+      "target": "theory:R1",
+      "relation": "bounds",
+      "expression": "L6 的 20.5–22.4 T 是保守基线，不是严格上界。"
+    },
+    {
+      "source": "theory:L7",
+      "target": "theory:R1",
+      "relation": "bounds",
+      "expression": "L7 提示无序/层间结构可能改变轨道限速，但未给出独立 ξ_c 测量。"
+    },
+    {
+      "source": "theory:L6",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L6 说明未修正的单带轨道基线低于 31 T，R2 仍依赖 γ/多带修正。"
+    },
+    {
+      "source": "theory:L8",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L8 记录 ξ_c/γ 尚无独立测量，因此 R2 仍是条件候选。"
+    },
+    {
+      "source": "theory:L1a",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L1a 的超 Pauli 面内值本身不能区分 Ising 与 γ≥5.6 的纯轨道拟合。"
+    },
+    {
+      "source": "theory:L1b",
+      "target": "theory:R2",
+      "relation": "bounds",
+      "expression": "L1b 的面外标尺只有在 TH5a 条件下才能用于纯轨道阈值。"
+    }
+  ],
+  "notes": {
+    "chain_semantics": "回答层只沿显式回答 DAG 展示链；TH0/TH5 主理论图不自动穿透，以免把同一方程的所有分支误报为 R1/R2 证据。边界与类比单列，不计作支持。",
+    "axiom_semantics": "公理节点是 AX1/AX2/AX3/AX3a/AX5 这类语义出发点；实验观察叶子仍是证据末端，不因没有入边而自动成为公理。",
+    "verdict_semantics": "复核版的“主结论/条件候选/关键指纹待测”是人工审计标签；支持链与边界统计用于核查可追溯性，不自动决定 verdict。",
+    "quant_verification": "本回答层的定量部分经独立子代理交叉核验（原文 PDF 数字化 + 三种独立轨道极限估计 + 同族 2H_a 对照），关键数字：纯轨道面内极限 20.5±1.5 T；实测 31 T/WHH 24 T；比值 1.45–1.55×/1.10–1.20×；超 Pauli 2.78×；χ 比 DFT 泡利值高 ~3×（B_P 只会更小）；l_orb(H)/s_layer≈5×10²（FFLO 判据被破坏）；判定阈值 γ=5.64。未能取得的数据：Zhou et al. PRB 108, 224518 (2023) 为闭源，其 H_c2(0) 与 ξ 值未读取，故作回避处理。 追加核查（第二轮文献审计）：找到两组此前未纳入的 4H_a 数据 —— arXiv:2506.09413（B_c2∥(0)=32.9(5) T、B_c2⊥(0)=5.0(4) T、比值 6.6、α_m≈2.7）与 PRB 111, 024513 (2025)（双带 s+s，Δ_L≈1.1 meV、Δ_S≈0.3 meV）。确认 4H_a 至今没有任何面内方位角分辨的 B_c2 测量、没有转矩、没有隧穿谱；唯一的极角扫描（2506.09413，5 K）只区分面内/面外，不涉及面内方位。同行评议侧：arXiv:2501.08867 没有公开的 Comment/Reply，但 4H_b-TaS₂ 与块体 2H-NbSe₂ 两篇 orbital-FFLO 论文的透明评议记录里，审稿人与作者就“谁设定面内上临界场”有直接交锋，作者方给出的正是“Ising 压掉塞曼后由轨道对破缺主导”的双通道表述。 第三轮（对抗性审计）结论：(a) Ising 路线定性成立（晶体学 + 能带 + 同族对照 + 独立样品复现），但 154 T 与实测 31 T 之间的 5 倍缺口该由谁补，PRL 未讨论——这正是本图把答案写成双通道的原因；(b) 轨道 FFLO 路线“未被检验”而非“被否定”，其最实质的定量障碍是 B* ∝ 1/(N+1) → 0；(c) 六重各向异性作为指纹已被同行评议实质性削弱（体材 D6h 禁止所需线性项；Rashba 可在平凡 s 波下产生六重）；(d) 多带解释的是 31–33 T 这个数值，不解释 Pauli 违反本身；(e) 已排除：强耦合抬高 B_P、2H_a 体污染、严格 2D Tinkham 发散、PRL 热容结果的表面超导/渗流假象。",
+    "root_claim_policy": "根节点必须是**自足命题**：读一条根节点不需要看别的节点，就能知道它在断言什么（体系、被解释的量、机制、量级、条件都在句子里）。代号（R1…）只是标签。原“现有证据不足以判定”不是一个关于材料的解释，而是一句关于本图判决状态的元陈述，因此不再占用根节点，改由左侧“判决状态”面板承担。",
+    "topology": "边一律「前提 → 结论」。回答层分三种角色：**直接证据边**把无上游的经验节点挂到候选上（它们就是链的末端）；**桥接判据**（L1a/L1b/L4/L4p/L5–L8 与 M1/M2）挂在有完整上游的公式节点（TH1/TH2/TH3/TH5b）或经验节点上，再经条件节点 M1/M2 汇到候选；**说明性节点**（L6–L8）记录不确定性、混淆因素与测量缺口，它们是终点，不作为链上步骤。条件节点是“决定权”的所在：M1 = Ising 抬高塞曼后由轨道收口；M2 = γ 足够大时纯轨道自足。",
+    "claim_policy": "回答层按 paper2ir（pipelines/clean_claims step1a）的 claim 规范重写：每个节点的 conclusion 只含**一句、一个可独立核验的断言**，不含分号并列、不含推理连接词、不夹带符号定义与动机。符号释义移入 definitions，推理过程移入 derivation，写作动机移入 motivation —— 这三者在规范里分别是 elaboration 与 motivation，都不是 claim。M1/M2 标为 kind=relation：它们是若干断言之间的推理连接，按规范 connection 本身不是 claim，真实内容是“由哪几条前提得到哪条结论”，因此写成带前提与阈值的显式关系。",
+    "complete_route_semantics": "完整候选论证按 AND 合取显示：R1=(AX3a∧AX3→TH3)∧(TH3∧L1a∧L1b∧L6→M1)→R1；R2=(L1a∧L1b∧TH2→M2)且 TH5a 给适用边界→R2；有限动量机制背景=(TH4∧TH5b→背景节点)。node_routes 中拆开的单前提路径仅用于溯源，不是任一前提单独推出候选。",
+    "root_relation": "R1 与 R2 是用户设定的两个待判定论断：R1 是联合机制命题，R2 是纯轨道命题。γ≥5.6、TH5a 等属于 R2 的可检验充分条件与证据边界，不改写 R2 的命题文字。两者可共存，R2 不是对 R1 的直接矛盾。",
+    "node_role_explanation": "图中不是每个节点都在回答“哪条通道决定 B_c2∥”：R1/R2 是根回答；M1/M2 是把多个前提合成回答的判定分支；L1/L4/L6/L7/L8 是实验观察、标尺或边界；TH0–TH5b 是理论公式与适用条件；AX 节点是建模前提；论文 claim 是原始证据叶；跨材料关系主要是 analogy/边界。因此“证据溯源路径”数量不等于候选回答数量。",
+    "atomicity": "L1 已拆为 L1a（面内）与 L1b（面外）；L4–L8 英文展示句压缩为单句，详细清单保留在 basis/derivation/motivation。",
+    "non_root_semantics": "有限动量内部相是普通机制背景节点；其跨材料证据使用类比边，L5/L8 使用边界边，不把它们当成 4H_a 的直接支持。",
+    "explicit_dag": "R1/R2 的显示链只使用显式支持路径；单边溯源不代表单一实验足以推出根结论。L1 已拆为 L1a（面内）与 L1b（面外）。",
+    "negative_evidence": "当前没有实验直接证伪 R1 或 R2；L6、M2、L7、L8、L1a/L1b 均标为边界/不可辨识约束，不冒充 contradiction。",
+    "relevance_audit": "31 条跨材料弱 infer/reproduces 边已逐条降级为类比或边界；5 条缺失的目标材料关系已补入回答层（O16-2/O16-3/O16-5 支撑 TH3，O16-8/C16-1 作为 AX3a 样品边界）。"
+  },
+  "chain_relations": [
+    "归纳",
+    "推导",
+    "支撑",
+    "特例"
+  ],
+  "node_routes": {
+    "knowledge:papers:paper_db13a75e::claim_9": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_9",
+            "code": "O16-9",
+            "label_zh": "研磨样品的X射线衍射与4H$_{a}$-NbSe$_{2}$的Rietveld精修剖面相符。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_9",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_9",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:AX3a": {
+      "theory:R1": {
+        "count": 5,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_9",
+            "code": "O16-9",
+            "label_zh": "研磨样品的X射线衍射与4H$_{a}$-NbSe$_{2}$的Rietveld精修剖面相符。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_10",
+            "code": "O16-1",
+            "label_zh": "拉曼光谱显示出 $D_{3h}$ 点群所预期的更大一组拉曼活性模式。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_28",
+            "code": "O16-6",
+            "label_zh": "拉曼光谱显示出所观测到的更大的一组$A_{1}^{\\prime}$和$E^{\\prime}$模式",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_7",
+            "code": "C16-16",
+            "label_zh": "所研究的晶体被确认为具有块体化学计量比的非中心对称4H$_{a}$多型NbSe$_{2}$。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_27",
+            "code": "C16-12",
+            "label_zh": "4H\\(_{a}\\)堆垛的反演对称性破缺，在无需插层引起的电子去耦合的情况下，即可在块体NbSe",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_9",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_9",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_10",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_10",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_28",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_7",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_7",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_27",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_27",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:TH3": {
+      "theory:R1": {
+        "count": 16,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_9",
+            "code": "O16-9",
+            "label_zh": "研磨样品的X射线衍射与4H$_{a}$-NbSe$_{2}$的Rietveld精修剖面相符。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_10",
+            "code": "O16-1",
+            "label_zh": "拉曼光谱显示出 $D_{3h}$ 点群所预期的更大一组拉曼活性模式。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_28",
+            "code": "O16-6",
+            "label_zh": "拉曼光谱显示出所观测到的更大的一组$A_{1}^{\\prime}$和$E^{\\prime}$模式",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_7",
+            "code": "C16-16",
+            "label_zh": "所研究的晶体被确认为具有块体化学计量比的非中心对称4H$_{a}$多型NbSe$_{2}$。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_27",
+            "code": "C16-12",
+            "label_zh": "4H\\(_{a}\\)堆垛的反演对称性破缺，在无需插层引起的电子去耦合的情况下，即可在块体NbSe",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_14",
+            "code": "O16-4",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(ii)在K（及K'）点",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_15",
+            "code": "C16-2",
+            "label_zh": "K（及K'）点处Nb派生能带对的自旋–轨道劈裂具有半劈裂ζ≈75 meV。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_17",
+            "code": "C16-3",
+            "label_zh": "从计算得到的色散中提取出面外（层间）跳跃/色散尺度t_0，其定义为沿面外方向的带宽的四分之一，为",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_18",
+            "code": "C16-4",
+            "label_zh": "在反演对称性破缺的双层（或多层）NbSe_2环境中，保护库珀对自旋免受外部面内磁场影响的本征有效",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_20",
+            "code": "C16-6",
+            "label_zh": "量B_t（本征有效磁场）是一种本征的、依赖于能带参数的有效类塞曼场。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_21",
+            "code": "C16-7",
+            "label_zh": "量B_t（本征有效磁场）对库珀对内具有相反动量的电子起相反作用。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_22",
+            "code": "C16-8",
+            "label_zh": "当B_t≳B_P时，量B_t（本征有效磁场）可以保护伊辛配对免受外部面内塞曼场的影响。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_24",
+            "code": "C16-9",
+            "label_zh": "本征有效场计算为B_t≈154.3 T，对于T_c≈6 K（B_P≈11.15 T）而言，约为1",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_12",
+            "code": "O16-2",
+            "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有 (i) ",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_13",
+            "code": "O16-3",
+            "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有显著的层间",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_16",
+            "code": "O16-5",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(iii)晶胞内四个自旋",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_9",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_9",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_10",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_10",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_28",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_7",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_7",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_27",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_27",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_14",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_14",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_15",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_15",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_17",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_17",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_18",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_20",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_20",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_21",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_21",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_22",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_22",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_24",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_24",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_12",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_12",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_13",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_13",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_16",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_16",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:M1": {
+      "theory:R1": {
+        "count": 26,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_9",
+            "code": "O16-9",
+            "label_zh": "研磨样品的X射线衍射与4H$_{a}$-NbSe$_{2}$的Rietveld精修剖面相符。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_10",
+            "code": "O16-1",
+            "label_zh": "拉曼光谱显示出 $D_{3h}$ 点群所预期的更大一组拉曼活性模式。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_28",
+            "code": "O16-6",
+            "label_zh": "拉曼光谱显示出所观测到的更大的一组$A_{1}^{\\prime}$和$E^{\\prime}$模式",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_7",
+            "code": "C16-16",
+            "label_zh": "所研究的晶体被确认为具有块体化学计量比的非中心对称4H$_{a}$多型NbSe$_{2}$。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_27",
+            "code": "C16-12",
+            "label_zh": "4H\\(_{a}\\)堆垛的反演对称性破缺，在无需插层引起的电子去耦合的情况下，即可在块体NbSe",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_14",
+            "code": "O16-4",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(ii)在K（及K'）点",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_15",
+            "code": "C16-2",
+            "label_zh": "K（及K'）点处Nb派生能带对的自旋–轨道劈裂具有半劈裂ζ≈75 meV。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_17",
+            "code": "C16-3",
+            "label_zh": "从计算得到的色散中提取出面外（层间）跳跃/色散尺度t_0，其定义为沿面外方向的带宽的四分之一，为",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_18",
+            "code": "C16-4",
+            "label_zh": "在反演对称性破缺的双层（或多层）NbSe_2环境中，保护库珀对自旋免受外部面内磁场影响的本征有效",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_20",
+            "code": "C16-6",
+            "label_zh": "量B_t（本征有效磁场）是一种本征的、依赖于能带参数的有效类塞曼场。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_21",
+            "code": "C16-7",
+            "label_zh": "量B_t（本征有效磁场）对库珀对内具有相反动量的电子起相反作用。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_22",
+            "code": "C16-8",
+            "label_zh": "当B_t≳B_P时，量B_t（本征有效磁场）可以保护伊辛配对免受外部面内塞曼场的影响。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_24",
+            "code": "C16-9",
+            "label_zh": "本征有效场计算为B_t≈154.3 T，对于T_c≈6 K（B_P≈11.15 T）而言，约为1",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_12",
+            "code": "O16-2",
+            "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有 (i) ",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_13",
+            "code": "O16-3",
+            "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有显著的层间",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_16",
+            "code": "O16-5",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(iii)晶胞内四个自旋",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_3",
+            "code": "O16-7",
+            "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_4",
+            "code": "C16-13",
+            "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "theory:L6",
+            "code": "L6",
+            "label_zh": "单带/斜率路线的轨道场估计",
+            "kind": "bridge",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_2",
+            "code": "C16-5",
+            "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_6",
+            "code": "C16-15",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 2
+          },
+          {
+            "id": "theory:L4",
+            "code": "L4",
+            "label_zh": "2H_a/4H_a 面外场标尺比较（外部来源）",
+            "kind": "bridge",
+            "count": 1
+          },
+          {
+            "id": "theory:L4p",
+            "code": "L4p",
+            "label_zh": "2H_a 面内场低于其 Pauli 标尺",
+            "kind": "bridge",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_a54932bd::claim_5",
+            "code": "C8-9",
+            "label_zh": "对于 2H-NbSe₂，其超导转变温度 Tc = 7.1 K；在低温下，对于严格平行于基面（超导",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_9",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_9",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_10",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_10",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_28",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_7",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_7",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_27",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_27",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_14",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_14",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_15",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_15",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_17",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_17",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_18",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_20",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_20",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_21",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_21",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_22",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_22",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_24",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_24",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_12",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_12",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_13",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_13",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_16",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_16",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_3",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_4",
+              "theory:L1b",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "theory:L6",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L6",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_2",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_6",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1b",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "theory:L4",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L4",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "theory:L4p",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L4p",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_a54932bd::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_a54932bd::claim_5",
+              "theory:L4p",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "support",
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_10": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_10",
+            "code": "O16-1",
+            "label_zh": "拉曼光谱显示出 $D_{3h}$ 点群所预期的更大一组拉曼活性模式。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_10",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_10",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_28": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_28",
+            "code": "O16-6",
+            "label_zh": "拉曼光谱显示出所观测到的更大的一组$A_{1}^{\\prime}$和$E^{\\prime}$模式",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_28",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_7": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_7",
+            "code": "C16-16",
+            "label_zh": "所研究的晶体被确认为具有块体化学计量比的非中心对称4H$_{a}$多型NbSe$_{2}$。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_7",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_7",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_27": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_27",
+            "code": "C16-12",
+            "label_zh": "4H\\(_{a}\\)堆垛的反演对称性破缺，在无需插层引起的电子去耦合的情况下，即可在块体NbSe",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_27",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_27",
+              "theory:AX3a",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_14": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_14",
+            "code": "O16-4",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(ii)在K（及K'）点",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_14",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_14",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:AX3": {
+      "theory:R1": {
+        "count": 2,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_14",
+            "code": "O16-4",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(ii)在K（及K'）点",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_15",
+            "code": "C16-2",
+            "label_zh": "K（及K'）点处Nb派生能带对的自旋–轨道劈裂具有半劈裂ζ≈75 meV。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_14",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_14",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_15",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_15",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_15": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_15",
+            "code": "C16-2",
+            "label_zh": "K（及K'）点处Nb派生能带对的自旋–轨道劈裂具有半劈裂ζ≈75 meV。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_15",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_15",
+              "theory:AX3",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_17": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_17",
+            "code": "C16-3",
+            "label_zh": "从计算得到的色散中提取出面外（层间）跳跃/色散尺度t_0，其定义为沿面外方向的带宽的四分之一，为",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_17",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_17",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_18": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_18",
+            "code": "C16-4",
+            "label_zh": "在反演对称性破缺的双层（或多层）NbSe_2环境中，保护库珀对自旋免受外部面内磁场影响的本征有效",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_18",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_20": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_20",
+            "code": "C16-6",
+            "label_zh": "量B_t（本征有效磁场）是一种本征的、依赖于能带参数的有效类塞曼场。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_20",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_20",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_21": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_21",
+            "code": "C16-7",
+            "label_zh": "量B_t（本征有效磁场）对库珀对内具有相反动量的电子起相反作用。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_21",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_21",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_22": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_22",
+            "code": "C16-8",
+            "label_zh": "当B_t≳B_P时，量B_t（本征有效磁场）可以保护伊辛配对免受外部面内塞曼场的影响。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_22",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_22",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_24": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_24",
+            "code": "C16-9",
+            "label_zh": "本征有效场计算为B_t≈154.3 T，对于T_c≈6 K（B_P≈11.15 T）而言，约为1",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_24",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_24",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_12": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_12",
+            "code": "O16-2",
+            "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有 (i) ",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_12",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_12",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_13": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_13",
+            "code": "O16-3",
+            "label_zh": "使用经实验验证的 4H$_{a}$ 晶体结构进行的密度泛函理论计算，给出的电子结构具有显著的层间",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_13",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_13",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_16": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_16",
+            "code": "O16-5",
+            "label_zh": "使用经实验验证的4H_a晶体结构进行的密度泛函理论计算得到的电子结构具有(iii)晶胞内四个自旋",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_16",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_16",
+              "theory:TH3",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_3": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_3",
+            "code": "O16-7",
+            "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_3",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_3",
+            "code": "O16-7",
+            "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_3",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:L1a": {
+      "theory:R1": {
+        "count": 4,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_3",
+            "code": "O16-7",
+            "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_2",
+            "code": "C16-5",
+            "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_6",
+            "code": "C16-15",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_3",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_2",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_6",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 4,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_3",
+            "code": "O16-7",
+            "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_2",
+            "code": "C16-5",
+            "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_6",
+            "code": "C16-15",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_3",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_2",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_6",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_4": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_4",
+            "code": "C16-13",
+            "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_4",
+              "theory:L1b",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_4",
+            "code": "C16-13",
+            "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_4",
+              "theory:L1b",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:L1b": {
+      "theory:R1": {
+        "count": 2,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_4",
+            "code": "C16-13",
+            "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_4",
+              "theory:L1b",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1b",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 2,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_4",
+            "code": "C16-13",
+            "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_4",
+              "theory:L1b",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1b",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:L6": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:L6",
+            "code": "L6",
+            "label_zh": "单带/斜率路线的轨道场估计",
+            "kind": "bridge",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:L6",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L6",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_2": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_2",
+            "code": "C16-5",
+            "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_2",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_2",
+            "code": "C16-5",
+            "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_2",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_6": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_6",
+            "code": "C16-15",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_6",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_6",
+            "code": "C16-15",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_6",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "knowledge:papers:paper_db13a75e::claim_5": {
+      "theory:R1": {
+        "count": 2,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 2
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1a",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1b",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      },
+      "theory:R2": {
+        "count": 2,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 2
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1b",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:L4": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:L4",
+            "code": "L4",
+            "label_zh": "2H_a/4H_a 面外场标尺比较（外部来源）",
+            "kind": "bridge",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:L4",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L4",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "theory:L4p": {
+      "theory:R1": {
+        "count": 2,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:L4p",
+            "code": "L4p",
+            "label_zh": "2H_a 面内场低于其 Pauli 标尺",
+            "kind": "bridge",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_a54932bd::claim_5",
+            "code": "C8-9",
+            "label_zh": "对于 2H-NbSe₂，其超导转变温度 Tc = 7.1 K；在低温下，对于严格平行于基面（超导",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:L4p",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L4p",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_a54932bd::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_a54932bd::claim_5",
+              "theory:L4p",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_a54932bd::claim_5": {
+      "theory:R1": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_a54932bd::claim_5",
+            "code": "C8-9",
+            "label_zh": "对于 2H-NbSe₂，其超导转变温度 Tc = 7.1 K；在低温下，对于严格平行于基面（超导",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_a54932bd::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_a54932bd::claim_5",
+              "theory:L4p",
+              "theory:M1",
+              "theory:R1"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "theory:M2": {
+      "theory:R2": {
+        "count": 7,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_3",
+            "code": "O16-7",
+            "label_zh": "热容异常给出 B_c2,∥(T→0)：线性外推约 31 T，Werthamer–Helfand–",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_4",
+            "code": "C16-13",
+            "label_zh": "垂直（正交）上临界场为$B_{c2}^{\\perp}\\approx5.5\\ \\mathrm{T}",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "theory:TH2",
+            "code": "TH2",
+            "label_zh": "轨道通道 → WHH / 薄膜极限",
+            "kind": "formula",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_2",
+            "code": "C16-5",
+            "label_zh": "对单晶、未插层的4H_a-NbSe_2样品进行的热容（热力学）测量确立了一个面内上临界场（层平行",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_6",
+            "code": "C16-15",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了Paul",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_db13a75e::claim_5",
+            "code": "C16-14",
+            "label_zh": "对单晶、未插层的4H$_{a}$-NbSe$_{2}$样品所做的热容（热力学）测量确立了上临界场",
+            "kind": "evidence",
+            "count": 2
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_3",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_3",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_4",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_4",
+              "theory:L1b",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "theory:TH2",
+            "leaf_kind": "formula",
+            "path": [
+              "theory:TH2",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_2",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_2",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_6",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_6",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1a",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          },
+          {
+            "leaf": "knowledge:papers:paper_db13a75e::claim_5",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_db13a75e::claim_5",
+              "theory:L1b",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:TH2": {
+      "theory:R2": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:TH2",
+            "code": "TH2",
+            "label_zh": "轨道通道 → WHH / 薄膜极限",
+            "kind": "formula",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:TH2",
+            "leaf_kind": "formula",
+            "path": [
+              "theory:TH2",
+              "theory:M2",
+              "theory:R2"
+            ],
+            "route_kind": "support",
+            "relation": "支撑"
+          }
+        ],
+        "route_kinds": [
+          "support"
+        ]
+      }
+    },
+    "theory:TH4": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:TH4",
+            "code": "TH4",
+            "label_zh": "有限动量通道 → 轨道 FFLO + Lebed 判据",
+            "kind": "formula",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:TH4",
+            "leaf_kind": "formula",
+            "path": [
+              "theory:TH4",
+              "theory:TH5b",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "background",
+            "relation": "关联"
+          }
+        ],
+        "route_kinds": [
+          "background"
+        ]
+      }
+    },
+    "theory:TH5b": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:TH4",
+            "code": "TH4",
+            "label_zh": "有限动量通道 → 轨道 FFLO + Lebed 判据",
+            "kind": "formula",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:TH4",
+            "leaf_kind": "formula",
+            "path": [
+              "theory:TH4",
+              "theory:TH5b",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "background",
+            "relation": "关联"
+          }
+        ],
+        "route_kinds": [
+          "background"
+        ]
+      }
+    },
+    "theory:CAND_FFLO": {
+      "theory:CAND_FFLO": {
+        "count": 19,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:TH4",
+            "code": "TH4",
+            "label_zh": "有限动量通道 → 轨道 FFLO + Lebed 判据",
+            "kind": "formula",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_8",
+            "code": "C13-17",
+            "label_zh": "在临界面内磁场 $B_0$ 处（从 Ising 配对到轨道 Fulde-Ferrell-Lark",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_9",
+            "code": "O13-9",
+            "label_zh": "在临界面内磁场 $B_0$ 处（从 Ising 配对到轨道 Fulde-Ferrell-Lark",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_12",
+            "code": "C13-2",
+            "label_zh": "从Ising配对到轨道Fulde-Ferrell-Larkin-Ovchinnikov态的一级转",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_23",
+            "code": "O13-4",
+            "label_zh": "Ising超导态（Ising-SC）与轨道Fulde-Ferrell-Larkin-Ovchin",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_28",
+            "code": "C13-12",
+            "label_zh": "基于多层 Ising 超导体（具有将电子自旋钉扎在面外的自旋-轨道耦合的超导体）的 Lawren",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_31",
+            "code": "C13-14",
+            "label_zh": "被约瑟夫森涡旋晶格穿透的 Ising 超导态（层间相位空间调制且磁通线局域化）与轨道 Fulde",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_2eff6d41::claim_18",
+            "code": "C17-8",
+            "label_zh": "在 Ba₆Ta₁₁S₂₈ 中，高面内磁场和低温下，$B^{*}$（电阻转变的特征场）标志着相干层",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_2eff6d41::claim_28",
+            "code": "C17-18",
+            "label_zh": "Ba₆Ta₁₁S₂₈中的数据支持一种轨道有限动量配对机制。",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_27",
+            "code": "O12-4",
+            "label_zh": "在磁场严格平行基面的块体 2H-NbSe2 中，可逆扭矩异常、内部 H_FFLO(T) 相界、高",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_28",
+            "code": "C12-13",
+            "label_zh": "（i）在块体2H-NbSe2中，当磁场严格平行于基面施加时，在约4 T以上的上临界场H_c2处存",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_30",
+            "code": "C12-14",
+            "label_zh": "（iii）在块体2H-NbSe2中，当磁场严格平行于基面施加时，重建的磁相图显示内部超导相边界H",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_31",
+            "code": "C12-15",
+            "label_zh": "（iv）在块体2H-NbSe2中，当磁场严格平行于基面施加时，上临界场H_c2存在显著的面内六重",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_1",
+            "code": "C10-1",
+            "label_zh": "多层2H-NbSe2薄片表现出面内上临界场B_c2,∥(T)的异常上翘，该上翘在T*=5.8 K",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_18",
+            "code": "C10-4",
+            "label_zh": "在多层2H-NbSe2的面内磁场超导相图中，均匀（零动量）Ising超导相与六重对称轨道FFLO",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_20",
+            "code": "C10-5",
+            "label_zh": "在多层2H-NbSe2的面内磁场超导相图中，从Jc(B)提取的均匀（零动量）Ising超导相与六",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_42",
+            "code": "C10-21",
+            "label_zh": "在层状 2H-NbSe2 轨道 FFLO 模型中，该相需要有限但非最大的层间 Josephson",
+            "kind": "evidence",
+            "count": 1
+          },
+          {
+            "id": "theory:L5",
+            "code": "L5",
+            "label_zh": "4H_a 面内 B_c2(T) 未见低温上翘",
+            "kind": "bridge",
+            "count": 1
+          },
+          {
+            "id": "theory:L8",
+            "code": "L8",
+            "label_zh": "本图检索中的判别性测量缺口",
+            "kind": "bridge",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:TH4",
+            "leaf_kind": "formula",
+            "path": [
+              "theory:TH4",
+              "theory:TH5b",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "background",
+            "relation": "关联"
+          },
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_8",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_8",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_9",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_9",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_12",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_12",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_23",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_23",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_28",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_31",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_31",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_2eff6d41::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_2eff6d41::claim_18",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_2eff6d41::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_2eff6d41::claim_28",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_27",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_27",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_28",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_30",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_30",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_31",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_31",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_1",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_1",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_18",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_20",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_20",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_42",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_42",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          },
+          {
+            "leaf": "theory:L5",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L5",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "boundary",
+            "relation": "给出边界"
+          },
+          {
+            "leaf": "theory:L8",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L8",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "boundary",
+            "relation": "给出边界"
+          }
+        ],
+        "route_kinds": [
+          "background",
+          "analogy",
+          "boundary"
+        ]
+      }
+    },
+    "knowledge:papers:paper_cf693bed::claim_8": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_8",
+            "code": "C13-17",
+            "label_zh": "在临界面内磁场 $B_0$ 处（从 Ising 配对到轨道 Fulde-Ferrell-Lark",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_8",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_8",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_cf693bed::claim_9": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_9",
+            "code": "O13-9",
+            "label_zh": "在临界面内磁场 $B_0$ 处（从 Ising 配对到轨道 Fulde-Ferrell-Lark",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_9",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_9",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_cf693bed::claim_12": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_12",
+            "code": "C13-2",
+            "label_zh": "从Ising配对到轨道Fulde-Ferrell-Larkin-Ovchinnikov态的一级转",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_12",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_12",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_cf693bed::claim_23": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_23",
+            "code": "O13-4",
+            "label_zh": "Ising超导态（Ising-SC）与轨道Fulde-Ferrell-Larkin-Ovchin",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_23",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_23",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_cf693bed::claim_28": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_28",
+            "code": "C13-12",
+            "label_zh": "基于多层 Ising 超导体（具有将电子自旋钉扎在面外的自旋-轨道耦合的超导体）的 Lawren",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_28",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_cf693bed::claim_31": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_cf693bed::claim_31",
+            "code": "C13-14",
+            "label_zh": "被约瑟夫森涡旋晶格穿透的 Ising 超导态（层间相位空间调制且磁通线局域化）与轨道 Fulde",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_cf693bed::claim_31",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_cf693bed::claim_31",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_2eff6d41::claim_18": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_2eff6d41::claim_18",
+            "code": "C17-8",
+            "label_zh": "在 Ba₆Ta₁₁S₂₈ 中，高面内磁场和低温下，$B^{*}$（电阻转变的特征场）标志着相干层",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_2eff6d41::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_2eff6d41::claim_18",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_2eff6d41::claim_28": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_2eff6d41::claim_28",
+            "code": "C17-18",
+            "label_zh": "Ba₆Ta₁₁S₂₈中的数据支持一种轨道有限动量配对机制。",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_2eff6d41::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_2eff6d41::claim_28",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_5e031f1b::claim_27": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_27",
+            "code": "O12-4",
+            "label_zh": "在磁场严格平行基面的块体 2H-NbSe2 中，可逆扭矩异常、内部 H_FFLO(T) 相界、高",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_27",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_27",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_5e031f1b::claim_28": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_28",
+            "code": "C12-13",
+            "label_zh": "（i）在块体2H-NbSe2中，当磁场严格平行于基面施加时，在约4 T以上的上临界场H_c2处存",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_28",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_28",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_5e031f1b::claim_30": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_30",
+            "code": "C12-14",
+            "label_zh": "（iii）在块体2H-NbSe2中，当磁场严格平行于基面施加时，重建的磁相图显示内部超导相边界H",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_30",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_30",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_5e031f1b::claim_31": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_5e031f1b::claim_31",
+            "code": "C12-15",
+            "label_zh": "（iv）在块体2H-NbSe2中，当磁场严格平行于基面施加时，上临界场H_c2存在显著的面内六重",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_5e031f1b::claim_31",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_5e031f1b::claim_31",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_6fd394c4::claim_1": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_1",
+            "code": "C10-1",
+            "label_zh": "多层2H-NbSe2薄片表现出面内上临界场B_c2,∥(T)的异常上翘，该上翘在T*=5.8 K",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_1",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_1",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_6fd394c4::claim_18": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_18",
+            "code": "C10-4",
+            "label_zh": "在多层2H-NbSe2的面内磁场超导相图中，均匀（零动量）Ising超导相与六重对称轨道FFLO",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_18",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_18",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_6fd394c4::claim_20": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_20",
+            "code": "C10-5",
+            "label_zh": "在多层2H-NbSe2的面内磁场超导相图中，从Jc(B)提取的均匀（零动量）Ising超导相与六",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_20",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_20",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "knowledge:papers:paper_6fd394c4::claim_42": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "knowledge:papers:paper_6fd394c4::claim_42",
+            "code": "C10-21",
+            "label_zh": "在层状 2H-NbSe2 轨道 FFLO 模型中，该相需要有限但非最大的层间 Josephson",
+            "kind": "evidence",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "knowledge:papers:paper_6fd394c4::claim_42",
+            "leaf_kind": "evidence",
+            "path": [
+              "knowledge:papers:paper_6fd394c4::claim_42",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "analogy",
+            "relation": "类比"
+          }
+        ],
+        "route_kinds": [
+          "analogy"
+        ]
+      }
+    },
+    "theory:L5": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:L5",
+            "code": "L5",
+            "label_zh": "4H_a 面内 B_c2(T) 未见低温上翘",
+            "kind": "bridge",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:L5",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L5",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "boundary",
+            "relation": "给出边界"
+          }
+        ],
+        "route_kinds": [
+          "boundary"
+        ]
+      }
+    },
+    "theory:L8": {
+      "theory:CAND_FFLO": {
+        "count": 1,
+        "to_axiom": 0,
+        "leaves": [
+          {
+            "id": "theory:L8",
+            "code": "L8",
+            "label_zh": "本图检索中的判别性测量缺口",
+            "kind": "bridge",
+            "count": 1
+          }
+        ],
+        "chains": [
+          {
+            "leaf": "theory:L8",
+            "leaf_kind": "bridge",
+            "path": [
+              "theory:L8",
+              "theory:CAND_FFLO"
+            ],
+            "route_kind": "boundary",
+            "relation": "给出边界"
+          }
+        ],
+        "route_kinds": [
+          "boundary"
+        ]
+      }
+    }
+  },
+  "complete_routes": {
+    "theory:R1": [
+      {
+        "premises": [
+          "theory:AX3a",
+          "theory:AX3",
+          "theory:L1a",
+          "theory:L1b",
+          "theory:L6"
+        ],
+        "steps": [
+          "(AX3a ∧ AX3) → TH3",
+          "(TH3 ∧ L1a ∧ L1b ∧ L6) → M1",
+          "M1 → R1"
+        ],
+        "operator": "conjunction",
+        "note": "O16-9/O16-1/O16-6/C16-16 提供结构依据；O16-4/C16-2 提供 SOC 劈裂依据；O16-7/C16-13 提供 L1a/L1b；单边路径不是独立证明。"
+      }
+    ],
+    "theory:R2": [
+      {
+        "premises": [
+          "theory:L1a",
+          "theory:L1b",
+          "theory:TH2",
+          "theory:TH5a"
+        ],
+        "steps": [
+          "(L1a ∧ L1b ∧ TH2) → M2（γ≈31/5.5≈5.6）",
+          "TH5a：s_layer≪ξ_c 适用边界",
+          "M2 → R2"
+        ],
+        "operator": "conjunction",
+        "note": "γ 尚未独立测量；若面外仍有顺磁贡献或体系准二维，阈值不能直接使用。"
+      }
+    ],
+    "theory:CAND_FFLO": [
+      {
+        "premises": [
+          "theory:TH4",
+          "theory:TH5b"
+        ],
+        "steps": [
+          "(TH4 ∧ TH5b) → 有限动量内部相（机制背景）"
+        ],
+        "operator": "conjunction",
+        "note": "有限动量内部相保留为普通机制背景节点；L5/L8 是 4H_a 缺失指纹边界。"
+      }
+    ]
+  },
+  "root_ids": [
+    "theory:R1",
+    "theory:R2"
+  ],
+  "bridge_ids": [
+    "theory:L1a",
+    "theory:L1b",
+    "theory:L4",
+    "theory:L5",
+    "theory:L6",
+    "theory:L7",
+    "theory:L8",
+    "theory:M1",
+    "theory:M2",
+    "theory:L4p",
+    "theory:CAND_FFLO"
+  ],
+  "axiom_ids": [
+    "theory:AX1",
+    "theory:AX2",
+    "theory:AX3",
+    "theory:AX3a",
+    "theory:AX5"
+  ],
+  "candidates": [],
+  "node_boundaries": {
+    "theory:L6": [
+      {
+        "root": "theory:R1",
+        "path": [
+          "theory:L6",
+          "theory:R1"
+        ],
+        "relation": "给出边界",
+        "expression": "轨道基线低于 31 T，约束 R1 的“轨道限速”表述但不是严格上界。"
+      },
+      {
+        "root": "theory:R2",
+        "path": [
+          "theory:L6",
+          "theory:R2"
+        ],
+        "relation": "给出边界",
+        "expression": "单带轨道基线低于 31 T，R2 仍需 γ/多带修正。"
+      }
+    ],
+    "theory:L7": [
+      {
+        "root": "theory:R1",
+        "path": [
+          "theory:L7",
+          "theory:R1"
+        ],
+        "relation": "给出边界",
+        "expression": "无序/层间结构可能改变轨道场，但 ξ_c 尚未独立测量。"
+      }
+    ],
+    "theory:M2": [
+      {
+        "root": "theory:R1",
+        "path": [
+          "theory:M2",
+          "theory:R1"
+        ],
+        "relation": "给出边界",
+        "expression": "γ≥5.6 时纯轨道模型可自足拟合 31 T，因此限制 R1 的唯一归因。"
+      }
+    ],
+    "knowledge:papers:paper_db13a75e::claim_8": [
+      {
+        "root": "theory:R1",
+        "path": [
+          "knowledge:papers:paper_db13a75e::claim_8",
+          "theory:AX3a",
+          "theory:TH3",
+          "theory:M1",
+          "theory:R1"
+        ],
+        "relation": "给出边界",
+        "expression": "EDS 化学计量只约束样品身份/纯度，不能推出 P6̄m2。"
+      }
+    ],
+    "knowledge:papers:paper_db13a75e::claim_11": [
+      {
+        "root": "theory:R1",
+        "path": [
+          "knowledge:papers:paper_db13a75e::claim_11",
+          "theory:AX3a",
+          "theory:TH3",
+          "theory:M1",
+          "theory:R1"
+        ],
+        "relation": "给出边界",
+        "expression": "2H 污染 <1% 约束结构归因的样品纯度，不能单独支持 P6̄m2。"
+      }
+    ],
+    "theory:L1a": [
+      {
+        "root": "theory:R2",
+        "path": [
+          "theory:L1a",
+          "theory:R2"
+        ],
+        "relation": "给出边界",
+        "expression": "超 Pauli 面内场本身不能区分 Ising 与纯轨道拟合。"
+      }
+    ],
+    "theory:L1b": [
+      {
+        "root": "theory:R2",
+        "path": [
+          "theory:L1b",
+          "theory:R2"
+        ],
+        "relation": "给出边界",
+        "expression": "面外场只有在 TH5a 三维条件下才能作为纯轨道标尺。"
+      }
+    ],
+    "theory:L8": [
+      {
+        "root": "theory:R2",
+        "path": [
+          "theory:L8",
+          "theory:R2"
+        ],
+        "relation": "给出边界",
+        "expression": "γ/ξ_c 尚未独立测量，R2 仍为条件候选。"
+      }
+    ],
+    "theory:TH5a": [
+      {
+        "root": "theory:R2",
+        "path": [
+          "theory:TH5a",
+          "theory:R2"
+        ],
+        "relation": "给出边界",
+        "expression": "γ 阈值只在 s_layer≪ξ_c 条件下适用。"
+      }
+    ]
+  },
+  "non_root_nodes": {
+    "theory:CAND_FFLO": "普通机制背景节点：有限动量内部相只作为替代机制/边界，不参与 R1/R2 的主判决。",
+    "theory:L5": "只约束有限动量内部相背景节点：当前 4H_a 曲线未见其形态指纹。"
+  },
+  "background_nodes": [
+    {
+      "id": "theory:CAND_FFLO",
+      "title_zh": "有限动量内部相",
+      "role": "普通机制背景节点"
+    }
+  ],
+  "edges_to_candidates": [],
+  "edges_to_background": [
+    {
+      "source": "theory:TH4",
+      "target": "theory:CAND_FFLO",
+      "relation": "supports",
+      "expression": "TH4 只支持有限动量内部相在模型中的可行性，不等同于 4H_a 的 B_c2。"
+    },
+    {
+      "source": "theory:TH5b",
+      "target": "theory:CAND_FFLO",
+      "relation": "supports",
+      "expression": "TH5b 给出准二维/层间解耦的适用条件。"
+    },
+    {
+      "source": "theory:L5",
+      "target": "theory:CAND_FFLO",
+      "relation": "bounds",
+      "expression": "L5 在当前 4H_a 曲线审计中未见低温上翘或内部相界；这削弱但不证伪有限动量候选。"
+    },
+    {
+      "source": "theory:L8",
+      "target": "theory:CAND_FFLO",
+      "relation": "bounds",
+      "expression": "L8 记录了当前缺少方位角、转矩与场下谱学等判别性测量。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_8",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_9",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_12",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_23",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_28",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_cf693bed::claim_31",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 中的谱学、滞后、一级转变或 B* 结果是同族类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_2eff6d41::claim_18",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "Ba6Ta11S28 的有限动量实验/解释是跨材料类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_2eff6d41::claim_28",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "Ba6Ta11S28 的有限动量实验/解释是跨材料类比，不是 4H_a 直接证据。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_27",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_28",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_30",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_5e031f1b::claim_31",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的 orbital-FFLO 证据是跨多型类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_1",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_18",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_20",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    },
+    {
+      "source": "knowledge:papers:paper_6fd394c4::claim_42",
+      "target": "theory:CAND_FFLO",
+      "relation": "analogy",
+      "expression": "2H-NbSe2 的有限动量/轨道机制是跨材料类比。"
+    }
+  ]
+}

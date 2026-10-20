@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gaia://schemas/formalization/1.0.0",
+  "title": "Revisioned authoring formalization (pre-Gaia IR)",
+  "type": "object",
+  "required": ["schema_version", "revision", "package", "graph", "workflow"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "revision": {
+      "type": "object",
+      "required": ["revision_id", "supersedes", "parent_hash", "content_hash"],
+      "properties": {
+        "revision_id": {"type": "string", "minLength": 1},
+        "supersedes": {"type": ["string", "null"]},
+        "parent_hash": {"type": ["string", "null"]},
+        "content_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "package": {
+      "type": "object",
+      "required": ["paper_id", "namespace", "name", "version"],
+      "properties": {
+        "paper_id": {"type": "string", "minLength": 1},
+        "namespace": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "graph": {
+      "type": "object",
+      "required": ["knowledges", "operators", "strategies", "composes"],
+      "properties": {
+        "knowledges": {"type": "array", "items": {"$ref": "#/$defs/knowledge"}},
+        "operators": {"type": "array", "items": {"$ref": "#/$defs/operator"}},
+        "strategies": {"type": "array", "items": {"$ref": "#/$defs/strategy"}},
+        "composes": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": false
+    },
+    "workflow": {
+      "type": "object",
+      "required": ["source_records", "source_anchors", "proposals", "gaps"],
+      "properties": {
+        "source_records": {"type": "array", "items": {"$ref": "#/$defs/source_record"}},
+        "source_anchors": {"type": "array", "items": {"$ref": "#/$defs/source_anchor"}},
+        "proposals": {"type": "array", "items": {"$ref": "#/$defs/proposal"}},
+        "gaps": {"type": "array", "items": {"$ref": "#/$defs/gap"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "source_record": {
+      "type": "object",
+      "required": ["id", "artifact_id", "locator", "related_ids"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "artifact_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "object"},
+        "external_id": {"type": "string"},
+        "original_type": {"type": "string"},
+        "related_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "knowledge": {
+      "type": "object",
+      "required": ["id", "type", "format", "content", "source_anchor_ids"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {"enum": ["claim", "note", "question", "setting", "context"]},
+        "format": {"const": "markdown"},
+        "content": {"type": "string"},
+        "source_anchor_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "observation": {"type": ["object", "null"]},
+        "lineage": {"type": ["object", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "operator": {
+      "type": "object",
+      "required": ["operator_id", "scope", "operator", "variables", "conclusion"],
+      "properties": {
+        "operator_id": {"type": ["string", "null"]},
+        "scope": {"enum": ["local", null]},
+        "operator": {"type": "string", "minLength": 1},
+        "variables": {"type": "array", "items": {"type": "string"}},
+        "conclusion": {"type": "string", "minLength": 1},
+        "metadata": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "strategy": {
+      "type": "object",
+      "required": ["strategy_id", "scope", "type", "premises", "conclusion", "background", "formal_expr"],
+      "properties": {
+        "strategy_id": {"type": "string", "minLength": 1},
+        "scope": {"const": "local"},
+        "type": {"type": "string", "minLength": 1},
+        "premises": {"type": "array", "items": {"type": "string"}},
+        "conclusion": {"type": "string", "minLength": 1},
+        "background": {"type": "array", "items": {"type": "string"}},
+        "formal_expr": {
+          "type": "object",
+          "required": ["operators"],
+          "properties": {"operators": {"type": "array", "items": {"$ref": "#/$defs/operator"}}},
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "source_anchor": {
+      "type": "object",
+      "required": ["id", "artifact_id", "locator"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "artifact_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "proposal": {
+      "type": "object",
+      "required": ["id", "proposal_type", "payload", "supersedes", "review"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "proposal_type": {"enum": ["new_observation", "relation", "weakpoint", "formalization", "warrant_review"]},
+        "payload": {"type": "object"},
+        "supersedes": {"type": ["string", "null"]},
+        "review": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/review"}
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "required": ["decision", "reviewer", "reviewed_at", "rationale"],
+      "properties": {
+        "decision": {"enum": ["approved", "rejected"]},
+        "reviewer": {"type": "string", "minLength": 1},
+        "reviewed_at": {"type": "string", "minLength": 1},
+        "rationale": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "gap": {
+      "type": "object",
+      "required": ["id", "candidate_text", "source_anchor_ids", "reason", "resolved_by"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "candidate_text": {"type": "string"},
+        "source_anchor_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "reason": {"type": "string", "minLength": 1},
+        "resolved_by": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

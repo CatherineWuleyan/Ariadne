@@ -1,0 +1,1736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Domain graph · Papers + Integration</title>
+<style>
+  :root{color-scheme:light;--ink:#101828;--muted:#667085;--line:#d0d5dd;--paper:#f8f9fb;--accent:#175cd3;}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;color:var(--ink);background:var(--paper);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;gap:9px;align-items:center;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);position:relative;z-index:5;flex-wrap:wrap;flex:none}
+  h1{font-size:16px;margin:0 auto 0 0;font-weight:750;white-space:nowrap}
+  .stat{color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .stat b{color:var(--ink)}
+  button,select,input{border:1px solid var(--line);border-radius:7px;padding:6px 9px;background:#fff;font:inherit;color:inherit}
+  button{cursor:pointer}
+  button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  #search{width:168px;padding:6px 9px;font-size:12.5px;flex:none}
+  header button,.stat,label.chk{flex:none}
+  #search::placeholder{color:#98a2b3}
+  label.chk{display:flex;gap:6px;align-items:center;color:#475467;font-size:12px;cursor:pointer;white-space:nowrap}
+  label.chk select{padding:3px 5px;font-size:12px;border-radius:6px}
+  main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 360px}
+  /* 没有选中任何节点时右栏收起，把画布让给图 */
+  main.collapsed{grid-template-columns:minmax(0,1fr) 0}
+  main.collapsed aside{display:none}
+  #canvas-wrap{position:relative;overflow:hidden;min-height:0;background:var(--paper)}
+  svg{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+  svg.panning{cursor:grabbing}
+  aside{position:relative;background:#fff;border-left:1px solid var(--line);padding:14px;overflow:auto;min-height:0}
+  #detail-close{position:absolute;top:10px;right:10px;padding:3px 8px;font-size:12px;line-height:1.2}
+  .legend{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;max-width:330px;max-height:calc(100% - 24px);overflow:auto}
+  .legend .row{display:flex;align-items:center;gap:7px;margin:3px 0;color:#475467;white-space:nowrap}
+  .legend .row .cnt{color:#98a2b3;margin-left:auto;padding-left:8px}
+  .legend-title{font-weight:700;margin:9px 0 4px;color:#344054}
+  .legend-title:first-child{margin-top:0}
+  .legend-note{color:#667085;font-size:10.5px;line-height:1.45;margin-top:8px;white-space:normal;max-width:300px}
+  .swatch{width:22px;height:3px;border-radius:2px;flex:none;background:#98a2b3}
+  .swatch.dashed{height:0;background:none;border-top:3px dashed #6941c6}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .edge{fill:none;stroke:#98a2b3;stroke-width:.9;pointer-events:stroke}
+  .edge.entail{stroke:#175cd3;stroke-width:1.1}
+  .edge.joint{stroke:#6941c6;stroke-width:1.1;stroke-dasharray:2 4}
+  .edge.cross{stroke-width:1.8}
+  .edge.dimmed{opacity:.07}
+  .edge.hot{stroke-width:2.8;opacity:1}
+  .edge-label{font-size:9.5px;fill:#475467;paint-order:stroke;stroke:#fff;stroke-width:3.2px;pointer-events:none}
+  .node circle.shape{stroke:#fff;stroke-width:1.6;cursor:pointer}
+  .node.delta circle.shape{stroke-width:2.8;filter:drop-shadow(0 1px 2px rgba(16,24,40,.20))}
+  .node text{font-size:10.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3.4px}
+  .node .node-code{font-size:11.5px;font-weight:750}
+  .node .node-sub{font-size:9.5px;fill:#475467}
+  .node.dimmed{opacity:.15}
+  .node.search-dim{opacity:.10}
+  .node.hot circle.shape{stroke:var(--ink);stroke-width:2.6}
+  .node.hit circle.shape{stroke:#f79009;stroke-width:3}
+  .node.hidden{display:none}
+  h2{font-size:14px;margin:0 84px 6px 0}
+  h2 .h2sub{font-weight:400;color:#475467;font-size:12.5px}
+  .section-title{font-weight:700;margin:14px 0 5px;font-size:12px;color:#344054}
+  .statement{margin:4px 0 6px;font-size:13.5px;line-height:1.6;overflow-wrap:anywhere}
+  .badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#f2f4f7;color:#475467;font-size:11px;margin:0 4px 4px 0}
+  .kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px;margin:5px 0;font-size:12.5px;overflow-wrap:anywhere}
+  .kv span:first-child{color:var(--muted)}
+  .en{color:#475467;font-size:12px;background:#f9fafb;border:1px solid #eaecf0;border-radius:7px;padding:8px;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .empty{color:var(--muted)}
+  .hint{color:var(--muted);font-size:12px;margin-top:10px}
+  .stepline{display:flex;gap:6px;align-items:baseline;padding:2px 0;font-size:12px;line-height:1.45;cursor:pointer;border-radius:4px}
+  .stepline:hover{background:#f9fafb}
+  .stepline .ri{flex:none;width:76px;white-space:nowrap;text-align:right;color:#6941c6;font-size:10px;border-right:2px solid #e9d7fe;padding-right:5px}
+  .stepline .nc{font-weight:700;flex:none;min-width:42px}
+  .stepline .nl{color:#475467;min-width:0;overflow-wrap:anywhere}
+  /* 公式排版：分式用上下两行，根式用上划线，行内数学不去动基线 */
+  .math-inline{white-space:nowrap}
+  .math-display{display:block;margin:8px 0;padding:6px 8px;background:#f9fafb;border:1px solid #eaecf0;border-radius:6px;overflow-x:auto;text-align:center}
+  .mfrac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px}
+  .mfrac>.mnum{border-bottom:1px solid currentColor;padding:0 3px}
+  .mfrac>.mden{padding:0 3px}
+  .msqrt>.mrad{border-top:1px solid currentColor;padding:0 2px}
+  .macc{position:relative}
+  .maccmark{position:absolute;left:50%;top:-.62em;transform:translateX(-50%);font-size:.85em}
+  .mcases{display:inline-flex;flex-direction:column;vertical-align:middle;margin-left:4px}
+  .mcases>.mrow>.mcell{padding:0 6px}
+  aside code{background:#f2f4f7;border-radius:4px;padding:1px 4px;font-size:12px}
+  .mcmd{color:#b42318;font-family:ui-monospace,monospace;font-size:.9em}
+  .pick{cursor:pointer;padding:2px 4px;border-radius:6px;margin:1px 0}
+  .pick:hover{background:#f2f4f7}
+  .pick.sel{background:#eef4ff;outline:1px solid #b2ccff}
+  #canvas-wrap.no-legend .legend{display:none}
+  @media (max-width:1180px){
+    main{grid-template-columns:minmax(0,1fr) 330px}
+    #search{width:160px}
+  }
+
+  /* ---- 问题主导回答层（roots） ---- */
+  .node.root circle.shape{stroke:#fff;stroke-width:3;filter:drop-shadow(0 2px 5px rgba(16,24,40,.20))}
+  .node.root .node-code{font-size:15px;font-weight:800;fill:#fff;stroke:none;paint-order:normal;letter-spacing:.2px}
+  .node.root .node-sub{font-size:10.5px;fill:#344054;font-weight:650;stroke-width:3.6px}
+  .node.root.hot circle.shape{stroke:var(--ink);stroke-width:3.2}
+  .node.root.hit circle.shape{stroke:#f79009;stroke-width:3.5}
+  .edge.answer-support{stroke:#067647;stroke-width:1.6}
+  .edge.answer-bounds{stroke:#b54708;stroke-width:1.5;stroke-dasharray:3 3}
+  .edge.answer-oppose{stroke:#b42318;stroke-width:1.8;stroke-dasharray:7 4}
+  .edge.role-deduction{stroke:#175cd3;stroke-width:1.7;stroke-dasharray:none}
+  .edge.role-special_case{stroke:#0e9384;stroke-width:1.2;stroke-dasharray:5 3}
+  .edge.role-reproduces{stroke:#067647;stroke-width:1.2;stroke-dasharray:2 3}
+  .edge.role-bounds{stroke:#b54708;stroke-width:1.3;stroke-dasharray:2 3}
+  .edge.role-abduction{stroke:#6941c6;stroke-width:1.2;stroke-dasharray:2 3}
+  .edge.role-analogy{stroke:#c11574;stroke-width:1.2;stroke-dasharray:2 3}
+  .edge.role-infer{stroke:#98a2b3;stroke-width:0.8;stroke-dasharray:1 3;opacity:.6}
+  .edge.role-same_paper{stroke:#175cd3;stroke-width:1.3;stroke-dasharray:4 3;opacity:.85}
+  .edge.cross-paper{stroke-width:1.15}
+  .edge.exploratory-edge{stroke:#98a2b3;stroke-width:0.9;stroke-dasharray:2 5;opacity:.35}
+  .edge-badge{display:inline-block;border-radius:4px;padding:0 4px;margin-right:3px;font-size:9.5px;color:#fff}
+  .edge-badge.role-deduction{background:#175cd3}
+  .edge-badge.role-special_case{background:#0e9384}
+  .edge-badge.role-reproduces{background:#067647}
+  .edge-badge.role-bounds{background:#b54708}
+  .edge-badge.role-abduction{background:#6941c6}
+  .edge-badge.role-analogy{background:#c11574}
+  .edge-badge.role-infer{background:#98a2b3}
+  .edge-badge.role-same_paper{background:#175cd3}
+  .edge-badge.role-support{background:#067647}
+  .chainrow.exploratory{color:#98a2b3;font-style:italic}
+  .chainrow.same-paper{color:#344054}
+  .chainrow.exploratory:hover{background:#f9fafb}
+  .chainsteps{margin-top:2px}
+  .edge.answer-support.hot,.edge.answer-bounds.hot,.edge.answer-oppose.hot{stroke-width:3}
+  .swatch.answer-support{background:#067647}
+  .swatch.answer-bounds{height:0;background:none;border-top:3px dashed #b54708}
+  .swatch.answer-oppose{height:0;background:none;border-top:3px dashed #b42318}
+  .legend .answer-root-row b{font-weight:800}
+  .chainbox{border:1px solid #eaecf0;border-radius:7px;margin:4px 0;background:#fcfcfd}
+  .chainbox>summary{cursor:pointer;padding:5px 8px;font-size:12px;color:#344054}
+  .chainbody{padding:2px 8px 7px;border-top:1px dashed #eaecf0}
+  .chainrow{font-size:11px;line-height:1.55;padding:2px 3px;cursor:pointer;color:#475467;border-radius:4px}
+  .chainrow:hover{background:#f2f4f7}
+  .caveat{background:#fffaeb;border:1px solid #fedf89;border-radius:7px;padding:7px 8px;font-size:11.5px;line-height:1.5;color:#7a2e0e;margin:8px 0}
+  .root-verdict{display:inline-block;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff}
+  .legend-details{margin-top:8px;border-top:1px solid #eaecf0;padding-top:6px}
+  .legend-details>summary{cursor:pointer;font-weight:700;font-size:12px;color:#344054;list-style:none}
+  .legend-details>summary::-webkit-details-marker{display:none}
+  .legend-details>summary:before{content:'▸ ';}
+  .legend-details[open]>summary:before{content:'▾ ';}
+  .legend-details-body{padding-top:3px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Domain graph · Papers + Integration</h1>
+  <button id="toggle-panel" type="button" title="Toggle legend">◧ Legend</button>
+  <span class="stat" id="stats"></span>
+  <label class="chk" title="Show isolated claims"><input type="checkbox" id="toggle-isolated"> Isolated</label>
+  <label class="chk" title="Show only the cross-paper integration layer"><input type="checkbox" id="toggle-delta"> Integration</label>
+  <label class="chk" title="Minimum degree filter">Degree ≥
+    <select id="min-degree">
+      <option value="1" selected>1 (all)</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4 (hubs)</option>
+    </select>
+  </label>
+  <label class="chk"><input type="checkbox" id="toggle-labels" checked> Labels</label>
+  <input id="search" type="search" placeholder="Search claim or text…">
+  <button id="reheat" type="button">Re-layout</button>
+  <button id="fit" type="button">Fit</button>
+</header>
+<main class="collapsed">
+  <section id="canvas-wrap">
+    <svg id="graph" role="img" aria-label="Question-led domain graph with candidate answers as root nodes"></svg>
+    <div class="legend" id="legend"></div>
+  </section>
+  <aside id="detail"><button id="detail-close" type="button" title="Collapse">Collapse</button>
+    <div id="detail-body">
+      <p class="empty">Click a node or relation to inspect it.</p>
+      <p class="hint">Layout: spring–charge force-directed model. Root bubbles are candidate answers to the question; green edges support a root, orange dashed edges bound it, red dashed edges oppose it. Open a root to read its statement, support links and premise chains.</p>
+    </div>
+  </aside>
+</main>
+<script>
+// ---- 轻量 LaTeX + Markdown 渲染（自包含，无外部依赖）----------------------
+// 与 domain_graph_full.reviewed.html 同一套渲染器：语料里的 $...$ / $$...$$
+// 在自包含 viewer 中不引入 KaTeX，按实际用到的子集实现。
+const GREEK = {
+  alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',
+  theta:'θ',vartheta:'ϑ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',varpi:'ϖ',
+  rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',phi:'φ',varphi:'φ',chi:'χ',psi:'ψ',omega:'ω',
+  Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Xi:'Ξ',Pi:'Π',Sigma:'Σ',Upsilon:'Υ',Phi:'Φ',
+  Psi:'Ψ',Omega:'Ω',
+};
+const SYMBOLS = {
+  parallel:'∥',perp:'⊥',approx:'≈',equiv:'≡',sim:'∼',simeq:'≃',propto:'∝',pm:'±',mp:'∓',
+  times:'×',cdot:'·',div:'÷',leq:'≤',le:'≤',geq:'≥',ge:'≥',neq:'≠',ll:'≪',gg:'≫',
+  in:'∈',notin:'∉',subset:'⊂',cup:'∪',cap:'∩',infty:'∞',partial:'∂',nabla:'∇',
+  sum:'∑',prod:'∏',int:'∫',circ:'∘',bullet:'•',langle:'⟨',rangle:'⟩',
+  lceil:'⌈',rceil:'⌉',lfloor:'⌊',rfloor:'⌋',to:'→',rightarrow:'→',
+  leftarrow:'←',Rightarrow:'⇒',Leftrightarrow:'⇔',ldots:'…',cdots:'⋯',dots:'…',
+  hbar:'ℏ',ell:'ℓ'
+};
+const INVISIBLE = new Set(['left','right','bigl','bigr','Bigl','Bigr','big','Big','bigg','Bigg',
+  'displaystyle','textstyle','limits','nolimits','!',' ','mathrm','text','mathit','mathbf',
+  'boldsymbol','operatorname','mathsf','mathtt','mathnormal','quad','qquad',';',':']);
+const OPERATORS = { exp:'exp',ln:'ln',log:'log',sin:'sin',cos:'cos',tan:'tan',csc:'csc',
+  min:'min',max:'max',det:'det',Re:'Re',Im:'Im' };
+const ACCENTS = { hat:'^', bar:'‾', tilde:'~', vec:'→', dot:'˙', ddot:'¨', overline:'‾' };
+
+function renderMath(src) {
+  const s = String(src);
+  let i = 0;
+
+  function group() {
+    if (s[i] !== '{') return atom();
+    i++;
+    const out = seq('}');
+    if (s[i] === '}') i++;
+    return out;
+  }
+
+  function atom() {
+    if (i >= s.length) return '';
+    const c = s[i];
+    if (c === '{') return group();
+    if (c === '\\') {
+      if (s[i + 1] === '\\') { i += 2; return '<br>'; }
+      const m = /^\\([A-Za-z]+)/.exec(s.slice(i));
+      if (m) { i += m[0].length; return command(m[1]); }
+      i += 2;
+      return '';
+    }
+    i++;
+    return escapeHtml(c);
+  }
+
+  function command(name) {
+    if (INVISIBLE.has(name)) return '';
+    if (name === 'frac' || name === 'dfrac' || name === 'tfrac') {
+      const a = group(), b = group();
+      return '<span class="mfrac"><span class="mnum">' + a + '</span><span class="mden">' + b + '</span></span>';
+    }
+    if (name === 'sqrt') {
+      return '<span class="msqrt">√<span class="mrad">' + group() + '</span></span>';
+    }
+    if (name === 'begin') {
+      group();
+      const rows = [];
+      let row = [], cell = '';
+      while (i < s.length) {
+        if (s.startsWith('\\end', i)) { i = s.indexOf('}', i); if (i >= 0) i++; break; }
+        if (s.startsWith('\\\\', i)) { i += 2; row.push(cell); rows.push(row); row = []; cell = ''; continue; }
+        if (s[i] === '&') { i++; row.push(cell); cell = ''; continue; }
+        if (s[i] === '^' || s[i] === '_') {
+          const tag = s[i] === '^' ? 'sup' : 'sub';
+          i++;
+          cell += '<' + tag + '>' + group() + '</' + tag + '>';
+          continue;
+        }
+        cell += atom();
+      }
+      row.push(cell); rows.push(row);
+      return '<span class="mcases">' + rows.filter(function (r) { return r.join('').trim(); }).map(function (r) {
+        return '<span class="mrow">' + r.map(function (cc) { return '<span class="mcell">' + cc + '</span>'; }).join('') + '</span>';
+      }).join('') + '</span>';
+    }
+    if (ACCENTS[name]) {
+      return '<span class="macc">' + group() + '<span class="maccmark">' + ACCENTS[name] + '</span></span>';
+    }
+    if (GREEK[name]) return GREEK[name];
+    if (SYMBOLS[name]) return SYMBOLS[name];
+    if (OPERATORS[name]) return '<span class="mop">' + OPERATORS[name] + '</span>';
+    return '<span class="mcmd">' + escapeHtml(name) + '</span>';
+  }
+
+  function seq(stop) {
+    let out = '';
+    while (i < s.length && !(stop && s[i] === stop)) {
+      if (s[i] === '^' || s[i] === '_') {
+        const tag = s[i] === '^' ? 'sup' : 'sub';
+        i++;
+        out += '<' + tag + '>' + group() + '</' + tag + '>';
+        continue;
+      }
+      out += atom();
+    }
+    return out;
+  }
+
+  return seq(null);
+}
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function renderRich(value) {
+  const raw = String(value == null ? '' : value);
+  const parts = [];
+  // 语料混用 $...$、\\(...\\)、\\[...\\] 三种定界符：一次扫描按出现顺序切开，
+  // 避免把 $$...$$ 内部的 \\[4pt] 之类排版命令误当成行间公式的起止符。
+  const re = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$|\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g;
+  let last = 0, m;
+  while ((m = re.exec(raw)) !== null) {
+    parts.push({ text: raw.slice(last, m.index), math: false });
+    const mathText = m[1] != null ? m[1] : m[2] != null ? m[2] : m[3] != null ? m[3] : m[4];
+    parts.push({ text: mathText, math: true, display: m[1] != null || m[4] != null });
+    last = m.index + m[0].length;
+  }
+  parts.push({ text: raw.slice(last), math: false });
+  return parts.map(function (part) {
+    if (part.math) {
+      const body = renderMath(part.text);
+      return part.display ? '<div class="math-display">' + body + '</div>'
+                          : '<span class="math-inline">' + body + '</span>';
+    }
+    let t = escapeHtml(part.text);
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
+  }).join('');
+}
+</script>
+<script id="view-data" type="application/json">__VIEW_DATA__</script>
+<script>
+(function(){
+  'use strict';
+  const view = JSON.parse(document.getElementById('view-data').textContent);
+  const svg = document.getElementById('graph');
+  const detail = document.getElementById('detail');
+  const detailBody = document.getElementById('detail-body');
+  const mainEl = document.querySelector('main');
+  const legend = document.getElementById('legend');
+  const statsEl = document.getElementById('stats');
+  const NS = 'http://www.w3.org/2000/svg';
+  const HINT = document.getElementById('detail-body').innerHTML;
+  const collapse = () => { mainEl.classList.add('collapsed'); };
+  const expand = () => { mainEl.classList.remove('collapsed'); };
+
+  // ---- 箭头 -----------------------------------------------------------------
+  const defs = document.createElementNS(NS, 'defs');
+  function addArrow(id, color){
+    const marker = document.createElementNS(NS, 'marker');
+    marker.setAttribute('id', id);
+    marker.setAttribute('viewBox', '0 0 10 10');
+    marker.setAttribute('refX', '8.5');
+    marker.setAttribute('refY', '5');
+    marker.setAttribute('markerWidth', '5.5');
+    marker.setAttribute('markerHeight', '5.5');
+    marker.setAttribute('orient', 'auto-start-reverse');
+    const arrow = document.createElementNS(NS, 'path');
+    arrow.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+    arrow.setAttribute('fill', color);
+    marker.appendChild(arrow);
+    defs.appendChild(marker);
+  }
+  addArrow('arrow-entail', '#175cd3');
+  addArrow('arrow-neutral', '#667085');
+  addArrow('arrow-support', '#067647');
+  addArrow('arrow-bounds', '#b54708');
+  addArrow('arrow-oppose', '#b42318');
+  svg.appendChild(defs);
+
+  // ---- 数据准备 ---------------------------------------------------------------
+  const rawNodes = Array.isArray(view.nodes) ? view.nodes : [];
+  const rawEdges = Array.isArray(view.edges) ? view.edges : [];
+  const answerLayer = view.answer_layer || (view.metadata && view.metadata.answer_layer) || null;
+  const answerRoots = answerLayer && Array.isArray(answerLayer.roots) ? answerLayer.roots : [];
+  const rootById = new Map(answerRoots.map(function(r){ return [String(r.id), r]; }));
+  const answerRootIds = new Set(answerRoots.map(function(r){ return String(r.id); }));
+  const VERDICT_COLORS = { primary:'#b42318', partial:'#b54708', contested:'#6941c6', exploratory:'#475467' };
+  const VERDICT_LABELS = { primary:'multi-paper support', partial:'single-paper support', contested:'opposed in graph', exploratory:'exploratory' };
+
+  function paperOf(id){
+    const m = /^knowledge:papers:(paper_[^:]+)::/.exec(String(id));
+    if (m) return m[1];
+    const value = String(id);
+    const cut = value.indexOf('::');
+    return cut > 0 ? value.slice(0, cut).replace(/^knowledge:/, '') : 'other';
+  }
+
+  const degreeMap = new Map();
+  rawEdges.forEach(function(e){
+    degreeMap.set(e.source, (degreeMap.get(e.source) || 0) + 1);
+    degreeMap.set(e.target, (degreeMap.get(e.target) || 0) + 1);
+  });
+
+  const nodes = rawNodes.map(function(n, i){
+    const d = n.details || {};
+    const degree = degreeMap.get(n.id) || 0;
+    const rootInfo = rootById.get(String(n.id)) || null;
+    const isRoot = !!rootInfo || n.kind === 'answer_root';
+    const isK = !isRoot && /^K\d/.test(String(n.display_label || n.label || ''));
+    const delta = !isRoot && n.layer === 'weakpoints';
+    const summary = n.summary || d.content || '';
+    const supportCount = rootInfo && rootInfo.stats ? Number(rootInfo.stats.support_claim_count || 0) : 0;
+    return {
+      id: n.id,
+      code: n.display_label || n.label || String(n.entity_id || n.id),
+      summary: summary,
+      paper: isK ? 'domain' : paperOf(n.id),
+      layer: n.layer || '',
+      delta: delta,
+      domainConclusion: isK,
+      isRoot: isRoot,
+      root: rootInfo,
+      answer: isRoot,
+      color: isRoot ? (rootInfo && rootInfo.color) || VERDICT_COLORS[(rootInfo && rootInfo.verdict_class) || 'exploratory'] : isK ? '#7f56d9' : null,
+      kind: n.kind || 'claim',
+      type: d.type || n.kind || 'claim',
+      details: d,
+      degree: degree,
+      connected: degree > 0,
+      r: isRoot ? Math.min(34 + Math.sqrt(supportCount) * 3, 46) : isK ? Math.min(6 + 2.4 * Math.sqrt(degree), 18) : Math.min(4.5 + 2.4 * Math.sqrt(degree) + (delta ? 2 : 0), 16),
+      index: i
+    };
+  });
+
+  const byId = new Map(nodes.map(function(n){ return [n.id, n]; }));
+  const nodeIndex = new Map(nodes.map(function(n, i){ return [n.id, i]; }));
+
+  function claimOrdinal(id){
+    const node = byId.get(String(id));
+    const match = String((node && node.code) || '').match(/^P(\d+)/);
+    return match ? Number(match[1]) : 9999;
+  }
+  function samePaperSequences(root){
+    const groups = new Map();
+    (root.support_ids || []).forEach(function(id){
+      const node = byId.get(String(id));
+      if (!node) return;
+      const paper = node.paper || '?';
+      if (!groups.has(paper)) groups.set(paper, []);
+      groups.get(paper).push(String(id));
+    });
+    const result = [];
+    groups.forEach(function(ids, paper){
+      if (ids.length < 2) return;
+      ids.sort(function(a, b){ return claimOrdinal(a) - claimOrdinal(b); });
+      result.push({ paper: paper, ids: ids });
+    });
+    return result;
+  }
+  const samePaperByRoot = new Map();
+  const samePaperEdges = [];
+  answerRoots.forEach(function(root){
+    const rid = String(root.id);
+    const sequences = samePaperSequences(root);
+    samePaperByRoot.set(rid, sequences);
+    sequences.forEach(function(seq){
+      for (let i = 0; i < seq.ids.length - 1; i++) {
+        const source = seq.ids[i], target = seq.ids[i + 1];
+        if (!byId.has(source) || !byId.has(target)) continue;
+        samePaperEdges.push({
+          id: 'same-paper:' + rid + ':' + seq.paper + ':' + source + ':' + target,
+          source: source,
+          target: target,
+          label: 'same paper',
+          semantic_type: 'same_paper',
+          layer: 'same_paper',
+          edge_class: 'sequence',
+          reasoning_type: 'same_paper',
+          residual_reason: null,
+          chainable: false,
+          role_reason: 'Direct support claims from the same paper, ordered by claim number; a reading sequence, not a logical inference.',
+          details: { reasoning_type: 'same_paper', chainable: false, relation: 'same paper' }
+        });
+      }
+    });
+  });
+  rawEdges.push.apply(rawEdges, samePaperEdges);
+
+  const edges = rawEdges.map(function(e, i){
+    const st = String(e.semantic_type || e.label || '');
+    const isAnswer = e.layer === 'answer' || String(e.id || '').startsWith('answer:');
+    const directed = st === 'infer' || st === 'deduction' || st === 'same_paper' || isAnswer;
+    const family = isAnswer
+      ? 'answer-' + (st === 'support' ? 'support' : st === 'oppose' ? 'oppose' : 'bounds')
+      : st === 'conjunction' ? 'joint' : st === 'infer' ? 'entail' : 'definition';
+    return {
+      id: e.id || ('edge:' + i),
+      source: e.source,
+      target: e.target,
+      relation: isAnswer ? st : (e.label || st),
+      semantic_type: st,
+      family: family,
+      answer: isAnswer,
+      directed: directed,
+      delta: !isAnswer && e.layer === 'weakpoints',
+      layer: e.layer || '',
+      reasoning_type: isAnswer ? 'support' : String(e.reasoning_type || (e.details && e.details.reasoning_type) || 'infer'),
+      residual_reason: e.residual_reason || (e.details && e.details.residual_reason) || null,
+      chainable: !!(e.chainable || (e.details && e.details.chainable)),
+      role_reason: e.role_reason || (e.details && e.details.role_reason) || '',
+      cross_paper: !isAnswer && !!byId.get(e.source) && !!byId.get(e.target) &&
+        !!byId.get(e.source).paper && !!byId.get(e.target).paper &&
+        byId.get(e.source).paper !== byId.get(e.target).paper,
+      details: e.details || {},
+      hidden: false
+    };
+  }).filter(function(e){ return byId.has(e.source) && byId.has(e.target); });
+
+  const crossPaperNodes = new Set();
+  edges.forEach(function(e){
+    if (!e.cross_paper) return;
+    crossPaperNodes.add(e.source);
+    crossPaperNodes.add(e.target);
+  });
+  const edgeById = new Map(edges.map(function(e){ return [e.id, e]; }));
+  const ROLE_LABELS = {
+    deduction: 'deduces', special_case: 'special case', reproduces: 'reproduces',
+    bounds: 'bounds', abduction: 'explains', analogy: 'analogy',
+    infer: 'related', same_paper: 'same paper', conjunction: 'conjunction', support: 'supports'
+  };
+  const RESIDUAL_LABELS = {
+    precondition: 'requires', enabling: 'enables', instance: 'instance', unclear: 'related'
+  };
+  function roleOfEdge(edge){
+    if (!edge || edge.answer) return { type: 'support', label: 'supports' };
+    const type = edge.reasoning_type || 'infer';
+    let label = ROLE_LABELS[type] || type;
+    if (type === 'infer' && edge.residual_reason && RESIDUAL_LABELS[edge.residual_reason]) {
+      label = RESIDUAL_LABELS[edge.residual_reason];
+    }
+    return { type: type, label: label };
+  }
+  function edgeLabel(edge){
+    return roleOfEdge(edge).label;
+  }
+
+  const palette = ['#175cd3','#b54708','#067647','#6941c6','#c11574','#0e9384','#b42318','#3538cd','#b93815','#475467','#7f56d9','#0ba5ec','#3b7c0f'];
+  const papers = Array.from(new Set(nodes.filter(function(n){ return !n.isRoot && !n.domainConclusion; }).map(function(n){ return n.paper; }))).sort();
+  const paperColor = new Map(papers.map(function(p, i){ return [p, palette[i % palette.length]]; }));
+  const paperIndex = new Map(papers.map(function(p, i){ return [p, i + 1]; }));
+  const paperCounts = new Map();
+  nodes.forEach(function(n){ if (!n.isRoot && !n.domainConclusion) paperCounts.set(n.paper, (paperCounts.get(n.paper) || 0) + 1); });
+
+  const adjacency = new Map(nodes.map(function(n){ return [n.id, new Set()]; }));
+  edges.forEach(function(e){
+    if (adjacency.has(e.source)) adjacency.get(e.source).add(e.target);
+    if (adjacency.has(e.target)) adjacency.get(e.target).add(e.source);
+  });
+
+  // ---- 回答层链索引 -----------------------------------------------------------
+  const pairEdges = new Map();
+  edges.forEach(function(e){
+    const key = e.source + '|' + e.target;
+    if (!pairEdges.has(key)) pairEdges.set(key, []);
+    pairEdges.get(key).push(e);
+  });
+  function edgeForStep(source, target){
+    const list = pairEdges.get(source + '|' + target) || [];
+    return list.find(function(e){ return e.layer === 'answer'; })
+      || list.find(function(e){ return e.semantic_type === 'infer'; })
+      || list[0] || null;
+  }
+  const rootChainNodes = new Map();
+  const rootChainEdges = new Map();
+  const answerChainNodes = new Set();
+  const answerChainEdges = new Set();
+  answerRoots.forEach(function(root){
+    const rid = String(root.id);
+    const nodeSet = new Set([rid]);
+    const edgeSet = new Set();
+    (root.chains || []).forEach(function(chain){
+      const path = (chain.path || []).map(String);
+      path.forEach(function(id){ nodeSet.add(id); answerChainNodes.add(id); });
+      for (let i = 0; i < path.length - 1; i++) {
+        const edge = edgeForStep(path[i], path[i + 1]);
+        if (edge) { edgeSet.add(edge.id); answerChainEdges.add(edge.id); }
+      }
+    });
+    (root.links || []).forEach(function(link){
+      const claimId = String(link.claim_id);
+      nodeSet.add(claimId); answerChainNodes.add(claimId);
+      const edge = edgeForStep(claimId, rid);
+      if (edge) { edgeSet.add(edge.id); answerChainEdges.add(edge.id); }
+    });
+    rootChainNodes.set(rid, nodeSet);
+    rootChainEdges.set(rid, edgeSet);
+  });
+  samePaperByRoot.forEach(function(sequences, rid){
+    const edgeSet = rootChainEdges.get(rid);
+    if (!edgeSet) return;
+    sequences.forEach(function(seq){
+      for (let i = 0; i < seq.ids.length - 1; i++) {
+        const id = 'same-paper:' + rid + ':' + seq.paper + ':' + seq.ids[i] + ':' + seq.ids[i + 1];
+        edgeSet.add(id);
+        answerChainEdges.add(id);
+      }
+    });
+  });
+
+  const rootExploratoryNodes = new Map();
+  const rootExploratoryEdges = new Map();
+  const exploratoryNodes = new Set();
+  const exploratoryEdges = new Set();
+  answerRoots.forEach(function(root){
+    const rid = String(root.id);
+    const nodeSet = new Set([rid]);
+    const edgeSet = new Set();
+    (root.exploratory_paths || []).forEach(function(chain){
+      const path = (chain.path || []).map(String);
+      path.forEach(function(id){ nodeSet.add(id); exploratoryNodes.add(id); });
+      for (let i = 0; i < path.length - 1; i++) {
+        const edge = edgeForStep(path[i], path[i + 1]);
+        if (edge) { edgeSet.add(edge.id); exploratoryEdges.add(edge.id); }
+      }
+    });
+    rootExploratoryNodes.set(rid, nodeSet);
+    rootExploratoryEdges.set(rid, edgeSet);
+  });
+
+  const deltaCount = nodes.filter(function(n){ return n.delta; }).length;
+  const paperNodeCount = nodes.filter(function(n){ return !n.isRoot && n.layer !== 'weakpoints'; }).length;
+  const isolatedCount = nodes.filter(function(n){ return !n.isRoot && !n.connected; }).length;
+  const answerCount = answerRoots.length;
+  const claimCount = nodes.length - answerCount;
+  const claimEdges = edges.filter(function(e){ return !e.answer; }).length;
+  const baseStats = '<b>' + claimCount + '</b> claims · <b>' + claimEdges + '</b> relations · <b>' +
+    deltaCount + '</b> integration' + (answerCount ? ' · <b>' + answerCount + '</b> answers' : '');
+  statsEl.innerHTML = baseStats;
+
+  // ---- 文本工具 ---------------------------------------------------------------
+  const norm = function(value){ return String(value == null ? '' : value).normalize('NFKC').toLowerCase(); };
+  const plain = function(value){
+    return String(value == null ? '' : value)
+      .replace(/\\[()\[\]]/g, '')
+      .replace(/\$+/g, '')
+      .replace(/\s+/g, ' ').trim();
+  };
+  function shortText(value, limit){
+    const s = plain(value);
+    return s.length > limit ? s.slice(0, limit - 1) + '…' : s;
+  }
+  function subLabel(value){
+    const s = String(value == null ? '' : value)
+      .replace(/\${1,2}[^$]*\${1,2}/g, '…')
+      .replace(/\\\([\s\S]*?\\\)/g, '…')
+      .replace(/\\\[[\s\S]*?\\\]/g, '…')
+      .replace(/\s+/g, ' ').trim();
+    return s.length > 30 ? s.slice(0, 29) + '…' : s;
+  }
+
+  // ---- 视图层 -----------------------------------------------------------------
+  const root = document.createElementNS(NS, 'g');
+  const edgeLayer = document.createElementNS(NS, 'g');
+  const labelLayer = document.createElementNS(NS, 'g');
+  const nodeLayer = document.createElementNS(NS, 'g');
+  root.append(edgeLayer, labelLayer, nodeLayer);
+  svg.appendChild(root);
+
+  const edgeEls = edges.map(function(edge){
+    const path = document.createElementNS(NS, 'path');
+    const cls = ['edge', edge.family];
+    if (edge.delta) cls.push('cross');
+    if (!edge.answer && edge.semantic_type !== 'conjunction' && edge.reasoning_type) {
+      cls.push('role-' + edge.reasoning_type);
+    }
+    if (edge.cross_paper) cls.push('cross-paper');
+    path.setAttribute('class', cls.join(' '));
+    if (edge.directed) {
+      const marker = edge.answer
+        ? (edge.semantic_type === 'support' ? 'arrow-support'
+          : edge.semantic_type === 'oppose' ? 'arrow-oppose' : 'arrow-bounds')
+        : edge.reasoning_type === 'deduction' ? 'arrow-entail' : 'arrow-neutral';
+      path.setAttribute('marker-end', 'url(#' + marker + ')');
+    }
+    edgeLayer.appendChild(path);
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('class', 'edge-label');
+    text.style.display = 'none';
+    labelLayer.appendChild(text);
+    return { edge: edge, path: path, text: text };
+  });
+
+  nodes.forEach(function(node){
+    const g = document.createElementNS(NS, 'g');
+    const nodeClass = ['node'];
+    if (node.delta) nodeClass.push('delta');
+    if (node.isRoot) nodeClass.push('root', 'verdict-' + ((node.root && node.root.verdict_class) || 'exploratory'));
+    g.setAttribute('class', nodeClass.join(' '));
+    g.dataset.id = node.id;
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('class', 'shape');
+    c.setAttribute('r', node.r);
+    c.setAttribute('fill', node.isRoot ? (node.color || '#475467') : node.domainConclusion ? '#7f56d9' : (paperColor.get(node.paper) || '#667085'));
+    c.setAttribute('fill-opacity', node.isRoot ? '0.95' : node.domainConclusion ? '0.78' : node.delta ? '0.90' : '0.42');
+    const tip = document.createElementNS(NS, 'title');
+    tip.textContent = node.isRoot
+      ? node.code + ' · ' + (node.root && node.root.title_zh ? node.root.title_zh : '') + '\n' +
+        shortText(node.summary, 500) + '\n' + ((node.root && node.root.verdict) || '')
+      : node.code + ' · ' + shortText(node.summary, 240);
+    g.appendChild(tip);
+    g.appendChild(c);
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('class', 'node-code');
+    t.setAttribute('y', node.isRoot ? 6 : node.r + 12);
+    t.textContent = node.code;
+    g.appendChild(t);
+    const t2 = document.createElementNS(NS, 'text');
+    t2.setAttribute('class', 'node-sub' + (node.isRoot ? ' root-title' : ''));
+    t2.setAttribute('y', node.isRoot ? node.r + 18 : node.r + 22);
+    t2.textContent = node.isRoot
+      ? shortText((node.root && node.root.title_zh) || node.root.title_en || '', 20)
+      : subLabel(node.summary);
+    g.appendChild(t2);
+    nodeLayer.appendChild(g);
+    node.el = g;
+    node.textEl = t;
+    node.subEl = t2;
+    node.circleEl = c;
+  });
+
+  // ---- 图例 -------------------------------------------------------------------
+  const relationCounts = new Map();
+  edges.forEach(function(e){ relationCounts.set(e.relation, (relationCounts.get(e.relation) || 0) + 1); });
+
+  function buildLegend(){
+    const answerRelationCounts = new Map();
+    edges.forEach(function(edge){
+      if (!edge.answer) return;
+      const type = String(edge.semantic_type || 'support');
+      answerRelationCounts.set(type, (answerRelationCounts.get(type) || 0) + 1);
+    });
+    const answerRelationRows = ['support', 'bounds', 'oppose'].filter(function(name){
+      return answerRelationCounts.get(name);
+    }).map(function(name){
+      const cls = name === 'support' ? 'answer-support' : name === 'bounds' ? 'answer-bounds' : 'answer-oppose';
+      return '<div class="row"><span class="swatch ' + cls + '"></span><span>' + escapeHtml(name) +
+        '</span><span class="cnt">' + (answerRelationCounts.get(name) || 0) + '</span></div>';
+    }).join('');
+
+    const roleColors = {
+      deduction: '#175cd3', special_case: '#0e9384', reproduces: '#067647',
+      bounds: '#b54708', abduction: '#6941c6', analogy: '#c11574',
+      same_paper: '#175cd3', infer: '#98a2b3'
+    };
+    const reasoningCounts = new Map();
+    edges.forEach(function(edge){
+      if (edge.answer || edge.semantic_type === 'conjunction') return;
+      const type = edge.reasoning_type || 'infer';
+      reasoningCounts.set(type, (reasoningCounts.get(type) || 0) + 1);
+    });
+    const reasoningRows = ['deduction', 'special_case', 'reproduces', 'bounds', 'abduction', 'analogy', 'same_paper', 'infer']
+      .filter(function(name){ return reasoningCounts.get(name); })
+      .map(function(name){
+        const color = roleColors[name];
+        const swatch = name === 'deduction'
+          ? '<span class="swatch" style="background:' + color + '"></span>'
+          : '<span class="swatch" style="background:none;border-top:3px dashed ' + color + ';height:0"></span>';
+        const label = name === 'same_paper' ? 'same paper' : name;
+        return '<div class="row">' + swatch + '<span>' + escapeHtml(label) +
+          '</span><span class="cnt">' + reasoningCounts.get(name) + '</span></div>';
+      }).join('');
+    const crossPaperCount = edges.filter(function(edge){ return edge.cross_paper; }).length;
+    const conjunctionCount = relationCounts.get('conjunction') || relationCounts.get('joint') || 0;
+    const relationRows = conjunctionCount
+      ? '<div class="row"><span class="swatch dashed"></span><span>conjunction</span><span class="cnt">' + conjunctionCount + '</span></div>'
+      : '';
+
+    const answerRows = answerRoots.map(function(root){
+      const support = root.stats ? Number(root.stats.support_claim_count || 0) : 0;
+      return '<div class="row pick answer-root-row" data-answer="' + escapeHtml(root.id) + '" title="Focus this candidate answer">' +
+        '<span class="dot" style="background:' + (root.color || '#475467') + '"></span>' +
+        '<b>' + escapeHtml(root.code) + '</b><span>' + escapeHtml(shortText(root.title_zh, 15)) + '</span>' +
+        '<span class="cnt">' + support + '</span></div>';
+    }).join('');
+
+    const paperRows = papers.map(function(p){
+      return '<div class="row pick" data-paper="' + escapeHtml(p) + '" title="Focus this paper">' +
+        '<span class="dot" style="background:' + paperColor.get(p) + '"></span><span>' +
+        escapeHtml(p) + '</span><span class="cnt">' + (paperCounts.get(p) || 0) + '</span></div>';
+    }).join('');
+
+    const questionText = answerLayer && answerLayer.question
+      ? (answerLayer.question.zh || answerLayer.question.en || '') : '';
+
+    legend.innerHTML =
+      (questionText ? '<div class="legend-note" style="margin:0 0 7px;color:#344054;font-weight:650">' +
+        escapeHtml(questionText) + '</div>' : '') +
+      (answerRoots.length ? '<label class="chk" style="margin:0 0 7px" title="Show all connected domain nodes, including nodes not linked to any answer root"><input type="checkbox" id="toggle-full-domain"> Full domain graph</label>' : '') +
+      (answerRows ? '<div class="legend-title">Candidate answers</div>' + answerRows +
+        '<div class="legend-note" style="margin-top:2px">Roots are candidate answers generated from the question; ' +
+        'support counts are graph links, not a truth vote. Green = support, orange dashed = boundary, red dashed = opposition.</div>' : '') +
+      (answerRelationRows ? '<div class="legend-title">Answer links</div>' + answerRelationRows : '') +
+      '<div class="legend-title">Reasoning types</div>' + reasoningRows +
+      '<div class="legend-note" style="margin-top:2px">Only <b>deduction</b> is chainable. <b>infer</b> is the residual class ' +
+      'and is not evidence. <b>same paper</b> groups direct support claims by paper, ordered by claim number; ' +
+      'it is a reading sequence, not a logical inference. <b>Cross-paper relations (' + crossPaperCount + ')</b> ' +
+      'are all shown; analogy/infer are relations, not support.</div>' +
+      (relationRows ? '<div class="legend-title">Relations</div>' + relationRows : '') +
+      '<div class="legend-title">Nodes</div>' +
+      (answerRows ? '<div class="row"><span class="dot" style="background:#b42318"></span><span>Candidate answer</span><span class="cnt">' + answerCount + '</span></div>' : '') +
+      '<div class="row"><span class="dot" style="background:#667085;opacity:.42"></span><span>Paper claim</span><span class="cnt">' + paperNodeCount + '</span></div>' +
+      '<div class="row"><span class="dot" style="background:#667085"></span><span>Integration delta</span><span class="cnt">' + deltaCount + '</span></div>' +
+      (nodes.filter(function(n){ return n.domainConclusion; }).length ? '<div class="row"><span class="dot" style="background:#7f56d9;opacity:.78"></span><span>Domain conclusion (K)</span><span class="cnt">' + nodes.filter(function(n){ return n.domainConclusion; }).length + '</span></div>' : '') +
+      '<div class="row"><span class="dot" style="background:#fff;border:1px solid #98a2b3"></span><span>Isolated claim</span><span class="cnt">' + isolatedCount + '</span></div>' +
+      '<details class="legend-details"><summary>Papers (' + papers.length + ')</summary><div class="legend-details-body">' + paperRows +
+      '<div class="legend-note" style="margin-top:2px">Click a paper row to highlight it in place; click again to clear.</div></div></details>' +
+      '<div class="legend-note">P&lt;n&gt; = claim node · radius ∝ √degree · solid = integration delta · ' +
+      'thicker = cross-paper · blue arrow = deduction · gray dotted = residual infer · purple dashed = conjunction. ' +
+      'All graph paths are shown by default; dashed gray paths are graph reachability, not evidence.</div>';
+
+    legend.querySelectorAll('.pick[data-paper]').forEach(function(el){
+      el.addEventListener('click', function(){ focusPaper(el.dataset.paper); });
+    });
+    legend.querySelectorAll('.pick[data-answer]').forEach(function(el){
+      el.addEventListener('click', function(){ focusRoot(el.dataset.answer); });
+    });
+  }
+
+  // ---- 力学布局（Fruchterman–Reingold / d3-force 模型） -------------------------
+  const W = function(){ return svg.clientWidth || 1000; };
+  const H = function(){ return svg.clientHeight || 700; };
+  const state = { positions: [], vx: [], vy: [], alpha: 1, running: false, query: '', paper: null, activeRoot: null, fitted: false };
+  let transform = { x: 0, y: 0, k: 1 };
+  let selected = null;
+  let drag = null;
+  let pan = null;
+
+  function seedPositions(){
+    nodes.forEach(function(node){ node.pinned = false; node.pinPos = null; });
+    const c = { x: W() / 2, y: H() / 2 };
+    const R = Math.min(W(), H()) * 0.42;
+    const n = Math.max(1, nodes.length);
+    state.positions = nodes.map(function(_, i){
+      const a = i * 2.399963229728653;
+      const r = R * Math.sqrt((i + 0.5) / n);
+      return { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r };
+    });
+    state.vx = new Array(n).fill(0);
+    state.vy = new Array(n).fill(0);
+    state.alpha = 1;
+  }
+
+  function simulate(){
+    const n = nodes.length;
+    if (!n) return;
+    const area = W() * H();
+    const k = Math.sqrt(area / Math.max(1, n)) * 0.45;
+    const centre = { x: W() / 2, y: H() / 2 };
+    const maxStep = 6 + 26 * state.alpha;
+    const fx = new Array(n).fill(0), fy = new Array(n).fill(0);
+    const hidden = nodes.map(function(node){ return node.el.classList.contains('hidden'); });
+
+    // 1) 斥力：任意两个可见节点之间（未连线时的主要作用）
+    for (let i = 0; i < n; i++) {
+      if (hidden[i]) continue;
+      for (let j = i + 1; j < n; j++) {
+        if (hidden[j]) continue;
+        let dx = state.positions[i].x - state.positions[j].x;
+        let dy = state.positions[i].y - state.positions[j].y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1e-6) { dx = (i - j) * 0.7 + 0.3; dy = 0.4; d2 = dx * dx + dy * dy; }
+        const d = Math.sqrt(d2);
+        // 连线的节点对改用弹簧；其余保持库仑斥力
+        const linked = adjacency.get(nodes[i].id).has(nodes[j].id);
+        if (linked) continue;
+        const rep = (k * k * 8.0) / Math.max(d2, 100);
+        const ux = dx / d, uy = dy / d;
+        if (!nodes[i].pinned) { fx[i] += ux * rep; fy[i] += uy * rep; }
+        if (!nodes[j].pinned) { fx[j] -= ux * rep; fy[j] -= uy * rep; }
+      }
+    }
+
+    // 2) 引力：只作用于有关系的节点对（弹簧）
+    for (let e = 0; e < edges.length; e++) {
+      const edge = edges[e];
+      const a = nodeIndex.get(edge.source), b = nodeIndex.get(edge.target);
+      if (a === undefined || b === undefined || hidden[a] || hidden[b]) continue;
+      let dx = state.positions[a].x - state.positions[b].x;
+      let dy = state.positions[a].y - state.positions[b].y;
+      let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      const desired = k * 0.85;
+      const att = (d * d) / k * 0.85 * (1 - Math.min(1, desired / d) * 0.35);
+      const ux = dx / d, uy = dy / d;
+      if (!nodes[a].pinned) { fx[a] -= ux * att; fy[a] -= uy * att; }
+      if (!nodes[b].pinned) { fx[b] += ux * att; fy[b] += uy * att; }
+    }
+
+    // 3) 向心引力 + 4) 碰撞分离
+    for (let i = 0; i < n; i++) {
+      if (hidden[i]) continue;
+      const p = state.positions[i];
+      if (!nodes[i].pinned) {
+        fx[i] += (centre.x - p.x) * 0.02;
+        fy[i] += (centre.y - p.y) * 0.02;
+      }
+      for (let j = i + 1; j < n; j++) {
+        if (hidden[j]) continue;
+        const q = state.positions[j];
+        let dx = q.x - p.x, dy = q.y - p.y;
+        let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const want = nodes[i].r + nodes[j].r + 18;
+        if (d < want) {
+          const push = (want - d) / d * 1.6;
+          if (!nodes[i].pinned) { fx[i] -= dx * push; fy[i] -= dy * push; }
+          if (!nodes[j].pinned) { fx[j] += dx * push; fy[j] += dy * push; }
+        }
+      }
+    }
+
+    // 5) 位移限幅（温度冷却）
+    for (let i = 0; i < n; i++) {
+      if (hidden[i] || nodes[i].pinned) continue;
+      const mag = Math.hypot(fx[i], fy[i]) || 1;
+      const step = Math.min(mag, maxStep) / mag;
+      state.positions[i].x += fx[i] * step;
+      state.positions[i].y += fy[i] * step;
+    }
+
+    // 6) 位置松弛：直接按重叠量把圆分开，而不是给一个力
+    for (let pass = 0; pass < 3; pass++) {
+      let moved = 0;
+      for (let i = 0; i < n; i++) {
+        if (hidden[i]) continue;
+        for (let j = i + 1; j < n; j++) {
+          if (hidden[j]) continue;
+          const a = state.positions[i], b = state.positions[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          let d = Math.sqrt(dx * dx + dy * dy);
+          const want = nodes[i].r + nodes[j].r + 18;
+          if (d >= want) continue;
+          if (d < 0.01) { dx = (i - j) * 0.7 + 0.3; dy = 0.4; d = Math.sqrt(dx * dx + dy * dy); }
+          const aPinned = nodes[i].pinned, bPinned = nodes[j].pinned;
+          if (aPinned && bPinned) continue;
+          const shift = (want - d) / d * (aPinned || bPinned ? 1.0 : 0.5);
+          if (!aPinned) { a.x -= dx * shift; a.y -= dy * shift; }
+          if (!bPinned) { b.x += dx * shift; b.y += dy * shift; }
+          moved++;
+        }
+      }
+      if (!moved) break;
+    }
+
+    state.alpha = Math.max(0, state.alpha - 0.008);
+  }
+
+  // 把候选答案摆到画布上沿并钉住：根节点是回答层的入口，不能沉进网络里。
+  function layoutRoots(){
+    const roots = nodes.filter(function(n){ return n.isRoot && !n.el.classList.contains('hidden'); });
+    if (!roots.length) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodes.forEach(function(n){
+      if (n.isRoot || n.el.classList.contains('hidden')) return;
+      const p = state.positions[n.index];
+      if (!p) return;
+      minX = Math.min(minX, p.x - n.r);
+      maxX = Math.max(maxX, p.x + n.r);
+      minY = Math.min(minY, p.y - n.r);
+      maxY = Math.max(maxY, p.y + n.r);
+    });
+    const rootsSpan = Math.max(roots.length * 200, 720);
+    let cx = W() / 2, top;
+    if (!isFinite(minX)) {
+      top = H() * 0.22;
+    } else {
+      cx = (minX + maxX) / 2;
+      top = minY - 165;
+    }
+    roots.forEach(function(n, i){
+      const t = roots.length === 1 ? 0.5 : i / (roots.length - 1);
+      const position = { x: cx - rootsSpan / 2 + rootsSpan * t, y: top };
+      n.pinned = true;
+      n.pinPos = position;
+      state.positions[n.index] = position;
+    });
+    state.alpha = Math.max(state.alpha, 0.65);
+  }
+
+  function edgeGeometry(item){
+    const edge = item.edge;
+    const a = nodeIndex.get(edge.source);
+    const b = nodeIndex.get(edge.target);
+    if (a === undefined || b === undefined) return null;
+    const p = state.positions[a], q = state.positions[b];
+    const sn = nodes[a], tn = nodes[b];
+    let dx = q.x - p.x, dy = q.y - p.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    const startCut = Math.min(sn.r + 2, len * 0.45);
+    const endCut = Math.min(tn.r + (edge.directed ? 6 : 2), len * 0.45);
+    const sx = p.x + ux * startCut, sy = p.y + uy * startCut;
+    const ex = q.x - ux * endCut, ey = q.y - uy * endCut;
+    const bend = ((a * 31 + b * 17) % 11 - 5) * 0.9;
+    const nx = -(q.y - p.y), ny = (q.x - p.x);
+    const nl = Math.hypot(nx, ny) || 1;
+    const mx = (sx + ex) / 2 + nx / nl * bend;
+    const my = (sy + ey) / 2 + ny / nl * bend;
+    return {
+      d: 'M ' + sx + ' ' + sy + ' Q ' + mx + ' ' + my + ' ' + ex + ' ' + ey,
+      lx: mx, ly: my - 3
+    };
+  }
+
+  function paint(){
+    edgeEls.forEach(function(item){
+      const edge = item.edge;
+      const a = nodeIndex.get(edge.source);
+      const b = nodeIndex.get(edge.target);
+      if (a === undefined || b === undefined) return;
+      const hidden = edge.hidden ||
+        nodes[a].el.classList.contains('hidden') ||
+        nodes[b].el.classList.contains('hidden');
+      const geometry = hidden ? null : edgeGeometry(item);
+      if (!geometry) {
+        item.path.setAttribute('d', '');
+        item.text.style.display = 'none';
+        item.text.textContent = '';
+        return;
+      }
+      item.path.setAttribute('d', geometry.d);
+      const selectedIsRoot = selected && answerRootIds.has(selected);
+      const incident = selected && !selectedIsRoot && transform.k >= 1.6 &&
+        (edge.source === selected || edge.target === selected);
+      if (incident) {
+        item.text.textContent = edgeLabel(edge);
+        item.text.setAttribute('x', geometry.lx);
+        item.text.setAttribute('y', geometry.ly);
+        item.text.style.display = '';
+      } else {
+        item.text.style.display = 'none';
+        item.text.textContent = '';
+      }
+    });
+
+    const labelsOn = document.getElementById('toggle-labels').checked;
+    const deltaOnly = document.getElementById('toggle-delta').checked;
+    const fullDomainToggle = document.getElementById('toggle-full-domain');
+    const hasAnswerLayer = answerRoots.length > 0;
+    const showFullDomain = !!(fullDomainToggle && fullDomainToggle.checked && hasAnswerLayer);
+    const showExploratory = hasAnswerLayer;
+    const answerFocus = hasAnswerLayer && !showFullDomain;
+    nodes.forEach(function(node, i){
+      const p = state.positions[i];
+      if (!p) return;
+      node.el.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ')');
+      const important = node.degree >= (deltaOnly ? 2 : 4);
+      const showCode = labelsOn && (node.isRoot || node.id === selected || important ||
+        transform.k >= 1.05 || (state.paper && node.paper === state.paper) ||
+        (answerFocus && transform.k >= 0.92 &&
+          (answerChainNodes.has(node.id) || crossPaperNodes.has(node.id) || (showExploratory && exploratoryNodes.has(node.id)))));
+      const showSub = labelsOn && (node.isRoot || transform.k >= 2.0);
+      node.textEl.style.display = showCode ? '' : 'none';
+      node.subEl.style.display = showSub ? '' : 'none';
+    });
+  }
+
+  function applyTransform(){
+    root.setAttribute('transform', 'translate(' + transform.x + ',' + transform.y + ') scale(' + transform.k + ')');
+  }
+
+  // 取景区域：左栏图例展开时把画布左侧让出来，避免节点压在图上。
+  function viewportRect(){
+    const legendVisible = !document.getElementById('canvas-wrap').classList.contains('no-legend');
+    const left = legendVisible ? Math.min(356, W() * 0.30) : 12;
+    return { left: left, top: 12, width: Math.max(200, W() - left - 16), height: Math.max(200, H() - 24) };
+  }
+
+  function fit(){
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nodes.forEach(function(node){
+      if (node.el.classList.contains('hidden')) return;
+      const p = state.positions[node.index];
+      if (!p) return;
+      minX = Math.min(minX, p.x - node.r - 10);
+      maxX = Math.max(maxX, p.x + node.r + 10);
+      minY = Math.min(minY, p.y - node.r - 4);
+      maxY = Math.max(maxY, p.y + node.r + 24);
+    });
+    if (!isFinite(minX)) return;
+    const width = Math.max(1, maxX - minX), height = Math.max(1, maxY - minY);
+    const rect = viewportRect();
+    const k = Math.min(Math.max(Math.min(rect.width / width, rect.height / height), 0.12), 3.2);
+    transform = {
+      k: k,
+      x: rect.left + (rect.width - width * k) / 2 - minX * k,
+      y: rect.top + (rect.height - height * k) / 2 - minY * k
+    };
+    state.fitted = true;
+    applyTransform();
+    paint();
+  }
+
+  function runLayout(ticks){
+    state.running = true;
+    const budget = ticks || 1000;
+    let i = 0;
+    function frame(){
+      const batch = 6;
+      for (let b = 0; b < batch && i < budget && state.alpha > 0.001; b++, i++) simulate();
+      paint();
+      if (i < budget && state.alpha > 0.001) {
+        requestAnimationFrame(frame);
+      } else {
+        state.running = false;
+        if (!state.fitted) fit();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- 选择与详情 -------------------------------------------------------------
+  function clearHighlight(){
+    state.activeRoot = null;
+    nodes.forEach(function(n){ n.el.classList.remove('hot', 'dimmed'); });
+    edgeEls.forEach(function(item){ item.path.classList.remove('hot', 'dimmed'); });
+  }
+
+  function highlightNode(id){
+    const rel = new Set([id]);
+    (adjacency.get(id) || new Set()).forEach(function(x){ rel.add(x); });
+    nodes.forEach(function(n){
+      n.el.classList.toggle('dimmed', n.id !== id && !rel.has(n.id));
+      n.el.classList.toggle('hot', n.id === id);
+    });
+    edgeEls.forEach(function(item){
+      const touch = item.edge.source === id || item.edge.target === id;
+      item.path.classList.toggle('hot', touch);
+      item.path.classList.toggle('dimmed', !touch);
+    });
+  }
+
+  function highlightRoot(id){
+    const chainNodes = rootChainNodes.get(String(id)) || new Set([String(id)]);
+    const chainEdges = rootChainEdges.get(String(id)) || new Set();
+    state.activeRoot = String(id);
+    nodes.forEach(function(n){
+      n.el.classList.toggle('dimmed', !chainNodes.has(n.id));
+      n.el.classList.toggle('hot', n.id === String(id));
+    });
+    edgeEls.forEach(function(item){
+      const hot = chainEdges.has(item.edge.id) || (item.edge.layer === 'answer' && item.edge.target === String(id));
+      item.path.classList.toggle('hot', hot);
+      item.path.classList.toggle('dimmed', !hot);
+    });
+  }
+
+  function bindDetailLinks(){
+    detailBody.querySelectorAll('[data-goto]').forEach(function(el){
+      el.addEventListener('click', function(){
+        const target = byId.get(el.dataset.goto);
+        if (!target) return;
+        centerOn(target);
+        selectNode(target);
+      });
+    });
+  }
+
+  function renderRootDetail(node){
+    const root = node.root || answerRoots.find(function(r){ return String(r.id) === String(node.id); }) || {};
+    const links = root.links || [];
+    const support = links.filter(function(l){ return l.relation === 'support'; });
+    const bounds = links.filter(function(l){ return l.relation === 'bounds'; });
+    const oppose = links.filter(function(l){ return l.relation === 'oppose'; });
+    const stat = root.stats || {};
+    const verdictClass = root.verdict_class || 'exploratory';
+    const color = root.color || VERDICT_COLORS[verdictClass] || '#475467';
+    const verdict = root.verdict || VERDICT_LABELS[verdictClass] || verdictClass;
+    const rows = [
+      ['Title (en)', root.title_en || '—'],
+      ['Scope', root.scope || '—'],
+      ['Criteria', root.criteria || '—'],
+      ['Support', (stat.support_claim_count || support.length) + ' claims · ' + (stat.support_paper_count || 0) + ' papers'],
+      ['Typed chains', (stat.chain_count || 0) + ' · ' + (stat.chain_status || 'no_typed_chain') + ' · max depth ' + (stat.max_depth || 0)],
+      ['Same-paper sequences', String((samePaperByRoot.get(String(root.id)) || []).length)],
+      ['Exploratory', (stat.exploratory_path_count || 0) + ' paths · not evidence'],
+      ['Boundary', String(stat.boundary_count || bounds.length)],
+      ['Oppose', String(stat.oppose_count || oppose.length)],
+      ['Answer type', root.answer_type || 'candidate answer']
+    ];
+    function linkRows(list, empty){
+      if (!list.length) return '<div class="kv"><span>—</span><span>' + empty + '</span></div>';
+      return list.map(function(link){
+        const claim = byId.get(link.claim_id);
+        if (!claim) return '';
+        return '<div class="stepline" data-goto="' + escapeHtml(claim.id) + '">' +
+          '<span class="ri">' + escapeHtml(link.relation) + '</span>' +
+          '<span class="nc">' + escapeHtml(claim.code) + '</span>' +
+          '<span class="nl">' + escapeHtml(shortText(link.reason, 120)) + '</span></div>';
+      }).join('');
+    }
+    const chains = root.chains || [];
+    const exploratory = root.exploratory_paths || [];
+    const samePaper = samePaperByRoot.get(String(root.id)) || [];
+    function chainRowsFor(list, exploratoryMode){
+      return list.slice(0, 26).map(function(chain){
+        const codes = (chain.path || []).map(function(id){ const n = byId.get(id); return n ? n.code : id; });
+        const types = (chain.types || []).slice(1);
+        const direct = chain.path && chain.path.length > 1 ? chain.path[chain.path.length - 2] : chain.leaf;
+        const badges = types.map(function(type, index){
+          const edgeId = (chain.edge_ids || [])[index];
+          const edge = edgeId ? edgeById.get(edgeId) : null;
+          const role = edge ? roleOfEdge(edge) : { type: 'support', label: type === 'support' ? 'supports' : 'related' };
+          return '<span class="edge-badge role-' + escapeHtml(role.type) + '">' + escapeHtml(role.label) + '</span>';
+        }).join('');
+        return '<div class="chainrow' + (exploratoryMode ? ' exploratory' : '') + '" data-goto="' + escapeHtml(direct || '') + '">' +
+          '<div>' + codes.map(escapeHtml).join(' → ') + '</div>' +
+          '<div class="chainsteps">' + (badges || '<span class="edge-badge role-infer">untyped</span>') + '</div></div>';
+      }).join('');
+    }
+    const typedRows = chainRowsFor(chains, false);
+    const exploratoryRows = chainRowsFor(exploratory, true);
+    detailBody.innerHTML =
+      '<h2>' + escapeHtml(node.code) + ' <span class="h2sub">· ' + escapeHtml(root.title_zh || root.title_en || '') + '</span></h2>' +
+      '<div><span class="root-verdict" style="background:' + color + '">' + escapeHtml(verdict) + '</span> ' +
+        '<span class="badge">' + escapeHtml(root.answer_type || 'candidate answer') + '</span> ' +
+        '<span class="badge" style="background:' + (chains.length ? '#175cd3' : '#f2f4f7') + ';color:' + (chains.length ? '#fff' : '#475467') + '">' +
+        (chains.length ? chains.length + ' typed chain' + (chains.length === 1 ? '' : 's') : 'no typed chain') + '</span></div>' +
+      '<div class="section-title">Candidate answer</div>' +
+      '<p class="statement">' + renderRich(root.statement || node.summary) + '</p>' +
+      rows.map(function(row){
+        return '<div class="kv"><span>' + escapeHtml(row[0]) + '</span><span>' + escapeHtml(row[1]) + '</span></div>';
+      }).join('') +
+      '<div class="caveat">' + escapeHtml(root.caveat || 'Candidate answer generated from graph support; support counts are not a truth vote.') + '</div>' +
+      '<div class="section-title">Supporting claims (' + support.length + ')</div>' + linkRows(support, 'No direct support link.') +
+      '<div class="section-title">Typed support chains (' + chains.length + ')</div>' +
+      (chains.length
+        ? '<div class="chainbody">' + typedRows + '</div>'
+        : '<div class="kv"><span>—</span><span>No chainable deduction path. Direct support above is the only evidence.</span></div>') +
+      (chains.length > 26 ? '<div class="hint">Showing first 26 of ' + chains.length + ' typed chains.</div>' : '') +
+      '<div class="section-title">Same-paper evidence sequences (' + samePaper.length + ')</div>' +
+      '<div class="hint">Direct support claims grouped by paper and ordered by claim number. This is a reading sequence, not a logical inference.</div>' +
+      (samePaper.length
+        ? '<div class="chainbody">' + samePaper.map(function(seq){
+            const codes = seq.ids.map(function(id){ const n = byId.get(id); return n ? n.code : id; });
+            return '<div class="chainrow same-paper" data-goto="' + escapeHtml(seq.ids[seq.ids.length - 1] || '') + '">' +
+              '<div>' + codes.map(escapeHtml).join(' → ') + '</div>' +
+              '<div class="chainsteps"><span class="edge-badge role-same_paper">same paper · direct support</span></div></div>';
+          }).join('') + '</div>'
+        : '<div class="kv"><span>—</span><span>No same-paper sequence with two or more direct supports.</span></div>') +
+      '<div class="section-title">Exploratory paths (' + exploratory.length + ', not evidence)</div>' +
+      '<div class="hint">These are the old infer-based graph paths. They are useful for exploration but are not counted as support.</div>' +
+      (exploratory.length
+        ? '<div class="chainbody">' + exploratoryRows + '</div>'
+        : '<div class="kv"><span>—</span><span>No exploratory path recorded.</span></div>') +
+      (exploratory.length > 26 ? '<div class="hint">Showing first 26 of ' + exploratory.length + ' exploratory paths.</div>' : '') +
+      '<div class="section-title">Boundary conditions (' + bounds.length + ')</div>' + linkRows(bounds, 'None recorded.') +
+      '<div class="section-title">Opposition (' + oppose.length + ')</div>' + linkRows(oppose, 'None recorded.') +
+      '<div class="hint">Click a claim row to inspect it; click a chain row to select its direct support claim. ' +
+      'Only deduction steps are chainable; infer is residual and not evidence.</div>';
+    bindDetailLinks();
+  }
+
+  function renderDetail(node){
+    if (node.isRoot) { renderRootDetail(node); return; }
+    const rels = edges.filter(function(e){ return e.source === node.id || e.target === node.id; });
+    const relRows = rels.map(function(e){
+      const outgoing = e.source === node.id;
+      const other = byId.get(outgoing ? e.target : e.source);
+      if (!other) return '';
+      const direction = e.directed ? (outgoing ? '→' : '←') : '—';
+      const role = e.answer ? '' : (
+        ' · ' + (e.reasoning_type || 'infer') +
+        (e.residual_reason ? ':' + e.residual_reason : '') +
+        (e.chainable ? ' ✓' : '')
+      );
+      return '<div class="stepline" data-goto="' + escapeHtml(other.id) + '" title="' +
+        escapeHtml(e.role_reason || '') + '">' +
+        '<span class="ri">' + escapeHtml(e.relation) + role + ' ' + direction + '</span>' +
+        '<span class="nc">' + escapeHtml(other.code) + '</span>' +
+        '<span class="nl">' + escapeHtml(shortText(other.summary, 64)) + '</span></div>';
+    }).join('');
+
+    const rows = [
+      ['Type', node.type],
+      ['Layer', node.delta ? 'Integration delta' : 'Paper claim'],
+      ['Paper', node.paper + ' · #' + (paperIndex.get(node.paper) || '?')],
+      ['Degree', String(node.degree)],
+      ['Node ID', node.id]
+    ];
+    if (node.details.qid) rows.push(['QID', node.details.qid]);
+    if (node.details.original_label) rows.push(['Original label', node.details.original_label]);
+
+    detailBody.innerHTML =
+      '<h2>' + escapeHtml(node.code) + ' <span class="h2sub">· ' + escapeHtml(shortText(node.summary, 70)) + '</span></h2>' +
+      '<div>' + Array.from(new Set(rels.map(function(e){ return e.relation; })))
+        .map(function(r){ return '<span class="badge">' + escapeHtml(r) + '</span>'; }).join('') + '</div>' +
+      '<div class="section-title">Statement</div>' +
+      '<p class="statement">' + renderRich(node.summary) + '</p>' +
+      '<div class="section-title">Relations (' + rels.length + ')</div>' +
+      (relRows || '<div class="kv"><span>—</span><span>No relations in this graph.</span></div>') +
+      '<div class="section-title">Node</div>' +
+      rows.map(function(row){
+        return '<div class="kv"><span>' + escapeHtml(row[0]) + '</span><span>' + escapeHtml(row[1]) + '</span></div>';
+      }).join('') +
+      '<div class="hint">Click a relation row to jump to the neighbouring claim.</div>';
+
+    bindDetailLinks();
+  }
+
+  function renderEdgeDetail(item){
+    const edge = item.edge;
+    const source = byId.get(edge.source), target = byId.get(edge.target);
+    const sourceLabel = edge.answer ? 'Claim' : edge.directed ? 'Premise' : 'End A';
+    const targetLabel = edge.answer ? 'Answer root' : edge.directed ? 'Claim' : 'End B';
+    detailBody.innerHTML =
+      '<h2>Relation: ' + escapeHtml(edge.relation) + '</h2>' +
+      '<div class="kv"><span>Type</span><span>' + escapeHtml(edge.semantic_type) + '</span></div>' +
+      '<div class="kv"><span>Layer</span><span>' + (edge.answer ? 'Candidate answer link' : edge.delta ? 'Integration delta (cross-paper)' : 'Paper reasoning') + '</span></div>' +
+      '<div class="kv"><span>' + sourceLabel + '</span><span>' +
+        (source ? escapeHtml(source.code) + ' · ' + escapeHtml(shortText(source.summary, 48)) : escapeHtml(edge.source)) + '</span></div>' +
+      '<div class="kv"><span>' + targetLabel + '</span><span>' +
+        (target ? escapeHtml(target.code) + ' · ' + escapeHtml(shortText(target.summary, 48)) : escapeHtml(edge.target)) + '</span></div>' +
+      '<div class="kv"><span>Directed</span><span>' + (edge.directed ? (edge.answer ? 'Yes (claim → answer)' : 'Yes (premise → claim)') : 'No (symmetric)') + '</span></div>' +
+      '<div class="kv"><span>Cross-paper</span><span>' + (edge.delta ? 'Yes' : 'No') + '</span></div>' +
+      (edge.answer && edge.details && edge.details.reason ? '<div class="kv"><span>Reason</span><span>' + escapeHtml(edge.details.reason) + '</span></div>' : '') +
+      '<div class="kv"><span>Edge ID</span><span>' + escapeHtml(edge.id) + '</span></div>';
+  }
+
+  function ensureVisible(node){
+    const p = state.positions[node.index];
+    if (!p) return;
+    const rect = viewportRect();
+    const x = transform.x + p.x * transform.k;
+    const y = transform.y + p.y * transform.k;
+    let dx = 0, dy = 0;
+    if (x < rect.left + 48) dx = rect.left + 48 - x;
+    else if (x > rect.left + rect.width - 48) dx = rect.left + rect.width - 48 - x;
+    if (y < rect.top + 48) dy = rect.top + 48 - y;
+    else if (y > rect.top + rect.height - 48) dy = rect.top + rect.height - 48 - y;
+    if (dx || dy) {
+      transform.x += dx;
+      transform.y += dy;
+      applyTransform();
+    }
+  }
+
+  function clearSelection(){
+    selected = null;
+    state.paper = null;
+    syncPaperSelection();
+    clearHighlight();
+    detailBody.innerHTML = HINT;
+    collapse();
+    paint();
+  }
+  document.getElementById('detail-close').addEventListener('click', clearSelection);
+
+  function selectNode(node){
+    if (!node) return;
+    if (state.paper) {
+      state.paper = null;
+      syncPaperSelection();
+    }
+    selected = node.id;
+    applyFilters();
+    clearHighlight();
+    if (node.isRoot) highlightRoot(node.id); else highlightNode(node.id);
+    renderDetail(node);
+    expand();
+    ensureVisible(node);
+    paint();
+  }
+
+  function selectEdge(item){
+    selected = null;
+    if (state.paper) { state.paper = null; syncPaperSelection(); }
+    clearHighlight();
+    item.path.classList.add('hot');
+    renderEdgeDetail(item);
+    expand();
+    paint();
+  }
+
+  function centerOn(node){
+    const p = state.positions[node.index];
+    if (!p) return;
+    const k = Math.max(transform.k, 1.0);
+    const rect = viewportRect();
+    transform = {
+      k: k,
+      x: rect.left + rect.width / 2 - p.x * k,
+      y: rect.top + rect.height * 0.42 - p.y * k
+    };
+    state.fitted = true;
+    applyTransform();
+    paint();
+  }
+
+  // ---- 过滤与搜索 -------------------------------------------------------------
+  function applyFilters(){
+    const showIsolated = document.getElementById('toggle-isolated').checked;
+    const deltaOnly = document.getElementById('toggle-delta').checked;
+    const minDegree = Number(document.getElementById('min-degree').value || 1);
+    const fullDomainToggle = document.getElementById('toggle-full-domain');
+    const hasAnswerLayer = answerRoots.length > 0;
+    const showFullDomain = !!(fullDomainToggle && fullDomainToggle.checked && hasAnswerLayer);
+    const showExploratory = hasAnswerLayer;
+
+    nodes.forEach(function(node){
+      const deltaOk = !deltaOnly || node.delta;
+      const degreeOk = !node.connected ? true : node.degree >= minDegree;
+      const isolatedOk = showIsolated || node.connected;
+      const answerOk = !hasAnswerLayer || showFullDomain || node.isRoot || answerChainNodes.has(node.id)
+        || crossPaperNodes.has(node.id)
+        || (showExploratory && exploratoryNodes.has(node.id));
+      let hide = !(deltaOk && degreeOk && isolatedOk && answerOk) && node.id !== selected;
+      if (node.isRoot) hide = false;
+      node.el.classList.toggle('hidden', hide);
+      node.el.style.display = hide ? 'none' : '';
+    });
+
+    edgeEls.forEach(function(item){
+      const edge = item.edge;
+      const source = nodes[nodeIndex.get(edge.source)];
+      const target = nodes[nodeIndex.get(edge.target)];
+      const typedEdge = !edge.answer && edge.semantic_type !== 'conjunction' &&
+        (edge.chainable || edge.reasoning_type !== 'infer');
+      const answerEdgeOk = !hasAnswerLayer || showFullDomain || edge.layer === 'answer' ||
+        answerChainEdges.has(edge.id) || edge.cross_paper ||
+        (typedEdge && answerChainNodes.has(edge.source) && answerChainNodes.has(edge.target)) ||
+        (showExploratory && exploratoryEdges.has(edge.id));
+      const hidden = !answerEdgeOk ||
+        (deltaOnly && !edge.delta && !edge.answer) ||
+        source.el.classList.contains('hidden') ||
+        target.el.classList.contains('hidden');
+      edge.hidden = hidden;
+      item.path.style.display = hidden ? 'none' : '';
+      item.path.classList.toggle('exploratory-edge',
+        showExploratory && exploratoryEdges.has(edge.id) && !answerChainEdges.has(edge.id) && edge.layer !== 'answer');
+      if (hidden) {
+        item.path.setAttribute('d', '');
+        item.text.style.display = 'none';
+        item.text.textContent = '';
+      }
+    });
+    // Root focus must remain connected through the edges actually displayed.
+    // Cross-paper endpoints and filtered-out bridge nodes can otherwise leave islands.
+    if (hasAnswerLayer && !showFullDomain) {
+      const visibleNeighbors = new Map(nodes.map(function(node){ return [node.id, []]; }));
+      edgeEls.forEach(function(item){
+        if (item.edge.hidden) return;
+        visibleNeighbors.get(item.edge.source).push(item.edge.target);
+        visibleNeighbors.get(item.edge.target).push(item.edge.source);
+      });
+      const reachable = new Set(nodes.filter(function(node){ return node.isRoot; }).map(function(node){ return node.id; }));
+      const queue = Array.from(reachable);
+      for (let i = 0; i < queue.length; i++) {
+        visibleNeighbors.get(queue[i]).forEach(function(id){
+          if (reachable.has(id)) return;
+          reachable.add(id);
+          queue.push(id);
+        });
+      }
+      nodes.forEach(function(node){
+        if (reachable.has(node.id)) return;
+        node.el.classList.add('hidden');
+        node.el.style.display = 'none';
+      });
+      edgeEls.forEach(function(item){
+        if (reachable.has(item.edge.source) && reachable.has(item.edge.target)) return;
+        item.edge.hidden = true;
+        item.path.style.display = 'none';
+        item.path.setAttribute('d', '');
+        item.text.style.display = 'none';
+        item.text.textContent = '';
+      });
+    }
+    paint();
+  }
+
+  function updateSearch(){
+    const query = norm(state.query.trim());
+    let count = 0;
+    nodes.forEach(function(node){
+      const hit = !!query && (
+        norm(node.code).includes(query) ||
+        norm(node.summary).includes(query) ||
+        norm(node.id).includes(query)
+      );
+      node.el.classList.toggle('hit', hit);
+      node.el.classList.toggle('search-dim', !!query && !hit);
+      if (hit) count++;
+    });
+    statsEl.innerHTML = baseStats + (query ? ' · <b>' + count + '</b> match' + (count === 1 ? '' : 'es') : '');
+  }
+
+  function syncPaperSelection(){
+    legend.querySelectorAll('.pick[data-paper]').forEach(function(el){
+      el.classList.toggle('sel', el.dataset.paper === state.paper);
+    });
+  }
+
+  function applyPaperHighlight(){
+    if (!state.paper) {
+      clearHighlight();
+      paint();
+      return;
+    }
+    const ids = new Set(nodes.filter(function(n){ return n.paper === state.paper; }).map(function(n){ return n.id; }));
+    nodes.forEach(function(n){
+      n.el.classList.toggle('dimmed', !ids.has(n.id));
+      n.el.classList.remove('hot');
+    });
+    edgeEls.forEach(function(item){
+      const touch = ids.has(item.edge.source) || ids.has(item.edge.target);
+      item.path.classList.toggle('dimmed', !touch);
+      item.path.classList.remove('hot');
+    });
+    paint();
+  }
+
+  function focusPaper(paper){
+    const same = state.paper === paper;
+    clearSelection();
+    state.paper = same ? null : paper;
+    applyPaperHighlight();
+    syncPaperSelection();
+  }
+
+  function focusRoot(rootId){
+    const node = byId.get(String(rootId));
+    if (!node) return;
+    const ids = rootChainNodes.get(String(rootId)) || new Set([String(rootId)]);
+    const list = Array.from(ids).map(function(id){ return nodeIndex.get(id); })
+      .filter(function(i){ return i !== undefined; });
+    if (!list.length) { selectNode(node); return; }
+    const xs = list.map(function(i){ return state.positions[i].x; });
+    const ys = list.map(function(i){ return state.positions[i].y; });
+    const pad = 110;
+    const minX = Math.min.apply(null, xs) - pad, maxX = Math.max.apply(null, xs) + pad;
+    const minY = Math.min.apply(null, ys) - pad, maxY = Math.max.apply(null, ys) + pad;
+    const rect = viewportRect();
+    const k = Math.min(Math.max(Math.min(
+      rect.width / Math.max(1, maxX - minX),
+      rect.height / Math.max(1, maxY - minY)), 0.28), 1.6);
+    transform = {
+      k: k,
+      x: rect.left + rect.width / 2 - ((minX + maxX) / 2) * k,
+      y: rect.top + rect.height / 2 - ((minY + maxY) / 2) * k
+    };
+    state.fitted = true;
+    applyTransform();
+    selectNode(node);
+    paint();
+  }
+
+  // ---- 缩放 / 平移 / 拖拽 -----------------------------------------------------
+  svg.addEventListener('wheel', function(event){
+    event.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    const mx = event.clientX - rect.left, my = event.clientY - rect.top;
+    const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    const k = Math.min(6, Math.max(0.08, transform.k * factor));
+    transform.x = mx - (mx - transform.x) * (k / transform.k);
+    transform.y = my - (my - transform.y) * (k / transform.k);
+    transform.k = k;
+    state.fitted = true;
+    applyTransform();
+    paint();
+  }, { passive: false });
+
+  svg.addEventListener('pointerdown', function(event){
+    if (event.target.closest('.node') || event.target.closest('.edge')) return;
+    pan = { x: event.clientX - transform.x, y: event.clientY - transform.y };
+    svg.classList.add('panning');
+    svg.setPointerCapture(event.pointerId);
+  });
+  svg.addEventListener('pointermove', function(event){
+    if (!pan) return;
+    transform.x = event.clientX - pan.x;
+    transform.y = event.clientY - pan.y;
+    state.fitted = true;
+    applyTransform();
+  });
+  const finishPan = function(){ pan = null; svg.classList.remove('panning'); };
+  svg.addEventListener('pointerup', finishPan);
+  svg.addEventListener('pointercancel', finishPan);
+
+  nodeLayer.addEventListener('pointerdown', function(event){
+    const g = event.target.closest('.node');
+    if (!g) return;
+    const node = byId.get(g.dataset.id);
+    if (!node) return;
+    drag = { id: node.id, moved: false };
+    state.alpha = Math.max(state.alpha, 0.25);
+    nodeLayer.setPointerCapture(event.pointerId);
+    selectNode(node);
+  });
+  nodeLayer.addEventListener('pointermove', function(event){
+    if (!drag) return;
+    const rect = svg.getBoundingClientRect();
+    const i = nodeIndex.get(drag.id);
+    state.positions[i] = {
+      x: (event.clientX - rect.left - transform.x) / transform.k,
+      y: (event.clientY - rect.top - transform.y) / transform.k
+    };
+    drag.moved = true;
+    paint();
+  });
+  nodeLayer.addEventListener('pointerup', function(){
+    if (!drag) return;
+    const moved = drag.moved;
+    drag = null;
+    if (moved && !state.running) runLayout(200);
+  });
+  nodeLayer.addEventListener('pointercancel', function(){ drag = null; });
+
+  edgeLayer.addEventListener('click', function(event){
+    const path = event.target.closest('.edge');
+    if (!path) return;
+    const item = edgeEls.find(function(x){ return x.path === path; });
+    if (!item) return;
+    selectEdge(item);
+  });
+
+  // ---- 工具栏 -----------------------------------------------------------------
+  document.getElementById('toggle-labels').addEventListener('change', paint);
+  document.getElementById('fit').addEventListener('click', fit);
+  document.getElementById('reheat').addEventListener('click', function(){
+    clearSelection();
+    state.fitted = false;
+    seedPositions();
+    applyFilters();
+    runLayout(1000);
+    if (answerRoots.length) {
+      layoutRoots();
+      state.fitted = false;
+      runLayout(220);
+    }
+  });
+  document.getElementById('toggle-isolated').addEventListener('change', function(event){
+    clearSelection();
+    applyFilters();
+    if (event.target.checked) {
+      state.alpha = Math.max(state.alpha, 0.5);
+      state.fitted = false;
+      runLayout(240);
+    } else {
+      fit();
+    }
+  });
+  document.getElementById('toggle-delta').addEventListener('change', function(){
+    clearSelection();
+    applyFilters();
+    fit();
+  });
+  document.getElementById('min-degree').addEventListener('change', function(){
+    clearSelection();
+    applyFilters();
+    fit();
+  });
+  function bindFullDomainToggle(){
+    const el = document.getElementById('toggle-full-domain');
+    if (!el) return;
+    el.addEventListener('change', function(){
+      clearSelection();
+      applyFilters();
+      if (answerRoots.length) {
+        layoutRoots();
+        state.fitted = false;
+        runLayout(220);
+      } else {
+        fit();
+      }
+    });
+  }
+  document.getElementById('toggle-panel').addEventListener('click', function(){
+    const wrap = document.getElementById('canvas-wrap');
+    wrap.classList.toggle('no-legend');
+    this.classList.toggle('active', wrap.classList.contains('no-legend'));
+    fit();
+  });
+
+  const searchEl = document.getElementById('search');
+  searchEl.addEventListener('input', function(event){
+    state.query = event.target.value;
+    if (state.query.trim() && (selected || state.paper)) clearSelection();
+    updateSearch();
+  });
+  searchEl.addEventListener('keydown', function(event){
+    if (event.key === 'Escape') {
+      searchEl.value = '';
+      state.query = '';
+      updateSearch();
+      searchEl.blur();
+    }
+    if (event.key === 'Enter') {
+      const first = nodes.find(function(n){ return n.el.classList.contains('hit'); });
+      if (first) {
+        centerOn(first);
+        selectNode(first);
+      }
+    }
+  });
+
+  window.addEventListener('resize', function(){ paint(); });
+
+  // ---- 启动 -------------------------------------------------------------------
+  const questionInfo = answerLayer && answerLayer.question;
+  const pageTitle = questionInfo
+    ? 'Question: ' + (questionInfo.zh || questionInfo.en || '')
+    : (view.title || 'Domain graph');
+  document.getElementById('title').textContent = pageTitle;
+  document.getElementById('title').title = questionInfo
+    ? ((questionInfo.zh || '') + ' / ' + (questionInfo.en || '')) : '';
+  document.title = pageTitle;
+  buildLegend();
+  bindFullDomainToggle();
+  seedPositions();
+  applyFilters();
+  runLayout(1000);
+  if (answerRoots.length) {
+    layoutRoots();
+    state.fitted = false;
+    runLayout(220);
+  }
+  // Ensure the first frame is fitted even when requestAnimationFrame is heavily
+  // throttled (headless screenshots, background tabs).
+  setTimeout(function(){ fit(); }, 1200);
+  setTimeout(function(){
+    const params = new URLSearchParams(location.search);
+    if (params.get('full') === '1') {
+      const toggle = document.getElementById('toggle-full-domain');
+      if (toggle) { toggle.checked = true; toggle.dispatchEvent(new Event('change')); }
+    }
+    if (params.get('select')) {
+      const node = byId.get(params.get('select'));
+      if (node) selectNode(node);
+    }
+  }, 1500);
+
+  // 调试句柄：便于在控制台核对布局/选择状态
+  window.__graphView = {
+    nodes: nodes,
+    edges: edges,
+    state: state,
+    get transform(){ return transform; }
+  };
+})();
+</script>
+</body>
+</html>

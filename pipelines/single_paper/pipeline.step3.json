@@ -1,0 +1,12 @@
+{
+  "pipeline_id": "agent-pipeline-v2.1-step3",
+  "version": "2.1.0",
+  "stages": [
+    {
+      "name": "step3_analyze_reasoning",
+      "plugin": "agent_pipeline_v2.step3:Step3AnalyzeReasoningPlugin",
+      "options": {}
+    }
+  ],
+  "view_adapter": "agent_pipeline_v2.view:V2FormalizationViewAdapter"
+}

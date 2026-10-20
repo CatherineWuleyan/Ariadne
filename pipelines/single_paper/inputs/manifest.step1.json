@@ -1,0 +1,14 @@
+{
+  "artifacts": [
+    {
+      "path": "paper_text.md",
+      "kind": "source.paper_text",
+      "media_type": "text/markdown"
+    },
+    {
+      "path": "claims_final.json",
+      "kind": "source.claims_final",
+      "media_type": "application/json"
+    }
+  ]
+}

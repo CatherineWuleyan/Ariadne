@@ -1,0 +1,77 @@
+{
+  "pipeline_id": "pipeline-merge-question",
+  "version": "0.1.0",
+  "view_adapter": "pipeline_merge_question.question_view:QuestionViewAdapter",
+  "stages": [
+    {
+      "name": "step0_select_scope",
+      "plugin": "pipeline_merge_question.step0:Step0SelectScopePlugin",
+      "options": {
+        "mode": "bootstrap",
+        "scope": {
+          "domain": "aircraft-simulation-design",
+          "selection": [
+            "papers:paper_aec49f8f",
+            "papers:paper_c6f44cb4",
+            "papers:paper_1438825f",
+            "papers:paper_6a2ef68a",
+            "papers:paper_066432fe",
+            "papers:paper_0fc191d1",
+            "papers:paper_755906eb",
+            "papers:paper_26dddb44",
+            "papers:paper_014abc68",
+            "papers:paper_53166ac1",
+            "papers:paper_9c2fb427",
+            "papers:paper_18f90780",
+            "papers:paper_7c211832"
+          ]
+        }
+      }
+    },
+    {
+      "name": "step1_freeze_inputs",
+      "plugin": "pipeline_merge_question.step1:Step1FreezeInputsPlugin",
+      "options": {}
+    },
+    {
+      "name": "step2_retrieve_domain_local",
+      "plugin": "pipeline_merge_question.step2:Step2RetrieveDomainLocalPlugin",
+      "options": {}
+    },
+    {
+      "name": "step3_identify_structures",
+      "plugin": "pipeline_merge_question.step3:Step3IdentifyStructuresPlugin",
+      "options": {
+        "summarize_conclusions": true,
+        "allow_infer": true
+      }
+    },
+    {
+      "name": "step3b_align_domain_spine",
+      "plugin": "pipeline_merge_question.step3b:Step3bAlignDomainSpinePlugin",
+      "options": {}
+    },
+    {
+      "name": "step4_formalize_integration",
+      "plugin": "pipeline_merge_question.step4:Step4FormalizeIntegrationPlugin",
+      "options": {}
+    },
+    {
+      "name": "step5_compile_gaia_ir",
+      "plugin": "pipeline_merge_question.step5:Step5CompileMergedGaiaIRPlugin",
+      "options": {
+        "compiler_plugin": "pipeline_harness.domain.compiler:Gaia05OfficialCompilerTool"
+      }
+    },
+    {
+      "name": "step6_question_answer_layer",
+      "plugin": "pipeline_merge_question.step6_question_layer:Step6QuestionLayerPlugin",
+      "options": {
+        "question_zh": "怎么完成飞机的仿真设计？",
+        "question_en": "How can aircraft simulation design be carried out?",
+        "domain": "aircraft simulation design (conceptual design, flight dynamics, aerodynamic modeling, MDO, HIL validation)",
+        "max_roots": 5
+      }
+    }
+  ]
+}

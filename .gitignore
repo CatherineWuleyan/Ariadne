@@ -1,0 +1,19 @@
+# Credentials and local configuration
+.env
+.env.*
+*.pem
+*.key
+config.local.json
+# Runtime and development artifacts
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.DS_Store
+node_modules/
+outputs/ariadne_runs/
+pipelines/clean_claims/data/
+**/claim_cleaner/data/
+dist/

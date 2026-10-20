@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gaia://schemas/tool-call/1.0.0",
+  "type": "object",
+  "required": ["schema_version", "call_id", "status", "raw", "normalized", "error", "metadata"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "call_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["succeeded", "failed"]},
+    "raw": {},
+    "normalized": {"type": ["object", "null"]},
+    "error": {"type": ["object", "null"]},
+    "metadata": {"type": "object"}
+  }
+}

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gaia-pipeline-harness"
+version = "0.2.0"
+description = "Pipeline-independent local harness kernel"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+gaia = ["gaia-lang==0.5.0a7"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pipeline_harness*"]
+
+[tool.setuptools.package-data]
+pipeline_harness = ["view/*.html", "view/*.b64", "view/*.txt", "domain/schemas/*.json"]
+
+[tool.unittest]
+start-directory = "tests"

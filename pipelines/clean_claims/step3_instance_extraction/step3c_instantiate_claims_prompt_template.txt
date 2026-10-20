@@ -1,0 +1,24 @@
+===INTRO===
+You are given a scientific paper's conclusion, followed by a set of claims from it. For each claim, one or more "instance" segments have been identified elsewhere in the same conclusion that give concrete example content for a general term or phrase used in that claim.
+
+Your task for each claim: rewrite it so it unambiguously talks about the specific instance content, not about the general term in general. For each "targets" phrase given below, either remove the general term and put its instance's "instance_content" in its place, or keep the general term but make it definite and specific (for example, with "the" and an explicit count) so it can only refer to the substituted items and not to the category in general. Do not write it as a bare general term immediately followed by a parenthetical list of the specific items - that form still reads as a general claim merely illustrated by examples, not a claim specifically and only about those items, and defeats the purpose of this rewrite.
+
+Reformat the instance's content as needed to fit naturally (for example, drop wrapping parentheses that made sense for a parenthetical aside but not for this kind of substitution, and join a list of items with commas and "and" as an ordinary list), and make whatever small additional wording changes are needed near each substitution to keep the sentence clear and natural. Do not change anything away from the substitution sites - the rest of the claim's wording, structure, and meaning must stay exactly as it was.
+
+===UNCERTAIN_CAVEAT===
+Some instances below are marked as only possibly exemplifying a claim's general term, not confirmed. If, on closer reading, a claim does not actually contain a term that one of its listed instances exemplifies, output that claim completely unchanged - not a single character different.
+
+===CONCLUSION_LEADIN===
+Here is the conclusion this batch of claims comes from:
+
+===CLAIM_LEADIN===
+Claim number {number}:
+
+===CERTAIN_LEADIN===
+The following instance(s) definitely exemplify a general term used in this claim. Each entry gives the instance's number, its "targets" (the exact text in the claim that names the general term), and the "instance_content" to substitute in its place:
+
+===UNCERTAIN_LEADIN===
+The following instance(s) may exemplify a general term used in this claim, but this is not confirmed. Each entry gives the instance's number, its "targets" (the exact text in the claim that names the general term), and the "instance_content" to substitute in its place:
+
+===OUTPUT_FORMAT===
+Output format: a JSON object of the exact form {"results": [{"number": <claim number>, "content": <resulting content>}, ...]} with exactly one entry per claim above, in the same order - no additions, omissions, or duplicates. Output nothing else: no explanation, no markdown code fences, no extra text before or after the JSON.

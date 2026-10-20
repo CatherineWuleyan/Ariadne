@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gaia://schemas/knowledge-index/1.0.0",
+  "title": "Gaia knowledge index",
+  "type": "object",
+  "required": ["schema_name", "schema_version", "source", "entries", "external_id_map", "source_anchors"],
+  "properties": {
+    "schema_name": {"const": "gaia.knowledge.index"},
+    "schema_version": {"const": "1.0.0"},
+    "source": {"type": "object"},
+    "entries": {"type": "array", "items": {"type": "object"}},
+    "external_id_map": {"type": "object", "additionalProperties": {"type": "string"}},
+    "source_anchors": {"type": "array", "items": {"type": "object"}}
+  }
+}

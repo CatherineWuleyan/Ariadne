@@ -1,0 +1,19 @@
+===INTRO===
+You are given a scientific paper's conclusion, followed by a set of "example/evidence" relations from it. Each relation says that one claim (an evidence or example claim) is an example or evidence for one or more other "target" claims. For some of these targets, an "instantiated" version of that same target also exists - a version where a general term has been replaced by concrete, specific content that a separate "instance" segment provided.
+
+Your task: for each such target that has both a general version and an instantiated version, decide which one the evidence/example claim connects to more directly. If the evidence/example claim itself talks about the same specific items that appear in the target's instantiated version, connecting to the instantiated version is more direct. If the evidence/example claim talks about the general term rather than those specific items, connecting to the general version is more direct. If you cannot tell which is more direct, choose the general version.
+
+===CONCLUSION_LEADIN===
+Here is the conclusion this batch of relations comes from:
+
+===RELATION_LEADIN===
+Relation for claim {m} (the evidence/example claim):
+
+===CLAIM_M_LEADIN===
+Claim {m} itself:
+
+===TARGET_CHOICE_LEADIN===
+Target claim {n} has both a general version and an instantiated version - decide which one claim {m} connects to more directly:
+
+===OUTPUT_FORMAT===
+Output format: a JSON object of the exact form {"results": [{"m": <claim number>, "decisions": [{"n": <target claim number>, "use_instantiated": true or false}, ...]}, ...]} with exactly one entry per relation listed above (matching "m"), and each entry's "decisions" list having exactly one entry per target choice listed for that relation (matching "n") - no additions, omissions, or duplicates at either level. Output nothing else: no explanation, no markdown code fences, no extra text before or after the JSON.

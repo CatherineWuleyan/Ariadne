@@ -1,0 +1,12 @@
+{
+  "artifacts": [
+    {
+      "path": "source.txt",
+      "kind": "input.synthetic",
+      "media_type": "text/plain",
+      "metadata": {
+        "fixture": true
+      }
+    }
+  ]
+}

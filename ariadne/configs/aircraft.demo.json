@@ -1,0 +1,10 @@
+{
+  "name": "aircraft-simulation-design",
+  "question_zh": "怎么完成飞机的仿真设计？",
+  "question_en": "How can aircraft simulation design be carried out?",
+  "domain": "aircraft simulation design (conceptual design, flight dynamics, aerodynamic modeling, MDO, HIL validation)",
+  "view": "outputs/aircraft/final/domain_view_typed.json",
+  "edge_roles": "outputs/aircraft/final/edge_roles_typed.json",
+  "fixture": "outputs/aircraft/final/answer_fixture.json",
+  "max_roots": 5
+}

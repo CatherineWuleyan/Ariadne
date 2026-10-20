@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>跨论文推理关系图</title>
+<style>
+  :root{color-scheme:light;--ink:#101828;--muted:#667085;--line:#d0d5dd;--paper:#f8f9fb;--accent:#175cd3;}
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);background:var(--paper);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+  header{display:flex;gap:14px;align-items:center;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+  h1{font-size:16px;margin:0 auto 0 0;font-weight:750}
+  .stat{color:var(--muted);font-size:12px}
+  .stat b{color:var(--ink)}
+  button,select,input{border:1px solid var(--line);border-radius:7px;padding:6px 9px;background:#fff;font:inherit;color:inherit}
+  button{cursor:pointer}
+  button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:calc(100vh - 52px)}
+  /* 没有选中任何节点时右栏收起，把画布让给图 */
+  main.collapsed{grid-template-columns:minmax(0,1fr) 0}
+  main.collapsed aside{display:none}
+  aside{position:relative}
+  #detail-close{position:absolute;top:10px;right:10px;padding:3px 8px;font-size:12px;line-height:1.2}
+  #canvas-wrap{position:relative;overflow:hidden}
+  svg{display:block;width:100%;height:calc(100vh - 52px);touch-action:none;cursor:grab}
+  svg.panning{cursor:grabbing}
+  aside{background:#fff;border-left:1px solid var(--line);padding:14px;overflow:auto;height:calc(100vh - 52px)}
+  .legend{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;max-width:330px}
+  .legend .row{display:flex;align-items:center;gap:7px;margin:4px 0;color:#475467}
+  .swatch{width:22px;height:3px;border-radius:2px;flex:none}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .edge{fill:none;stroke:#98a2b3;stroke-width:0.8}
+  .edge.entail{stroke:#175cd3}
+  .edge.explain{stroke:#b54708}
+  .edge.identity{stroke:#067647;stroke-dasharray:6 4}
+  .edge.joint{stroke:#6941c6;stroke-dasharray:2 4}
+  .edge.conflict{stroke:#d92d20;stroke-width:1.5}
+  .edge.analogy{stroke:#0e9384;stroke-dasharray:8 4}
+  .edge.definition{stroke:#98a2b3;stroke-width:0.7;stroke-dasharray:1 3}
+  .edge.derivation{stroke:#7f56d9;stroke-width:1.7}
+  .edge.special_case{stroke:#7f56d9;stroke-width:1.5;stroke-dasharray:9 3 2 3}
+  .edge.support{stroke:#12b76a;stroke-width:1.1;stroke-dasharray:5 4}
+  .node.theory circle{stroke:#101828;stroke-width:2.4}
+  .node.theory .node-code{font-size:12px;font-weight:800}
+  .edge.dimmed{opacity:.08}
+  .edge.hot{stroke-width:2.6;opacity:1}
+  .edge-label{font-size:9.5px;fill:#475467;paint-order:stroke;stroke:#fff;stroke-width:3.2px;pointer-events:none}
+  .node circle{stroke:#fff;stroke-width:1.6;cursor:pointer}
+  .node text{font-size:10.5px;fill:var(--ink);text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3.4px}
+  .node .node-code{font-size:11px;font-weight:750}
+  .node .node-sub{font-size:9px;fill:#475467}
+  .node.dimmed{opacity:.16}
+  .node.hot circle{stroke:var(--ink);stroke-width:2.4}
+  .node.hidden{display:none}
+  h2{font-size:14px;margin:0 0 6px}
+  /* 公式排版：分式用上下两行，根式用上划线，行内数学不去动基线 */
+  .math-inline{white-space:nowrap}
+  .math-display{display:block;margin:8px 0;padding:6px 8px;background:#f9fafb;border:1px solid #eaecf0;border-radius:6px;overflow-x:auto;text-align:center}
+  .mfrac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px}
+  .mfrac>.mnum{border-bottom:1px solid currentColor;padding:0 3px}
+  .mfrac>.mden{padding:0 3px}
+  .msqrt>.mrad{border-top:1px solid currentColor;padding:0 2px}
+  .macc{position:relative}
+  .maccmark{position:absolute;left:50%;top:-.62em;transform:translateX(-50%);font-size:.85em}
+  .mcases{display:inline-flex;flex-direction:column;vertical-align:middle;margin-left:4px}
+  .mcases>.mrow>.mcell{padding:0 6px}
+  aside code{background:#f2f4f7;border-radius:4px;padding:1px 4px;font-size:12px}
+  .mcmd{color:#b42318;font-family:ui-monospace,monospace;font-size:.9em}
+  .chain{font-size:12px;line-height:1.7;padding:1px 0;border-left:2px solid #eaecf0;margin-left:2px}
+  .chain .via{color:#7f56d9;font-weight:600}
+  .chain .cycles{color:#b54708}
+  .chain .endmark{color:#101828;font-size:10.5px}
+  .section-title{font-weight:700;margin:12px 0 5px;font-size:12px;color:#344054}
+  .badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#f2f4f7;color:#475467;font-size:11px;margin:0 4px 4px 0}
+  .kv{display:grid;grid-template-columns:74px minmax(0,1fr);gap:6px;margin:5px 0;font-size:12.5px}
+  .kv span:first-child{color:var(--muted)}
+  .en{color:#475467;font-size:12px;background:#f9fafb;border:1px solid #eaecf0;border-radius:7px;padding:8px;margin-top:8px;white-space:pre-wrap}
+  .empty{color:var(--muted)}
+  .hint{color:var(--muted);font-size:12px;margin-top:10px}
+  label.chk{display:flex;gap:6px;align-items:center;color:#475467;font-size:12px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">跨论文推理关系图</h1>
+  <span class="stat" id="stats"></span>
+  <label class="chk"><input type="checkbox" id="toggle-isolated"> 显示孤立节点</label>
+  <label class="chk"><input type="checkbox" id="toggle-derivation"> 显示推导块与定义</label>
+  <label class="chk"><input type="checkbox" id="only-theory"> 只看理论层</label>
+  <label class="chk"><input type="checkbox" id="same-symmetry" title="跨反演对称性类别的关系强度远低于同材料内的关系"> 隐藏跨对称性类别的边</label>
+  <label class="chk">最小度数
+    <select id="min-degree">
+      <option value="1" selected>1（全部）</option>
+      <option value="2">2</option>
+      <option value="3">3（主干）</option>
+      <option value="5">5</option>
+      <option value="8">8（骨架）</option>
+    </select>
+  </label>
+  <label class="chk"><input type="checkbox" id="toggle-labels" checked> 显示标签</label>
+  <button id="reheat" type="button">重新布局</button>
+  <button id="fit" type="button">适应画布</button>
+</header>
+<main>
+  <section id="canvas-wrap">
+    <svg id="graph"></svg>
+    <div class="legend" id="legend"></div>
+  </section>
+  <aside id="detail"><button id="detail-close" type="button" title="收起">收起</button><p class="empty">点击节点或连线查看详情。</p>
+    <p class="hint">布局：弹簧–电荷力导向（Fruchterman–Reingold 模型，即 d3-force 的 many-body + link + center + collide 组合）。任意两个节点默认相互排斥，存在跨论文关系的节点对之间为吸引力，迭代至稳定后停止。节点半径由连线数量（度）决定。</p>
+  </aside>
+</main>
+<script>
+// ---- 轻量 LaTeX + Markdown 渲染（自包含，无外部依赖）----------------------
+// 语料实测：449/645 条 claim 含数学，共 91 个命令，只有 cases / pmatrix 两个环境。
+// 自包含的 viewer 不能拉 KaTeX（要带几十个字体文件），所以针对实际用到的子集实现。
+// 解析用「共享游标 + 显式递归」：早期版本用共享字符串缓冲区递归，子表达式会覆盖
+// 外层缓冲，导致 \frac 丢分母、上标之后的内容整段消失。
+const GREEK = {
+  alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',
+  theta:'θ',vartheta:'ϑ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',varpi:'ϖ',
+  rho:'ρ',sigma:'σ',tau:'τ',upsilon:'υ',phi:'φ',varphi:'φ',chi:'χ',psi:'ψ',omega:'ω',
+  Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Xi:'Ξ',Pi:'Π',Sigma:'Σ',Upsilon:'Υ',Phi:'Φ',
+  Psi:'Ψ',Omega:'Ω',
+};
+const SYMBOLS = {
+  parallel:'∥',perp:'⊥',approx:'≈',equiv:'≡',sim:'∼',simeq:'≃',propto:'∝',pm:'±',mp:'∓',
+  times:'×',cdot:'·',div:'÷',leq:'≤',le:'≤',geq:'≥',ge:'≥',neq:'≠',ll:'≪',gg:'≫',
+  in:'∈',notin:'∉',subset:'⊂',cup:'∪',cap:'∩',infty:'∞',partial:'∂',nabla:'∇',
+  sum:'∑',prod:'∏',int:'∫',circ:'∘',bullet:'•',langle:'⟨',rangle:'⟩',
+  lceil:'⌈',rceil:'⌉',lfloor:'⌊',rfloor:'⌋',to:'→',rightarrow:'→',
+  leftarrow:'←',Rightarrow:'⇒',Leftrightarrow:'⇔',ldots:'…',cdots:'⋯',dots:'…',
+  hbar:'ℏ',ell:'ℓ'
+};
+const INVISIBLE = new Set(['left','right','bigl','bigr','Bigl','Bigr','big','Big','bigg','Bigg',
+  'displaystyle','textstyle','limits','nolimits','!',' ','mathrm','text','mathit','mathbf',
+  'boldsymbol','operatorname','mathsf','mathtt','mathnormal','quad','qquad',';',':']);
+const OPERATORS = { exp:'exp',ln:'ln',log:'log',sin:'sin',cos:'cos',tan:'tan',csc:'csc',
+  min:'min',max:'max',det:'det',Re:'Re',Im:'Im' };
+const ACCENTS = { hat:'^', bar:'‾', tilde:'~', vec:'→', dot:'˙', ddot:'¨', overline:'‾' };
+
+function renderMath(src) {
+  const s = String(src);
+  let i = 0;
+
+  function group() {
+    if (s[i] !== '{') return atom();
+    i++;
+    const out = seq('}');
+    if (s[i] === '}') i++;
+    return out;
+  }
+
+  function atom() {
+    if (i >= s.length) return '';
+    const c = s[i];
+    if (c === '{') return group();
+    if (c === '\\') {
+      if (s[i + 1] === '\\') { i += 2; return '<br>'; }
+      const m = /^\\([A-Za-z]+)/.exec(s.slice(i));
+      if (m) { i += m[0].length; return command(m[1]); }
+      i += 2;
+      return '';
+    }
+    i++;
+    return escapeHtml(c);
+  }
+
+  function command(name) {
+    if (INVISIBLE.has(name)) return '';
+    if (name === 'frac' || name === 'dfrac' || name === 'tfrac') {
+      const a = group(), b = group();
+      return '<span class="mfrac"><span class="mnum">' + a + '</span><span class="mden">' + b + '</span></span>';
+    }
+    if (name === 'sqrt') {
+      return '<span class="msqrt">√<span class="mrad">' + group() + '</span></span>';
+    }
+    if (name === 'begin') {
+      group();
+      const rows = [];
+      let row = [], cell = '';
+      while (i < s.length) {
+        if (s.startsWith('\\end', i)) { i = s.indexOf('}', i); if (i >= 0) i++; break; }
+        if (s.startsWith('\\\\', i)) { i += 2; row.push(cell); rows.push(row); row = []; cell = ''; continue; }
+        if (s[i] === '&') { i++; row.push(cell); cell = ''; continue; }
+        if (s[i] === '^' || s[i] === '_') {
+          const tag = s[i] === '^' ? 'sup' : 'sub';
+          i++;
+          cell += '<' + tag + '>' + group() + '</' + tag + '>';
+          continue;
+        }
+        cell += atom();
+      }
+      row.push(cell); rows.push(row);
+      return '<span class="mcases">' + rows.filter(function (r) { return r.join('').trim(); }).map(function (r) {
+        return '<span class="mrow">' + r.map(function (cc) { return '<span class="mcell">' + cc + '</span>'; }).join('') + '</span>';
+      }).join('') + '</span>';
+    }
+    if (ACCENTS[name]) {
+      return '<span class="macc">' + group() + '<span class="maccmark">' + ACCENTS[name] + '</span></span>';
+    }
+    if (GREEK[name]) return GREEK[name];
+    if (SYMBOLS[name]) return SYMBOLS[name];
+    if (OPERATORS[name]) return '<span class="mop">' + OPERATORS[name] + '</span>';
+    return '<span class="mcmd">' + escapeHtml(name) + '</span>';
+  }
+
+  function seq(stop) {
+    let out = '';
+    while (i < s.length && !(stop && s[i] === stop)) {
+      if (s[i] === '^' || s[i] === '_') {
+        const tag = s[i] === '^' ? 'sup' : 'sub';
+        i++;
+        out += '<' + tag + '>' + group() + '</' + tag + '>';
+        continue;
+      }
+      out += atom();
+    }
+    return out;
+  }
+
+  return seq(null);
+}
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function renderRich(value) {
+  const raw = String(value == null ? '' : value);
+  const parts = [];
+  const re = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g;
+  let last = 0, m;
+  while ((m = re.exec(raw)) !== null) {
+    parts.push({ text: raw.slice(last, m.index), math: false });
+    parts.push({ text: m[1] != null ? m[1] : m[2], math: true, display: m[1] != null });
+    last = m.index + m[0].length;
+  }
+  parts.push({ text: raw.slice(last), math: false });
+  return parts.map(function (part) {
+    if (part.math) {
+      const body = renderMath(part.text);
+      return part.display ? '<div class="math-display">' + body + '</div>'
+                          : '<span class="math-inline">' + body + '</span>';
+    }
+    let t = escapeHtml(part.text);
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
+  }).join('');
+}
+</script>
+<script id="view-data" type="application/json">__VIEW_DATA__</script>
+<script>
+(function(){
+  const view = JSON.parse(document.getElementById('view-data').textContent);
+  const svg = document.getElementById('graph');
+  const detail = document.getElementById('detail');
+  const mainEl = document.querySelector('main');
+  const collapse = () => { mainEl.classList.add('collapsed'); paint(); };
+  const expand = () => { mainEl.classList.remove('collapsed'); };
+  document.getElementById('detail-close').addEventListener('click', collapse);
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // ---- 数据准备 -----------------------------------------------------------
+  const nodes = view.nodes.map(n => Object.assign({}, n, {
+    degree: (n.details && n.details.degree) || 0,
+    paper: (n.details && n.details.paper) || '?',
+    connected: !!(n.details && n.details.connected),
+    paperZh: (n.details && n.details.paper_title_zh) || (n.details && n.details.paper) || '',
+    english: (n.details && n.details.english) || n.summary || '',
+    nodeClass: (n.details && n.details.node_class) || 'claim',
+    code: (n.details && n.details.code) || n.label,
+    labelZh: (n.details && n.details.label_zh) || n.summary || '',
+    definitions: (n.details && n.details.definitions) || [],
+    theoryKind: (n.details && n.details.theory_kind) || null,
+    declaredKind: (n.details && n.details.declared_kind) || null,
+    condition: (n.details && n.details.condition) || '',
+    system: (n.details && n.details.system) || '',
+    symmetry: (n.details && n.details.symmetry) || '',
+    isTheory: (n.details && n.details.node_class) === 'theory',
+  }));
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const edges = view.edges.map(e => Object.assign({}, e, {
+    family: e.family || 'entail',
+    relation: e.label || e.semantic_type || '',
+    // 有向 = 前提/结论可分（推导、支撑、弱点边）；无向 = 算子操作数之间的对称关系
+    directed: !!(e.details && e.details.directed),
+    crossSym: !!(e.details && e.details.cross_symmetry_class),
+    crossMat: !!(e.details && e.details.cross_material),
+  }));
+
+  // 节点半径由度决定：r = 5 + 3.2*sqrt(deg)
+  // 半径 ∝ √度，但系数收小：原系数下度 37 的枢纽半径达 26px，
+  // 237 节点的图上光圆之间就重叠 147 对。
+  const radius = d => 4 + 2.4 * Math.sqrt(Math.max(0, d));
+  // 理论层不按度数定大小，按它在推导链上的层级：公理 > 主方程 > 定理 > 合成判据
+  function theoryRadius(node){
+    if (node.theoryKind === 'axiom') return 16;
+    return {master:15, theorem:12, criterion:14}[node.declaredKind] || 12;
+  }
+  nodes.forEach((n, i) => { n.r = n.isTheory ? theoryRadius(n) : radius(n.degree); n.index = i; });
+
+  // 理论层过滤用：与理论节点直接相连的证据节点
+  const theoryNeighbours = new Set();
+  edges.forEach(e => {
+    if (e.family === 'support' || e.family === 'derivation') { theoryNeighbours.add(e.source); theoryNeighbours.add(e.target); }
+  });
+  const adjacency = new Map(nodes.map(n => [n.id, new Set()]));
+  edges.forEach(e => {
+    if (adjacency.has(e.source)) adjacency.get(e.source).add(e.target);
+    if (adjacency.has(e.target)) adjacency.get(e.target).add(e.source);
+  });
+
+  // 纸张配色：按 package 名称散列到固定色板
+  const palette = ['#175cd3','#b54708','#067647','#6941c6','#c11574','#0e9384','#b42318','#3538cd','#b93815','#175cd3'];
+  const paperColor = new Map();
+  [...new Set(nodes.map(n => n.paper))].sort().forEach((p, i) => paperColor.set(p, palette[i % palette.length]));
+
+  // ---- 视图层 -------------------------------------------------------------
+  const defs = document.createElementNS(NS, 'defs');
+  svg.appendChild(defs);
+  const root = document.createElementNS(NS, 'g');
+  svg.appendChild(root);
+  const edgeLayer = document.createElementNS(NS, 'g');
+  const labelLayer = document.createElementNS(NS, 'g');
+  const nodeLayer = document.createElementNS(NS, 'g');
+  root.append(edgeLayer, labelLayer, nodeLayer);
+
+  const edgeEls = edges.map(e => {
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('class', 'edge ' + e.family);
+    edgeLayer.appendChild(path);
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('class', 'edge-label');
+    text.textContent = e.relation;
+    labelLayer.appendChild(text);
+    return {edge: e, path, text};
+  });
+
+  const nodeEls = nodes.map(n => {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'node');
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('r', n.r);
+    c.setAttribute('fill', n.isTheory ? theoryColor(n) : (paperColor.get(n.paper) || '#667085'));
+    const tip = document.createElementNS(NS, 'title');
+    tip.textContent = `${n.code} · ${n.labelZh}\n${n.english}`;
+    g.appendChild(tip);
+    g.appendChild(c);
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('class', 'node-code');
+    t.setAttribute('y', n.r + 12);
+    t.textContent = n.code;
+    g.appendChild(t);
+    const t2 = document.createElementNS(NS, 'text');
+    t2.setAttribute('class', 'node-sub');
+    t2.setAttribute('y', n.r + 23);
+    t2.textContent = shortLabel(n.labelZh, 20);
+    g.appendChild(t2);
+    nodeLayer.appendChild(g);
+    n.el = g; n.textEl = t; n.subEl = t2; n.circleEl = c;
+    return g;
+  });
+
+  // 颜色/大小用"手写层级"（master/theorem/criterion）表达视觉层次，
+  // 而"公理 / 终点"这类身份由结构算出（role），两者分开：层级是画法，身份是事实。
+  const ROLE = {axiom:'#101828', derived:null, terminal:'#b54708'};
+  function theoryColor(node){
+    if (node.theoryKind === 'axiom') return '#101828';
+    return {master:'#7f56d9', theorem:'#3538cd', criterion:'#b54708'}[node.declaredKind] || '#344054';
+  }
+  function shortLabel(value, limit){
+    const max = limit || 14;
+    const s = String(value || '');
+    return s.length > max ? s.slice(0, max - 1) + '…' : s;
+  }
+
+  // ---- 力导向布局（Fruchterman–Reingold / d3-force 模型） ------------------
+  const W = () => svg.clientWidth || 1000;
+  const H = () => svg.clientHeight || 700;
+  const state = {positions: [], vx: [], vy: [], alpha: 1, running: false, tick: 0};
+
+  function seedPositions(){
+    const c = {x: W() / 2, y: H() / 2};
+    const R = Math.min(W(), H()) * 0.36;
+    const n = Math.max(1, nodes.length);
+    state.positions = nodes.map((node, i) => {
+      // 黄金角螺旋：确定性初始位置，避免每次打开都不同
+      const a = i * 2.399963229728653;
+      const r = R * Math.sqrt((i + 0.5) / n);
+      return {x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r};
+    });
+    state.vx = new Array(nodes.length).fill(0);
+    state.vy = new Array(nodes.length).fill(0);
+    state.alpha = 1;
+  }
+
+  function simulate(){
+    const n = nodes.length;
+    if (!n) return;
+    // k = 理想边长（Fruchterman–Reingold 的 k = sqrt(area / n)）。
+    // 系数从 0.62 收到 0.38：上一版节点铺得太开，画布上根本看不清，
+    // 而力导向的可读性主要取决于这个理想边长，而不是斥力本身。
+    const area = W() * H();
+    const k = Math.sqrt(area / Math.max(1, n)) * 0.62;
+    const centre = {x: W() / 2, y: H() / 2};
+    const maxStep = 6 + 26 * state.alpha;
+    const fx = new Array(n).fill(0), fy = new Array(n).fill(0);
+    // 隐藏的孤立节点只有斥力、没有弹簧，会把包围盒撑大几个数量级，把真正
+    // 连通的节点挤到看不见。它们照旧参与布局（这样切换显示时不是一堆重叠
+    // 的点），但斥力被大幅削弱。
+    const hidden = nodes.map(node => node.el.classList.contains('hidden'));
+
+    // 1) 斥力：任意两个节点之间（未连线时的主要作用）
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        let dx = state.positions[i].x - state.positions[j].x;
+        let dy = state.positions[i].y - state.positions[j].y;
+        let d2 = dx * dx + dy * dy;
+        if (d2 < 1e-6) { dx = (i - j) * 0.7 + 0.3; dy = 0.4; d2 = dx * dx + dy * dy; }
+        const d = Math.sqrt(d2);
+        // 连线的节点对改用弹簧；其余保持库仑斥力
+        const linked = adjacency.get(nodes[i].id).has(nodes[j].id);
+        if (linked) continue;
+        // 斥力再额外减半：默认库仑斥力在这个规模上把图撕得太散。
+        // 隐藏节点参与的斥力再乘一个很小的权重。
+        const hid = hidden[i] && hidden[j] ? 0.12 : (hidden[i] || hidden[j] ? 0.35 : 1);
+        const rep = (k * k) / d * 12.0 * hid;
+        const ux = dx / d, uy = dy / d;
+        fx[i] += ux * rep; fy[i] += uy * rep;
+        fx[j] -= ux * rep; fy[j] -= uy * rep;
+      }
+    }
+    // 2) 引力：只作用于有关系的节点对（弹簧）
+    const index = new Map(nodes.map((node, i) => [node.id, i]));
+    for (const e of edges) {
+      const a = index.get(e.source), b = index.get(e.target);
+      if (a === undefined || b === undefined) continue;
+      let dx = state.positions[a].x - state.positions[b].x;
+      let dy = state.positions[a].y - state.positions[b].y;
+      let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      const desired = k * 0.85;
+      const att = (d * d) / k * 0.85 * (1 - Math.min(1, desired / d) * 0.35);
+      const ux = dx / d, uy = dy / d;
+      fx[a] -= ux * att; fy[a] -= uy * att;
+      fx[b] += ux * att; fy[b] += uy * att;
+    }
+    // 3) 向心引力 + 4) 碰撞分离（等价于 d3-force 的 forceCenter + forceCollide）。
+    //    向心项**不能**乘 alpha：d3-force 的 forceCenter 也不随 alpha 衰减。
+    //    乘了 alpha 会在冷却到 0 时把引力一起关掉，只剩斥力，于是互不连通的
+    //    节点永远向外漂开 —— 这正是"节点离得太远看不见"的根因。
+    for (let i = 0; i < n; i++) {
+      const p = state.positions[i];
+      fx[i] += (centre.x - p.x) * 0.02;
+      fy[i] += (centre.y - p.y) * 0.02;
+      for (let j = i + 1; j < n; j++) {
+        // 隐藏节点之间的碰撞也要跳过：只削弱斥力而保留碰撞，会让它们塌缩成
+        // 中心一团再把这个团里的可见节点挤出去，比不处理更糟。
+        if (hidden[i] || hidden[j]) continue;
+        const q = state.positions[j];
+        let dx = q.x - p.x, dy = q.y - p.y;
+        let d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const want = nodes[i].r + nodes[j].r + 18;
+        if (d < want) {
+          // 碰撞要压过向心项，否则冷却后节点会互相压住：实测 0.5 的推力下
+          // 最近邻距离只有 21px，而两节点半径之和已接近 30px。
+          const push = (want - d) / d * 1.6;
+          fx[i] -= dx * push; fy[i] -= dy * push;
+          fx[j] += dx * push; fy[j] += dy * push;
+        }
+      }
+    }
+    // 5) 位移限幅（温度冷却）
+    for (let i = 0; i < n; i++) {
+      const mag = Math.hypot(fx[i], fy[i]) || 1;
+      const step = Math.min(mag, maxStep) / mag;
+      state.positions[i].x += fx[i] * step;
+      state.positions[i].y += fy[i] * step;
+    }
+    // 5) 位置松弛：直接按重叠量把圆分开，而不是给一个力。
+    //    力式的碰撞会被斥力和向心力稀释 —— 中间枢纽节点密、向心力把它们压在一起，
+    //    单靠加大斥力只会把整张图摊大，中间照旧重叠。松弛是位置约束，每帧结束时
+    //    保证"圆心距 ≥ 半径和"，与力平衡无关。
+    for (let pass = 0; pass < 3; pass++) {
+      let moved = 0;
+      for (let i = 0; i < n; i++) {
+        if (hidden[i]) continue;
+        for (let j = i + 1; j < n; j++) {
+          if (hidden[j]) continue;
+          const a = state.positions[i], b = state.positions[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          let d = Math.sqrt(dx * dx + dy * dy);
+          const want = nodes[i].r + nodes[j].r + 18;
+          if (d >= want) continue;
+          if (d < 0.01) { dx = (i - j) * 0.7 + 0.3; dy = 0.4; d = Math.sqrt(dx * dx + dy * dy); }
+          const shift = (want - d) / d * 0.5;
+          a.x -= dx * shift; a.y -= dy * shift;
+          b.x += dx * shift; b.y += dy * shift;
+          moved++;
+        }
+      }
+      if (!moved) break;
+    }
+    state.alpha = Math.max(0, state.alpha - 0.0125);
+  }
+
+  function paint(){
+    for (const item of edgeEls) {
+      const a = nodes.findIndex(n => n.id === item.edge.source);
+      const b = nodes.findIndex(n => n.id === item.edge.target);
+      if (a < 0 || b < 0) { item.path.setAttribute('d', ''); item.text.textContent = ''; continue; }
+      const p = state.positions[a], q = state.positions[b];
+      const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+      // 轻微弯曲，避免多重边重叠
+      const bend = ((a * 31 + b * 17) % 11 - 5) * 0.9;
+      const nx = -(q.y - p.y), ny = (q.x - p.x);
+      const nl = Math.hypot(nx, ny) || 1;
+      item.path.setAttribute('d', `M ${p.x} ${p.y} Q ${mx + nx / nl * bend} ${my + ny / nl * bend} ${q.x} ${q.y}`);
+      if (!item.edge.shown) { item.path.setAttribute('d', ''); item.text.style.display = 'none'; continue; }
+      const visible = !nodes[a].el.classList.contains('hidden') && !nodes[b].el.classList.contains('hidden');
+      // 默认不画边上的文字：几百条边的关系名叠在一起比节点标签更糊。
+      // 只有选中某个节点时，才显示与它直接相连的边是什么推理类型。
+      const incident = !!selected && (item.edge.source === selected || item.edge.target === selected);
+      item.text.style.display = (visible && incident) ? '' : 'none';
+      if (!visible) { item.text.textContent = ''; continue; }
+      if (!incident) { continue; }
+      item.text.textContent = item.edge.relation;
+      item.text.setAttribute('x', mx + nx / nl * bend * 0.6);
+      item.text.setAttribute('y', my + ny / nl * bend * 0.6 - 3);
+    }
+    // 标签按密度分级显示：165+ 个节点的中文标签全画出来会互相压住，所以只有
+    // 缩放足够大、或该节点度足够高（结构上的枢纽）时才常显，其余靠悬停/选中看。
+    const labelsOn = document.getElementById('toggle-labels').checked;
+    nodes.forEach((node, i) => {
+      const p = state.positions[i];
+      node.el.setAttribute('transform', `translate(${p.x},${p.y})`);
+      // 标签按缩放分级（LOD）：全局视图下只给枢纽节点标号，放大后逐步展开。
+      // 之前"度≥4 就常显"在 395 节点时等于 180 个标签同时画，中间必然糊成一片；
+      // 标签宽度约 14 个汉字，比圆大一个量级，所以决定观感的是标签而不是圆。
+      const important = node.degree >= 8 || node.id === selected || node.isTheory;
+      const showCode = labelsOn && (transform.k >= 1.4 || important);
+      node.textEl.style.display = showCode ? '' : 'none';
+      // 中文全文只在放得更大时作第二行
+      node.subEl.style.display = (showCode && transform.k >= 2.2) ? '' : 'none';
+    });
+  }
+
+  function runLayout(ticks){
+    state.running = true;
+    let i = 0;
+    const budget = ticks || 420;
+    function frame(){
+      const batch = 6;
+      for (let b = 0; b < batch && i < budget && state.alpha > 0.001; b++, i++) simulate();
+      paint();
+      if (i < budget && state.alpha > 0.001) requestAnimationFrame(frame);
+      else { state.running = false; if (!state.fitted) fit(); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- 缩放 / 平移 / 拖拽 -------------------------------------------------
+  let transform = {x: 0, y: 0, k: 1};
+  let fitted = false;
+  function applyTransform(){ root.setAttribute('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`); }
+  function fit(){
+    if (!nodes.length) return;
+    // 只用可见节点定包围盒：默认视图隐藏的孤立节点不该决定缩放比例，
+    // 否则它们把包围盒放大后，连通的节点被缩到几乎看不见。
+    const visible = nodes.map((node, i) => (node.el.classList.contains('hidden') ? -1 : i))
+      .filter(i => i >= 0);
+    const use = visible.length ? visible : nodes.map((_, i) => i);
+    // 不再要求画布装下整张图。全量图有 600+ 节点、包围盒上万个像素，装下整张图会把
+    // 缩放压到 0.1 以下 —— 节点只剩一两个像素，标签全部消失，等于什么都没显示。
+    // 改为只框住"中心区"：按到质心的距离取较近的一批节点，并给缩放设下限截断。
+    // 其余部分靠拖动/滚轮查看，这是这类规模图的标准做法。
+    const cx = use.reduce((s, i) => s + state.positions[i].x, 0) / use.length;
+    const cy = use.reduce((s, i) => s + state.positions[i].y, 0) / use.length;
+    const dists = use
+      .map(i => Math.hypot(state.positions[i].x - cx, state.positions[i].y - cy))
+      .sort((a, b) => a - b);
+    const cutoff = dists[Math.min(dists.length - 1, Math.floor(dists.length * 0.4))] || 1;
+    const core = use.filter(i => Math.hypot(state.positions[i].x - cx, state.positions[i].y - cy) <= cutoff);
+    const framed = core.length >= 8 ? core : use;
+    const xs = framed.map(i => state.positions[i].x), ys = framed.map(i => state.positions[i].y);
+    const pad = 40;
+    const minX = Math.min(...xs) - pad, maxX = Math.max(...xs) + pad;
+    const minY = Math.min(...ys) - pad, maxY = Math.max(...ys) + pad;
+    const k = Math.min(Math.max(Math.min(W() / (maxX - minX), H() / (maxY - minY)), 0.45), 3.6);
+    transform = {k, x: -minX * k + (W() - (maxX - minX) * k) / 2, y: -minY * k + (H() - (maxY - minY) * k) / 2};
+    applyTransform(); fitted = true; paint();
+  }
+  state.fitted = false;
+
+  svg.addEventListener('wheel', event => {
+    event.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    const mx = event.clientX - rect.left, my = event.clientY - rect.top;
+    const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    const k = Math.min(6, Math.max(0.15, transform.k * factor));
+    transform.x = mx - (mx - transform.x) * (k / transform.k);
+    transform.y = my - (my - transform.y) * (k / transform.k);
+    transform.k = k; applyTransform();
+  }, {passive: false});
+
+  let pan = null;
+  svg.addEventListener('pointerdown', event => {
+    if (event.target.closest('.node')) return;
+    pan = {x: event.clientX - transform.x, y: event.clientY - transform.y};
+    svg.classList.add('panning'); svg.setPointerCapture(event.pointerId);
+  });
+  svg.addEventListener('pointermove', event => {
+    if (!pan) return;
+    transform.x = event.clientX - pan.x; transform.y = event.clientY - pan.y; applyTransform();
+  });
+  svg.addEventListener('pointerup', () => { pan = null; svg.classList.remove('panning'); });
+
+  let drag = null;
+  nodeLayer.addEventListener('pointerdown', event => {
+    const g = event.target.closest('.node'); if (!g) return;
+    const i = nodes.findIndex(n => n.el === g); if (i < 0) return;
+    drag = i; state.alpha = Math.max(state.alpha, 0.35);
+    nodeLayer.setPointerCapture(event.pointerId);
+    selectNode(nodes[i]);
+  });
+  nodeLayer.addEventListener('pointermove', event => {
+    if (drag === null) return;
+    const rect = svg.getBoundingClientRect();
+    state.positions[drag] = {
+      x: (event.clientX - rect.left - transform.x) / transform.k,
+      y: (event.clientY - rect.top - transform.y) / transform.k,
+    };
+    paint();
+  });
+  nodeLayer.addEventListener('pointerup', () => {
+    if (drag === null) return;
+    drag = null;
+    if (!state.running) runLayout(160);
+  });
+
+  // ---- 选择与详情 ---------------------------------------------------------
+  let selected = null;
+  function clearHighlight(){
+    nodes.forEach(n => n.el.classList.remove('hot', 'dimmed'));
+    edgeEls.forEach(item => { item.path.classList.remove('hot', 'dimmed'); item.path.style.opacity = ''; });
+  }
+  function selectNode(node){
+    selected = node.id;
+    clearHighlight();
+    const near = adjacency.get(node.id) || new Set();
+    nodes.forEach(n => { if (n.id !== node.id && !near.has(n.id)) n.el.classList.add('dimmed'); });
+    node.el.classList.add('hot');
+    edgeEls.forEach(item => {
+      const touching = item.edge.source === node.id || item.edge.target === node.id;
+      if (touching) item.path.classList.add('hot'); else item.path.classList.add('dimmed');
+    });
+    renderDetail(node);
+    expand();
+  }
+  // 从某节点出发走推理链。方向约定是「前提 → 结论」，所以：
+  //   up   = 这个节点的依据（沿入边）—— 解释"它为什么成立"
+  //   down = 这个节点推出了什么（沿出边）—— 解释"它能推出什么"
+  // 定义边不算推理步骤；环路和深度都有保护，避免在有环的跨论文关系上打转。
+  // theoryOnly=true 时只走"理论↔理论"的推导/特例边：这样理论节点的上游链
+  // 干净地终结在公理上。否则会顺带走进证据依赖图（弱点边 evidence→target），
+  // 一条链能涨到 199 条，反而看不出推导主干。
+  function chainLines(startId, dir, theoryOnly){
+    const start = byId.get(startId);
+    const theoryOnlyFlag = theoryOnly !== undefined ? theoryOnly : !!(start && start.isTheory);
+    const map = new Map();
+    edges.forEach(e => {
+      // 只走有向边。算子边（合取/归纳/矛盾这类）是若干断言两两之间的**对称**关系，
+      // 没有前提/结论之分，沿它"向上/向下"遍历没有意义 —— 之前把 TH1 的依据链
+      // 走出了 69 条，就是因为混进了这些对称边。
+      if (!e.directed) return;
+      if (theoryOnlyFlag) {
+        const sn = byId.get(e.source), tn = byId.get(e.target);
+        if (!sn || !tn || !sn.isTheory || !tn.isTheory) return;
+      }
+      const from = dir === 'down' ? e.source : e.target;
+      const to = dir === 'down' ? e.target : e.source;
+      if (!byId.has(to)) return;
+      if (!map.has(from)) map.set(from, []);
+      map.get(from).push({to, via: e.relation});
+    });
+    const lines = [];
+    const onPath = new Set();
+    const walk = (id, depth, via) => {
+      const n = byId.get(id);
+      if (!n || lines.length >= 70) return;
+      const cycle = onPath.has(id);
+      const further = map.get(id) || [];
+      lines.push({depth, node: n, via, cycle, end: further.length === 0});
+      if (cycle || depth >= 6) return;
+      onPath.add(id);
+      for (const step of further) walk(step.to, depth + 1, step.via);
+      onPath.delete(id);
+    };
+    walk(startId, 0, '');
+    return lines.slice(1);
+  }
+
+  const CHAIN_SHOWN = 18;   // 侧栏只列前若干条，其余折叠；TH5 的向上链有 60+ 条
+  function chainHtml(lines, emptyText){
+    if (!lines.length) return `<div class="kv"><span>—</span><span>${emptyText}</span></div>`;
+    const extra = lines.length > CHAIN_SHOWN
+      ? `<div class="chain" style="color:#667085">…还有 ${lines.length - CHAIN_SHOWN} 条（链太长，其余已折叠）</div>`
+      : '';
+    return lines.slice(0, CHAIN_SHOWN).map(l =>
+      `<div class="chain" style="padding-left:${l.depth * 12}px">` +
+      (l.via ? `<span class="via">${escapeHtml(l.via)}</span> ` : '') +
+      `<b>${escapeHtml(l.node.code)}</b> ${escapeHtml(String(l.node.labelZh).slice(0, 24))}` +
+      (l.cycle ? ' <span class="cycles">↺</span>' : '') +
+      (l.end ? ' <span class="endmark">■ 尽头</span>' : '') +
+      `</div>`).join('') + extra;
+  }
+
+  function renderDetail(node){
+    const rows = [
+      ['编号', node.code],
+      ...(node.condition ? [['适用条件', node.condition]] : []),
+      ['论文', `${node.paperZh || node.paper}（第 ${(node.details && node.details.paper_index) || '?'} 篇）`],
+      ['来源包', node.paper],
+      ...(node.system ? [['研究体系', node.system], ['反演对称性', node.symmetry || '待确认']] : []),
+      ['度（连线数）', String(node.degree)],
+      ...(node.isTheory ? [['推导入度 / 出度', `${(node.details && node.details.theory_in_degree) || 0} / ${(node.details && node.details.theory_out_degree) || 0}`], ['结构角色', node.theoryKind || '']] : []),
+      ['跨论文邻居', String((node.details && node.details.cross_paper_neighbours) || 0)],
+      ['原文锚点数', String((node.details && node.details.anchor_count) || 0)],
+      ['节点 ID', node.entity_id || node.id],
+    ];
+    const rels = edges.filter(e => e.source === node.id || e.target === node.id);
+    detail.innerHTML = `
+      <h2>${escapeHtml(node.code)} · ${escapeHtml(node.labelZh)}</h2>
+      <div>${rels.map(r => `<span class="badge">${escapeHtml(r.relation)}</span>`).join('')}</div>
+      <p>${renderRich(node.summary || '')}</p>
+      <div class="section-title">推理链（向上游，直到尽头 = 公理 / 无依据的节点）</div>
+      ${chainHtml(chainLines(node.id, 'up'), '无上游依据 —— 这个节点本身就是尽头（结构上的公理 / 起点）')}
+      ${node.isTheory ? `<div class="section-title">直接证据（支撑该节点的现有 claim）</div>` +
+        chainHtml(edges.filter(e => e.target === node.id && e.directed && !byId.get(e.source).isTheory)
+          .map(e => ({depth: 0, node: byId.get(e.source), via: e.relation, cycle: false, end: false})),
+          '暂无直接挂接的证据节点') : ''}
+      <div class="section-title">下游（这个节点能推出什么）</div>
+      ${chainHtml(chainLines(node.id, 'down', node.isTheory ? true : undefined), '无下游推理 —— 结构上是终点节点')}
+      ${rows.map(([k, v]) => `<div class="kv"><span>${escapeHtml(k)}</span><span>${escapeHtml(v)}</span></div>`).join('')}
+      ${(node.definitions && node.definitions.length) ? `<div class="section-title">该节点的符号定义（已拆为独立节点）</div>` +
+         node.definitions.map(d => `<div class="kv"><span>定义</span><span>${renderRich(d)}</span></div>`).join('') : ''}
+      <div class="en">${renderRich(node.english)}</div>`;
+  }
+  function renderEdgeDetail(item){
+    const e = item.edge;
+    detail.innerHTML = `
+      <h2>关系：${escapeHtml(e.relation)}</h2>
+      <div>${[['类型', e.semantic_type], ['族', e.family], ['元数', (e.details && e.details.arity) || ''], ['算子 ID', (e.details && e.details.operator_id) || '']]
+        .map(([k, v]) => `<div class="kv"><span>${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span></div>`).join('')}</div>
+      <div class="kv"><span>起点</span><span>${escapeHtml(byId.get(e.source) ? byId.get(e.source).label : e.source)}</span></div>
+      <div class="kv"><span>终点</span><span>${escapeHtml(byId.get(e.target) ? byId.get(e.target).label : e.target)}</span></div>
+      <div class="kv"><span>跨论文</span><span>${e.details && e.details.cross_paper ? '是' : '否'}</span></div>
+      ${e.crossSym ? `<div class="kv"><span style="color:#b54708">⚠ 跨对称性类别</span><span style="color:#b54708">两端体系在"能否有 Ising 保护"上不同</span></div>` : ''}
+      ${e.details && e.details.expression ? `<div class="en">${renderRich(e.details.expression)}</div>` : ''}`;
+  }
+  edgeLayer.addEventListener('click', event => {
+    const path = event.target.closest('.edge'); if (!path) return;
+    const item = edgeEls.find(x => x.path === path); if (!item) return;
+    clearHighlight();
+    path.classList.add('hot');
+    renderEdgeDetail(item);
+    expand();
+  });
+  function escapeHtml(value){
+    return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---- 工具栏 -------------------------------------------------------------
+  // 跨反演对称性类别的边可以整体隐藏：中心对称的块体 2H 在对称性上不可能有 Ising 保护，
+  // 拿它的结论去和 4H_a/3R 的 Ising 主张对撞，强度比同材料内的关系低一个量级。
+  function applyEdgeFilter(){
+    const hideCross = document.getElementById('same-symmetry').checked;
+    edgeEls.forEach(item => {
+      item.edge.shown = !(hideCross && item.edge.crossSym);
+      if (!item.edge.shown) { item.path.setAttribute('d', ''); item.text.style.display = 'none'; }
+    });
+    paint();
+  }
+
+  function applyIsolated(){
+    const show = document.getElementById('toggle-isolated').checked;
+    const showDeriv = document.getElementById('toggle-derivation').checked;
+    const minDegree = Number(document.getElementById('min-degree').value || 1);
+    const onlyTheory = document.getElementById('only-theory').checked;
+    nodes.forEach(n => {
+      // 三层过滤，彼此独立：连没连上、是不是命题、是不是结构主干。
+      // 度 1–2 的叶子在 500 节点规模下占三分之一以上，全画出来只会互相压住，
+      // 默认按最小度数只画主干，需要时再放宽。
+      const hide = (!show && !n.connected)
+        || (!showDeriv && (n.nodeClass === 'derivation' || n.nodeClass === 'definition'))
+        || (n.degree < minDegree && n.id !== selected)
+        || (onlyTheory && !n.isTheory && !theoryNeighbours.has(n.id));
+      n.el.classList.toggle('hidden', hide);
+      n.textEl.textContent = n.code;
+    });
+    if (selected) { const n = nodes.find(x => x.id === selected); if (n) selectNode(n); }
+    paint();
+    // 可见集合变了要重算：缩放比例按新集合算，重新显示孤立节点时也需要让它们
+    // 真正参与布局，否则会全部叠在一起。
+    if (!state.running) {
+      if (show) { fitted = false; state.fitted = false; runLayout(240); }
+      else fit();
+    }
+  }
+  document.getElementById('toggle-isolated').addEventListener('change', applyIsolated);
+  document.getElementById('toggle-derivation').addEventListener('change', applyIsolated);
+  document.getElementById('min-degree').addEventListener('change', () => { fitted = false; state.fitted = false; runLayout(320); });
+  document.getElementById('only-theory').addEventListener('change', () => { fitted = false; state.fitted = false; runLayout(320); });
+  document.getElementById('same-symmetry').addEventListener('change', applyEdgeFilter);
+  document.getElementById('toggle-labels').addEventListener('change', paint);
+  document.getElementById('fit').addEventListener('click', fit);
+  document.getElementById('reheat').addEventListener('click', () => { seedPositions(); fitted = false; state.fitted = false; runLayout(900); });
+  window.addEventListener('resize', () => paint());
+
+  // ---- 顶部统计与图例 -----------------------------------------------------
+  const meta = view.metadata || {};
+  document.getElementById('title').textContent = view.title || '跨论文推理关系图';
+  document.getElementById('stats').innerHTML =
+    `论文 <b>${meta.package_count || 0}</b> 篇 · 节点 <b>${nodes.length}</b> · ` +
+    `跨论文关系 <b>${edges.length}</b> 条 · 有关系的节点 <b>${meta.connected_claim_count || 0}</b> · ` +
+    `孤立 <b>${meta.isolated_claim_count || 0}</b> · 推导块 <b>${meta.derivation_node_count || 0}</b> · ` +
+    `编号 <b>O/C/T</b> · 结论文层：<b>无</b>`;
+  const legend = document.getElementById('legend');
+  const relCounts = meta.relation_counts_zh || {};
+  const familyOf = {};
+  edges.forEach(e => { familyOf[e.relation] = e.family; });
+  legend.innerHTML = '<div style="font-weight:700;margin-bottom:5px">关系类型</div>' +
+    Object.entries(relCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) =>
+      `<div class="row"><span class="swatch" style="background:${familyColor(familyOf[name])}"></span>${escapeHtml(name)} · ${count}</div>`
+    ).join('') +
+    '<div style="font-weight:700;margin:8px 0 5px">理论层</div>' +
+    '<div class="row" style="display:block;color:#475467">' +
+      '<span class="dot" style="background:#101828;display:inline-block"></span> AX 公理（2 条，最基本）<br>' +
+      '<span class="dot" style="background:#7f56d9;display:inline-block"></span> TH0 主方程（线性化能隙方程）<br>' +
+      '<span class="dot" style="background:#3538cd;display:inline-block"></span> TH1-TH4 通道定理（塞曼/轨道/Ising/有限动量）<br>' +
+      '<span class="dot" style="background:#7f56d9;display:inline-block"></span> TH5 组合定理（能隙方程本征值条件）<br>' +
+      '<span class="dot" style="background:#3538cd;display:inline-block"></span> TH5a/TH5b 两个几何特例（点划线=特例边）<br>' +
+      '紫实线=推导 · 紫点划线=特例（含适用条件） · 绿虚线=证据支撑' +
+    '</div>' +
+    '<div style="font-weight:700;margin:8px 0 5px">节点编号</div>' +
+    '<div class="row" style="display:block;color:#475467">' +
+      '<code>O</code>=实验观察 · <code>C</code>=论断/结论 · <code>T</code>=推导块 · <code>D</code>=符号定义<br>' +
+      '编号 = 类型字母 + 论文号 - 该类型内序号，如 <code>O15-3</code> = 第 15 篇第 3 条观察' +
+    '</div>' +
+    '<div style="font-weight:700;margin:10px 0 5px">论文对照（点击定位）</div>' +
+    [...paperColor.entries()].map(([p, c]) => {
+      const entry = nodes.find(n => n.paper === p);
+      const idx = (entry && entry.details && entry.details.paper_index) || '?';
+      const title = entry ? (entry.paperZh || p) : p;
+      return `<div class="row"><span class="dot" style="background:${c}"></span>` +
+             `<span>第 ${idx} 篇 · ${escapeHtml(String(title).slice(0, 26))}</span></div>`;
+    }).join('') +
+    '<div class="row" style="margin-top:8px">节点半径 ∝ √度</div>';
+  function familyColor(family){
+    return {entail:'#175cd3', explain:'#b54708', identity:'#067647', joint:'#6941c6',
+            conflict:'#d92d20', analogy:'#0e9384', definition:'#98a2b3',
+            derivation:'#7f56d9', special_case:'#7f56d9', support:'#12b76a'}[family] || '#98a2b3';
+  }
+
+  edgeEls.forEach(item => { item.edge.shown = true; });
+  mainEl.classList.add('collapsed');
+  seedPositions();
+  runLayout(900);
+  applyIsolated();
+})();
+</script>
+</body>
+</html>
