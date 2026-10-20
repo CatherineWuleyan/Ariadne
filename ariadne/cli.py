@@ -286,11 +286,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
               ok=readiness["full_with_lkm"])
     print("\nNext")
     if not checks["config"]["exists"]:
-        print("  ./ariadne/run.sh config init")
+        print("  ./run.sh config init")
     if checks["bohr"]["cli"] and not status.get("logged_in"):
-        print("  ./ariadne/run.sh auth bohr")
-    print("  ./ariadne/run.sh demo")
-    print("  ./ariadne/run.sh ask \"your question\" --top-k 2 --yes")
+        print("  ./run.sh auth bohr")
+    print("  ./run.sh demo")
+    print("  ./run.sh ask \"your question\" --top-k 2 --yes")
     return 0
 
 
@@ -470,9 +470,9 @@ def cmd_config_init(args: argparse.Namespace) -> int:
         print(f"\nBohr login: {'OK' if status.get('logged_in') else 'FAILED'} "
               f"(profile={status.get('profile') or '?'})")
     else:
-        print("\nNext: ./ariadne/run.sh doctor")
-        print("      ./ariadne/run.sh auth bohr   # live LKM")
-        print("      ./ariadne/run.sh demo")
+        print("\nNext: ./run.sh doctor")
+        print("      ./run.sh auth bohr   # live LKM")
+        print("      ./run.sh demo")
     return 0
 
 

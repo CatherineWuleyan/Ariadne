@@ -31,9 +31,9 @@ for extra in (REPO, REPO / "agent", REPO / "pipelines" / "single_paper", REPO / 
 from pipeline_merge_question import question_layer as ql  # noqa: E402
 from pipeline_merge_question.step3 import _post_json  # noqa: E402
 
-DEFAULT_VIEW = REPO / "outputs/aircraft/versions/03-reviewed-handcrafted-2026-10-14/source_snapshot/domain_view_model.json"
-DEFAULT_OUT = REPO / "outputs/aircraft/final"
-DEFAULT_EDGE_ROLES = REPO / "outputs/aircraft/final/edge_roles.json"
+DEFAULT_VIEW = REPO / "examples/aircraft/domain_view_typed.json"
+DEFAULT_OUT = REPO / "outputs/question"
+DEFAULT_EDGE_ROLES = REPO / "examples/aircraft/edge_roles_typed.json"
 DEFAULT_QUESTION_ZH = "怎么完成飞机的仿真设计？"
 DEFAULT_QUESTION_EN = "How can aircraft simulation design be carried out?"
 DEFAULT_DOMAIN = "aircraft simulation design (conceptual design, flight dynamics, aerodynamic modeling, MDO, HIL validation)"
@@ -83,7 +83,7 @@ def main() -> int:
     parser.add_argument("--max-roots", type=int, default=5)
     parser.add_argument("--fixture", type=Path, help="offline roots/links fixture; skips LLM calls")
     parser.add_argument("--edge-roles", type=Path, default=DEFAULT_EDGE_ROLES,
-                        help="edge_role_audit output; only chainable/deduction roles form support chains")
+                        help="typed edge roles; only chainable/deduction roles form support chains")
     parser.add_argument("--template", type=Path, default=HERE / "viewer_question.html")
     parser.add_argument("--no-viewer", action="store_true")
     args = parser.parse_args()

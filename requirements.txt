@@ -1,0 +1,2 @@
+gaia-lang==0.5.0a7
+jsonschema>=4.21

@@ -1,15 +1,4 @@
-"""
-test_step2e_finalize_claims.py
-
-不需要monkeypatch call_claude,因为这一步是纯计算,不调API。用构造出来的
-数据(贴合真实的867752822639165809/867750889056633390情况)验证4种文本
-优先级都选对了字段、is_pure_data字段被正确保留、论据/example的
-supports/illustrates指向信息被正确补回来、assertion没有这两个键、以及
-main()整个流程(用临时目录跑,不影响真实数据)。
-
-用法:
-    python test_step2e_finalize_claims.py
-"""
+"""Self-contained extraction regression tests."""
 
 import json
 import shutil
@@ -169,18 +158,6 @@ def test_example_claim_gets_illustrates_field():
     assert "supports" not in result
 
 
-def test_load_pointer_fields_from_real_data():
-    # 用真实的867750889056633390/conclusion_4验证load_pointer_fields()
-    # 读出来的结果:number=6是论据带supports=[1],number=7是example带
-    # illustrates=[1],assertion的number=1不带任何指向键。
-    organized_path = step2e.DATA_DIR / "867750889056633390" / "organized_content.json"
-    pointer_fields = step2e.load_pointer_fields(organized_path)
-
-    assert pointer_fields[("conclusion_4", 6)] == {"supports": [1]}
-    assert pointer_fields[("conclusion_4", 7)] == {"illustrates": [1]}
-    assert pointer_fields[("conclusion_4", 1)] == {}
-
-
 def test_main_end_to_end_with_temp_directory():
     """跑一遍main(),不用真实数据、不影响任何真实文件,验证assertion/论据/
     example/纯数据claim混在一起时,输出文件名、顺序、字段、supports/
@@ -291,11 +268,3 @@ def test_main_requires_organized_content_json():
         assert exit_code != 0
     finally:
         shutil.rmtree(tmp_dir)
-
-
-if __name__ == "__main__":
-    tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
-    for t in tests:
-        t()
-        print(f"  OK: {t.__name__}")
-    print(f"\n全部 {len(tests)} 个测试通过")

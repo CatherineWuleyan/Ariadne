@@ -1,3 +1,0 @@
-# Ariadne
-
-[中文文档](../README.zh-CN.md) · [English](../README.md)

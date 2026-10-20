@@ -20,9 +20,9 @@ Options:
   -h, --help      show this help
 
 After install:
-  ./ariadne/run.sh config init
-  ./ariadne/run.sh doctor
-  ./ariadne/run.sh demo
+  ./run.sh config init
+  ./run.sh doctor
+  ./run.sh demo
 USAGE
 }
 
@@ -69,7 +69,7 @@ if [[ "$NO_DEPS" -eq 0 ]]; then
   echo "[install] upgrading pip"
   "$PY" -m pip install --upgrade pip
   echo "[install] installing Ariadne dependencies"
-  "$PY" -m pip install -r "$ROOT/ariadne/requirements.txt"
+  "$PY" -m pip install -r "$ROOT/requirements.txt"
   echo "[install] installing pipeline harness"
   "$PY" -m pip install -e "$ROOT/agent"
 fi
@@ -79,6 +79,6 @@ echo "Ariadne installed."
 echo "  Python: $PY"
 echo
 echo "Next:"
-echo "  ./ariadne/run.sh config init"
-echo "  ./ariadne/run.sh doctor"
-echo "  ./ariadne/run.sh demo"
+echo "  ./run.sh config init"
+echo "  ./run.sh doctor"
+echo "  ./run.sh demo"

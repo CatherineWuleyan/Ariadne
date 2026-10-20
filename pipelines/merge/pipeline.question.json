@@ -9,21 +9,10 @@
       "options": {
         "mode": "bootstrap",
         "scope": {
-          "domain": "aircraft-simulation-design",
+          "domain": "research-domain",
           "selection": [
-            "papers:paper_aec49f8f",
-            "papers:paper_c6f44cb4",
-            "papers:paper_1438825f",
-            "papers:paper_6a2ef68a",
-            "papers:paper_066432fe",
-            "papers:paper_0fc191d1",
-            "papers:paper_755906eb",
-            "papers:paper_26dddb44",
-            "papers:paper_014abc68",
-            "papers:paper_53166ac1",
-            "papers:paper_9c2fb427",
-            "papers:paper_18f90780",
-            "papers:paper_7c211832"
+            "papers:paper_a",
+            "papers:paper_b"
           ]
         }
       }
@@ -67,9 +56,9 @@
       "name": "step6_question_answer_layer",
       "plugin": "pipeline_merge_question.step6_question_layer:Step6QuestionLayerPlugin",
       "options": {
-        "question_zh": "怎么完成飞机的仿真设计？",
-        "question_en": "How can aircraft simulation design be carried out?",
-        "domain": "aircraft simulation design (conceptual design, flight dynamics, aerodynamic modeling, MDO, HIL validation)",
+        "question_zh": "研究问题",
+        "question_en": "Research question",
+        "domain": "research-domain",
         "max_roots": 5
       }
     }

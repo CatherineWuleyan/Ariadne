@@ -35,7 +35,7 @@ def _config(mode: str, selection: list[str]) -> dict:
 
 class Step0Tests(unittest.TestCase):
     def test_checked_in_config_runs_without_artifacts(self) -> None:
-        config = json.loads((ROOT / "pipeline.step0.json").read_text(encoding="utf-8"))
+        config = json.loads((ROOT / "tests" / "fixtures" / "pipeline.step0.json").read_text(encoding="utf-8"))
         with tempfile.TemporaryDirectory() as temporary:
             store = RunStore.create(Path(temporary), config)
             run = run_pipeline(store.run_dir)

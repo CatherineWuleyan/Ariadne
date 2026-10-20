@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Ariadne launcher.  Set ARIADNE_PYTHON to override the interpreter, or
-# configure it persistently with `./ariadne/run.sh config set runtime.python`.
+# configure it persistently with `./run.sh config set runtime.python`.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-REPO="$(cd "$HERE/.." && pwd)"
+REPO="$HERE"
 
 if [[ -n "${ARIADNE_PYTHON:-}" ]]; then
   PY="$(command -v "$ARIADNE_PYTHON" || printf '%s' "$ARIADNE_PYTHON")"
@@ -23,5 +23,5 @@ if [[ -z "$PY" || ! -x "$PY" ]]; then
 fi
 
 export PYTHONUTF8=1
-export PYTHONPATH="$HERE:$REPO:$REPO/agent:$REPO/pipelines/single_paper:$REPO/pipelines/merge${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$REPO:$REPO/agent:$REPO/pipelines/single_paper:$REPO/pipelines/merge${PYTHONPATH:+:$PYTHONPATH}"
 exec "$PY" -m ariadne "$@"

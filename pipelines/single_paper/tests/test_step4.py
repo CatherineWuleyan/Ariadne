@@ -1031,7 +1031,7 @@ class Step4Tests(unittest.TestCase):
     def test_full_v21_assembly_connects_the_shared_official_step5(self) -> None:
         root = Path(__file__).parents[1]
         self.assertFalse((root / "pipeline.step1-4.json").exists())
-        pipeline = json.loads((root / "pipeline.step1-5.json").read_text(encoding="utf-8"))
+        pipeline = json.loads((root / "pipeline.json").read_text(encoding="utf-8"))
         self.assertEqual("agent-pipeline-v2.1-step1-5", pipeline["pipeline_id"])
         self.assertEqual("2.1.0", pipeline["version"])
         for path in root.glob("pipeline.step*.json"):

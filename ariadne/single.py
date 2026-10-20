@@ -1,8 +1,4 @@
-"""Stage 3: run the maintained single-paper pipeline and export Gaia IR.
-
-The harness is driven exactly as in ``weekly_reports/run_full.py``.  Exporting
-uses the repo's ``export_single_artifacts.py`` instead of copying blobs by hand.
-"""
+"""Run the single-paper pipeline and export its package for merging."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -31,7 +27,7 @@ def run_one(paper: Mapping[str, Any], stage_dir: Path, run_root: Path,
         {"path": str(text), "kind": "source.paper_text", "media_type": "text/markdown"},
         {"path": str(claims), "kind": "source.claims_final", "media_type": "application/json"},
     ]})
-    exporter = REPO / "weekly_reports" / "export_single_artifacts.py"
+    exporter = REPO / "pipelines" / "single_paper" / "export_artifacts.py"
     if not exporter.is_file():
         raise AriadneError(
             f"single exporter not found: {exporter}; the public checkout is incomplete"
@@ -40,7 +36,7 @@ def run_one(paper: Mapping[str, Any], stage_dir: Path, run_root: Path,
     print(f"[single] {paper.get('title', pid)[:70]}", flush=True)
     init = run(
         [python, "-m", "pipeline_harness", "init",
-         "--pipeline", str(REPO / "pipelines" / "single_paper" / "pipeline.step1-5.json"),
+         "--pipeline", str(REPO / "pipelines" / "single_paper" / "pipeline.json"),
          "--inputs", str(manifest), "--runs-root", str(stage_dir / "runs")],
         env=harness_env(), log=log, timeout=600,
     )

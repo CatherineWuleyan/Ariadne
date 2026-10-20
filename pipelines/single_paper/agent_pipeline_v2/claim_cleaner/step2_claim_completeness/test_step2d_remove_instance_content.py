@@ -1,16 +1,4 @@
-"""
-test_step2d_remove_instance_content.py
-
-沙盒没有网络访问权限,用monkeypatch替换call_claude验证"不依赖模型质量"的
-那部分逻辑:按conclusion分组、prompt拼装、JSON格式+编号完整性校验、
-三档模型依次升级+保守兜底、"跳过不升级"这条规则——尤其是"同一批里有的
-claim被判定改动、有的判定不改动"这种混合结果的场景。不测试"改写内容
-对不对"本身,因为这一层校验已经按要求去掉了(容易把Sonnet改对的结果
-误判成没改对),内容质量完全交给Sonnet自己判断。
-
-用法:
-    python test_step2d_remove_instance_content.py
-"""
+"""Self-contained extraction regression tests."""
 
 import json
 import re
@@ -21,122 +9,6 @@ import step2d_remove_instance_content as step2d
 # 867752822639165809 这几条是用户在自己机器上真跑step2c之后人工核对过的
 # 真实结果;沙盒里的claim_completeness_analysis.json还没被真实写过
 # instance_containment字段,这里手动补上,构造贴近真实情况的测试输入。
-_KNOWN_CONTAINMENT = {
-    ("conclusion_4", 15): False, ("conclusion_4", 18): False, ("conclusion_4", 20): False,
-    ("conclusion_5", 1): False, ("conclusion_5", 3): False, ("conclusion_5", 5): True,
-    ("conclusion_5", 6): False, ("conclusion_5", 10): False, ("conclusion_5", 11): True,
-    ("conclusion_5", 12): False, ("conclusion_5", 13): False, ("conclusion_5", 16): False,
-    ("conclusion_6", 1): False, ("conclusion_6", 3): False, ("conclusion_6", 6): False,
-    ("conclusion_6", 7): False, ("conclusion_6", 8): False, ("conclusion_6", 10): True,
-    ("conclusion_7", 2): False, ("conclusion_7", 4): False, ("conclusion_7", 7): False,
-    ("conclusion_7", 10): False, ("conclusion_7", 11): True, ("conclusion_7", 14): False,
-    ("conclusion_7", 16): False,
-}
-
-
-def _load_records_with_known_containment():
-    paper_dir = step2d.DATA_DIR / "867752822639165809"
-    records = json.loads((paper_dir / "claim_completeness_analysis.json").read_text(encoding="utf-8"))
-    conc_instances = step2d.load_conclusion_instances(paper_dir / "organized_content.json")
-
-    for r in records:
-        key = (r["conclusion"], r["number"])
-        if key in _KNOWN_CONTAINMENT:
-            r["instance_containment"] = _KNOWN_CONTAINMENT[key]
-        elif r["conclusion"] not in conc_instances:
-            r["instance_containment"] = None
-        else:
-            r["instance_containment"] = False
-    return records, conc_instances
-
-
-def _mock_sub_items(content: str) -> list:
-    """跟生产代码里已经删掉的_instance_sub_items类似,但这里只是测试用的
-    简化版,不依赖生产代码(生产代码已经不需要拆子项了)——单纯用来让mock
-    自己判断"一般词语+具体内容是否同时出现"这条规则。"""
-    inner = content.strip().rstrip("。.")
-    if inner.startswith("(") and inner.endswith(")"):
-        inner = inner[1:-1]
-    return [p.strip() for p in re.split(r",|;| and ", inner) if p.strip()]
-
-
-def _rule_based_mock_call_claude(prompt, **kwargs):
-    """模拟"是否同时出现一般词语+instance具体内容"这条规则:对prompt里
-    每条候选claim,检查它的完整表述里有没有同时包含某个instance的of_terms
-    (一般词语)和该instance的content(具体例子)——两者都在才判定"混入",
-    输出去掉具体例子后的版本;否则原样输出。这不是真的语义判断,只是为了
-    在真实数据上验证整条数据管线(尤其是"同一批里部分改、部分不改"这种
-    混合结果)不会崩、逻辑对得上。"""
-    candidates_block = prompt.split("=== Suspected claims (full existing fields) ===\n")[1]
-    candidates_block = candidates_block.split("\n\n=== All instances")[0]
-    instances_block = prompt.split("=== All instances in this conclusion ===\n")[1]
-
-    candidates = json.loads(candidates_block)
-    instances = json.loads(instances_block)
-
-    def norm(s):
-        return "".join(s.split()).lower()
-
-    results = []
-    for c in candidates:
-        original = c.get("完整表述") or c["text"]
-        original_norm = norm(original)
-        mixed = False
-        edited = original
-        for inst in instances:
-            terms_present = any(norm(t) in original_norm for t in inst["of_terms"])
-            sub_items = _mock_sub_items(inst["content"])
-            items_present = len(sub_items) > 1 and all(norm(item) in original_norm for item in sub_items)
-            if terms_present and items_present:
-                mixed = True
-                edited = original
-                for item in sub_items:
-                    edited = edited.replace(item, "")
-                edited = " ".join(edited.split()).rstrip(", ") + "."
-        results.append({"number": c["number"], "content": edited if mixed else original})
-
-    return json.dumps({"results": results})
-
-
-def test_conclusion_5_batch_mixed_outcome():
-    """迁移后 conclusion_5 的 instance 具体内容在数据重跑时已被移除,规则
-    mock 不再触发改写;这里验证整条管线在真实数据上跑通、输出与输入一致
-    (幂等),以及"content 跟原文一样"作为"没改"的判定依据仍然成立。"""
-    step2d.call_claude = _rule_based_mock_call_claude
-
-    records, conc_instances = _load_records_with_known_containment()
-    groups = step2d.group_candidates_by_conclusion(records)
-
-    assert groups["conclusion_5"] and [r["number"] for r in groups["conclusion_5"]] == [5, 11]
-
-    content = conc_instances["conclusion_5"]["content"]
-    instances = conc_instances["conclusion_5"]["instances"]
-    result, status = step2d.process_conclusion_candidates(content, groups["conclusion_5"], instances)
-
-    assert status == "ok"
-
-    by_num = {r["number"]: r for r in groups["conclusion_5"]}
-    for num, record in by_num.items():
-        original = record.get("完整表述") or record["text"]
-        assert result[num] == original  # 数据已清洗,不应再有改写
-
-
-def test_non_candidates_get_null_fields():
-    records, conc_instances = _load_records_with_known_containment()
-
-    for r in records:
-        if r.get("instance_containment") is not True:
-            r["完整表述_不含instance"] = None
-            r["instance_containment_confirmed"] = None
-            r["instance_removal_status"] = (
-                "skipped_not_contained" if r.get("instance_containment") is False
-                else "skipped_not_applicable"
-            )
-
-    r15 = next(x for x in records if x["conclusion"] == "conclusion_4" and x["number"] == 15)
-    assert r15["instance_removal_status"] == "skipped_not_contained"
-    assert r15["完整表述_不含instance"] is None
-    assert r15["instance_containment_confirmed"] is None
 
 
 def test_json_parse_rejects_missing_or_extra_numbers():
@@ -313,11 +185,3 @@ def test_all_skip_paper_still_writes_file():
         assert "完整表述_不含instance" in result[0]  # 字段确实落盘了,不是只留在内存里
     finally:
         shutil.rmtree(tmp_dir)
-
-
-if __name__ == "__main__":
-    tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
-    for t in tests:
-        t()
-        print(f"  OK: {t.__name__}")
-    print(f"\n全部 {len(tests)} 个测试通过")

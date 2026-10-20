@@ -1,16 +1,4 @@
-"""
-test_single_text_pipeline.py
-
-重点测build_single_text_graph.build_graph_for_text()构造出来的
-graph.json,是不是真的能被step1a_pipeline.extract_conclusions()正确
-读出来(不是自己假设格式对,是拿真实的extract_conclusions函数去读一遍
-验证)。两个入口脚本(sync/batch)本身很薄,只mock掉它们各自复用的、
-已经在别处测试过的核心逻辑(run_step / run_multi_paper_pipeline),
-验证"传的paper_id对不对"这一件事,不重复测底层已经验证过的机制。
-
-用法:
-    python test_single_text_pipeline.py
-"""
+"""Tests for converting local text into a graph and running extraction."""
 
 import shutil
 import tempfile
@@ -19,7 +7,6 @@ from unittest.mock import patch
 
 import build_single_text_graph as graph_builder
 import run_single_text_pipeline_sync as sync_entry
-import run_single_text_pipeline_batch as batch_entry
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent / "step1_process_conclusions"))
@@ -132,22 +119,6 @@ def test_sync_entry_stops_at_first_failure():
         shutil.rmtree(tmp_dir)
 
 
-def test_batch_entry_generates_graph_and_calls_run_multi_paper_pipeline_with_list_of_one():
-    tmp_dir = Path(tempfile.mkdtemp())
-    try:
-        called_with = []
-
-        def fake_run_multi(paper_ids):
-            called_with.append(paper_ids)
-
-        with patch.object(batch_entry, "DATA_DIR", tmp_dir), \
-             patch.object(batch_entry.batch_pipeline, "run_multi_paper_pipeline", fake_run_multi):
-            paper_id = batch_entry.run_single_text("some text")
-
-        assert (tmp_dir / paper_id / "graph.json").exists()
-        assert called_with == [[paper_id]]  # 传的是只有1个元素的列表
-    finally:
-        shutil.rmtree(tmp_dir)
 
 
 def test_strict_sync_entry_rejects_partial_final_output():

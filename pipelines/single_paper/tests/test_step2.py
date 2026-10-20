@@ -117,6 +117,13 @@ class FailingObservationTool:
 
 class Step2Tests(unittest.TestCase):
     def setUp(self) -> None:
+        self.environment = patch.dict("os.environ", {"DEEPSEEK_API_KEY": "unit-test-only"})
+        self.environment.start()
+        self.addCleanup(self.environment.stop)
+        self.network = patch("agent_pipeline_v2.step2.urlopen",
+                             side_effect=OSError("network disabled in unit tests"))
+        self.network.start()
+        self.addCleanup(self.network.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
         (self.root / "paper_text.md").write_text(
@@ -265,7 +272,7 @@ class Step2Tests(unittest.TestCase):
 
     def pipeline(self, tool: str = f"{__name__}:FakeObservationTool") -> dict:
         value = json.loads(
-            (Path(__file__).parents[1] / "pipeline.step2.json").read_text(encoding="utf-8")
+            (Path(__file__).parents[1] / "tests" / "fixtures" / "pipeline.step2.json").read_text(encoding="utf-8")
         )
         value["pipeline_id"] += "-test"
         value["stages"][2]["options"]["tool_plugin"] = tool

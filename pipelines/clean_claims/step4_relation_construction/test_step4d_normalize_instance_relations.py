@@ -1,14 +1,4 @@
-"""
-test_step4d_normalize_instance_relations.py
-
-不调API,纯本地字符串改写。用合成数据覆盖各种relation类型(instance型/
-论据例子型/原生逻辑关系型)确认只改对了该改的那种,再用真实的
-867757662605934651数据(已经有真实的"[14] 是 [4] 的instance"关系)做一次
-端到端验证。
-
-用法:
-    python test_step4d_normalize_instance_relations.py
-"""
+"""Self-contained extraction regression tests."""
 
 import json
 import shutil
@@ -69,52 +59,3 @@ def test_idempotent_second_run_changes_nothing():
     n_changed_second = step4d.normalize_instance_relations(claims_final)  # 第二次
     assert n_changed_second == 0
     assert claims_final["relation"][0]["expression"] == "[14] 是 [4] 的例子或证据"
-
-
-def test_real_data_867757662605934651():
-    """真实数据:867757662605934651的claims_final.json里已经有一条
-    "[14] 是 [4] 的instance"(step4b真实产出的)。"""
-    real_path = step4d.DATA_DIR / "867757662605934651" / "claims_final.json"
-    claims_final = json.loads(real_path.read_text(encoding="utf-8"))
-
-    instance_relations_before = [
-        r for r in claims_final["relation"] if r["expression"].endswith("的instance")
-    ]
-    assert len(instance_relations_before) >= 1  # 确认真实数据里确实有这种关系
-
-    n_changed = step4d.normalize_instance_relations(claims_final)
-    assert n_changed == len(instance_relations_before)
-
-    # 改完之后不应该再有任何"的instance"结尾的关系
-    assert not any(r["expression"].endswith("的instance") for r in claims_final["relation"])
-
-    rel14 = next(r for r in claims_final["relation"] if r["connects"][0] == 14)
-    assert rel14["expression"] == "[14] 是 [4] 的例子或证据"
-
-
-def test_cli_end_to_end_with_temp_copy():
-    """用临时目录跑一遍main(),不影响真实数据。"""
-    from unittest.mock import patch
-
-    real_path = step4d.DATA_DIR / "867757662605934651" / "claims_final.json"
-    tmp_dir = Path(tempfile.mkdtemp())
-    try:
-        paper_dir = tmp_dir / "fake_paper"
-        paper_dir.mkdir()
-        shutil.copy(real_path, paper_dir / "claims_final.json")
-
-        with patch.object(step4d, "DATA_DIR", tmp_dir), patch("sys.argv", ["prog", "fake_paper"]):
-            step4d.main()
-
-        result = json.loads((paper_dir / "claims_final.json").read_text(encoding="utf-8"))
-        assert not any(r["expression"].endswith("的instance") for r in result["relation"])
-    finally:
-        shutil.rmtree(tmp_dir)
-
-
-if __name__ == "__main__":
-    tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
-    for t in tests:
-        t()
-        print(f"  OK: {t.__name__}")
-    print(f"\n全部 {len(tests)} 个测试通过")

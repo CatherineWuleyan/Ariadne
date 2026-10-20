@@ -1,14 +1,4 @@
-"""
-test_step3c_instantiate_claims.py
-
-沙盒没有网络访问权限,用monkeypatch替换call_claude验证"不依赖模型质量"的
-那部分逻辑:模板分节解析、prompt固定/可变内容交替结构、UNCERTAIN_CAVEAT
-按batch条件性出现、三档模型依次升级+保守兜底、忽略空格的内容变化检测、
-空结果时仍写同名文件。
-
-用法:
-    python test_step3c_instantiate_claims.py
-"""
+"""Self-contained extraction regression tests."""
 
 import json
 import shutil
@@ -245,46 +235,3 @@ def test_main_writes_empty_list_when_nothing_changed():
         assert json.loads(out_path.read_text(encoding="utf-8")) == []
     finally:
         shutil.rmtree(tmp_dir)
-
-
-def test_real_data_prompt_structure_conclusion_5():
-    """用真实的867752822639165809/conclusion_5数据(organized_content.json/
-    instance_target_positions.json/claim_instance_associations.json都是
-    真实拷贝)验证build_claims_info()+build_prompt()整条链路能正确处理
-    真实数据结构,不报错、字段对得上。"""
-    paper_dir = step3c.DATA_DIR / "867752822639165809"
-    conclusion_contents = step3c.load_conclusion_contents(paper_dir)
-    instances_by_key = step3c.load_instances_by_key(paper_dir)
-    candidate_groups = step3c.load_candidate_associations(paper_dir)
-
-    assert "conclusion_5" in candidate_groups
-    assert {a["claim_number"] for a in candidate_groups["conclusion_5"]} == {6, 13}
-
-    # 用organized_content.json自己的content模拟claim_texts(沙盒里没有真实
-    # 跑过的step2_output_claims.json)
-    org = json.loads((paper_dir / "organized_content.json").read_text(encoding="utf-8"))
-    claim_texts = {}
-    for c in org:
-        conc_short = c["id"].split("::")[-1]
-        for p in c["organized_parts"]:
-            if p["label"] in ("assertion", "论据", "example"):
-                claim_texts[(conc_short, p["number"])] = p["content"]
-
-    claims_info = step3c.build_claims_info(
-        "conclusion_5", candidate_groups["conclusion_5"], claim_texts, instances_by_key
-    )
-    prompt = step3c.build_prompt(conclusion_contents["conclusion_5"], claims_info)
-
-    assert "multiple scoring functions" in prompt
-    assert "MSP" in prompt
-    assert "backbones" in prompt
-    assert "ResNet variants" in prompt
-    assert "possibly exemplifying" not in prompt  # 这两条claim都只有certain,没有uncertain
-
-
-if __name__ == "__main__":
-    tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
-    for t in tests:
-        t()
-        print(f"  OK: {t.__name__}")
-    print(f"\n全部 {len(tests)} 个测试通过")

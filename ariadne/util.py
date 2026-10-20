@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[1]
 PRODUCT = REPO / "ariadne"
 DEFAULT_CONFIG = PRODUCT / "configs" / "aircraft.demo.json"
 VENV_PY = REPO / ".venv-gaia-a7" / "bin" / "python"

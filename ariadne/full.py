@@ -23,13 +23,13 @@ REQUIRED_FILES = frozenset({
     "agent/pipeline_harness/__init__.py",
     "pipelines/clean_claims/run_full_pipeline.py",
     "pipelines/clean_claims/step1_process_conclusions/step1a_pipeline.py",
-    "pipelines/single_paper/pipeline.step1-5.json",
+    "pipelines/single_paper/pipeline.json",
     "pipelines/merge/pipeline.question.json",
     "pipelines/merge/pipeline_merge_question/run_question_layer.py",
     "pipelines/merge/pipeline_merge_question/render_question_viewer.py",
     "pipelines/merge/pipeline_merge_question/export_chains_markdown.py",
     "pipelines/merge/pipeline_merge_question/question_layer.py",
-    "weekly_reports/export_single_artifacts.py",
+    "pipelines/single_paper/export_artifacts.py",
 })
 
 
@@ -50,7 +50,7 @@ def _preflight(runtime: Runtime, paper_spec: Path | None) -> dict[str, Any]:
         raise AriadneError(
             "The checkout is missing required pipeline files:\n  - "
             + "\n  - ".join(missing)
-            + "\nUse a full clone of https://github.com/CatherineWuleyan/gaia-ir."
+            + "\nUse a full clone of https://github.com/CatherineWuleyan/ariadne."
         )
     python = Path(runtime.python)
     if not python.is_file():
@@ -61,7 +61,7 @@ def _preflight(runtime: Runtime, paper_spec: Path | None) -> dict[str, Any]:
         )
     if not runtime.model_api_key:
         message = (
-            "No model API key is configured. Run `./ariadne/run.sh config init`, "
+            "No model API key is configured. Run `./run.sh config init`, "
             "set ARIADNE_MODEL_API_KEY / DEEPSEEK_API_KEY, or use `ariadne demo`."
         )
         if runtime.anthropic_key_present:
@@ -93,7 +93,7 @@ def _preflight(runtime: Runtime, paper_spec: Path | None) -> dict[str, Any]:
             profile = runtime.bohr_profile or "(active profile)"
             raise AriadneError(
                 f"Bohr is not logged in for profile {profile}. Run "
-                "`./ariadne/run.sh auth bohr`, or use --papers with local "
+                "`./run.sh auth bohr`, or use --papers with local "
                 "graph/text files.\n"
                 + str(status.get("error") or "")
             )

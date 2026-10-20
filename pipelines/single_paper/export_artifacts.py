@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
-"""Export a finished `single` run into the per-paper layout `merge` consumes.
-
-The harness stores stage outputs as content-addressed blobs plus an
-`artifacts/index.json`.  The merge pipeline instead reads plain per-paper files
-(`gaia.ir.json`, `formalization.json`, `knowledge.index.json`) declared in an
-input manifest, which is the layout its frozen merge manifests were written
-against.
-
-This exporter only copies bytes out of a run; it does not recompute, rename, or
-rewrite any artifact content.  For kinds produced more than once (the single
-pipeline snapshots `formalization` after each step), the entry with the highest
-index wins, which is the last one written by the run.
-"""
+"""Export the latest single-paper artifacts into the package layout used by merge."""
 from __future__ import annotations
 
 import argparse

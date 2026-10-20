@@ -4,13 +4,13 @@
 
 Research questions, connected to the evidence.
 
-<a href="README.zh-CN.md"><img src="ariadne/docs/images/language-en.svg" alt="English · Switch to 简体中文" width="208" height="38"></a>
+<a href="README.zh-CN.md"><img src="docs/images/language-en.svg" alt="English · Switch to 简体中文" width="208" height="38"></a>
 
 </div>
 
 Ariadne searches the Bohrium LKM paper corpus, extracts claims, and connects them across papers in an interactive graph. Start with a question; inspect the candidate answers, their premises, and the gaps in the evidence.
 
-![Aircraft simulation design graph](ariadne/docs/images/aircraft-question-graph.en.png)
+![Aircraft simulation design graph](docs/images/aircraft-question-graph.en.png)
 
 [Get started](#get-started) · [Examples](#examples) · [Configuration](#configuration) · [How it works](#how-it-works)
 
@@ -22,7 +22,7 @@ You need Python 3.11 or later. Live questions also require a Bohrium account and
 git clone https://github.com/CatherineWuleyan/ariadne.git
 cd ariadne
 ./install.sh
-./ariadne/run.sh demo
+./run.sh demo
 ```
 
 Open the HTML path printed by the demo in your browser. It includes the graph data and needs no server.
@@ -31,13 +31,13 @@ For a live question, install the Bohr CLI and configure your accounts:
 
 ```bash
 npm install -g bohr-cli
-./ariadne/run.sh config init
-./ariadne/run.sh auth bohr
-./ariadne/run.sh doctor
+./run.sh config init
+./run.sh auth bohr
+./run.sh doctor
 
-./ariadne/run.sh ask "How should aircraft simulation design be carried out?" \
+./run.sh ask "How should aircraft simulation design be carried out?" \
   --top-k 2 --dry-run
-./ariadne/run.sh ask "How should aircraft simulation design be carried out?" \
+./run.sh ask "How should aircraft simulation design be carried out?" \
   --top-k 2 --no-fulltext --yes
 ```
 
@@ -53,13 +53,12 @@ The bundled aircraft graph covers 13 papers, 311 claims, and 258 relations. Five
 
 The red nodes are candidate answers. Green links support an answer; dashed links show other relation types. Select a node to inspect its claim and source, or select an answer to follow its premises.
 
-[Interactive graph](outputs/aircraft/final/domain_viewer_question.html) · [Reasoning paths](outputs/aircraft/final/ALL_CHAINS_TO_ROOTS.md) · [Answer data](outputs/aircraft/final/answer_layer.json)
 
 ### Pair breaking in 4Hₐ-NbSe₂
 
 **Which pair-breaking channel sets the in-plane B_c2 in 4H_a-NbSe2?**
 
-![Pair-breaking evidence graph](ariadne/docs/images/physics-question-graph.en.png)
+![Pair-breaking evidence graph](docs/images/physics-question-graph.en.png)
 
 This reviewed example contains 18 papers and 500 claims. The full graph has 654 nodes and 1,298 edges; the opening view focuses on the explicit answer layer.
 
@@ -68,20 +67,19 @@ This reviewed example contains 18 papers and 500 claims. The full graph has 654 
 
 These answers are compatible. The unresolved issue is whether Ising protection is required to explain the measured scale. Cross-material analogies remain labeled as analogies; they are not direct evidence for this compound.
 
-[Interactive graph](outputs/physics/final/domain_graph_full.reviewed.html) · [Reviewed answer data](outputs/physics/final/answer_layer.reviewed.json)
 
-Both examples are frozen artifacts. The aircraft demo replays its answer layer offline; the physics example is a reviewed graph, not a fresh live run. GitHub displays HTML as source, so download or clone the repository and open the files locally.
+The aircraft demo rebuilds the graph and reasoning paths from the bundled inputs. The physics image illustrates a previously reviewed case; it is not a fresh live run.
 
 ## Configuration
 
 ```bash
-./ariadne/run.sh config init
-./ariadne/run.sh config show
-./ariadne/run.sh config test --api
-./ariadne/run.sh auth status
+./run.sh config init
+./run.sh config show
+./run.sh config test --api
+./run.sh auth status
 ```
 
-Configuration is stored in `~/.config/ariadne/config.json`. Use [the example](ariadne/config.example.json) as a reference. Environment variables override the file; command-line flags override both.
+Configuration is stored in `~/.config/ariadne/config.json`. Use [the example](config.example.json) as a reference. Environment variables override the file; command-line flags override both.
 
 | Setting | Purpose |
 | --- | --- |
@@ -98,9 +96,9 @@ For shell or CI use, set `DEEPSEEK_API_KEY` (or `OPENAI_API_KEY`) and `BOHR_ACCE
 Useful commands:
 
 ```bash
-./ariadne/run.sh ask --help
-./ariadne/run.sh ask "Your research question" --papers papers.json --top-k 2
-./ariadne/run.sh ask "Your research question" --no-lkm-extract --top-k 2 --yes
+./run.sh ask --help
+./run.sh ask "Your research question" --papers papers.json --top-k 2
+./run.sh ask "Your research question" --no-lkm-extract --top-k 2 --yes
 ```
 
 `--papers` accepts local graph and text paths in place of live search. Entries with only an LKM ID still fetch their graph. `--no-lkm-extract` disables building missing graphs.
@@ -128,8 +126,8 @@ A graph path is not a proof. Only deduction relations are eligible to form deduc
 
 ```bash
 source .venv/bin/activate
-PYTHONPATH=ariadne:agent:pipelines/single_paper:pipelines/merge \
-  python -m unittest discover -s ariadne/ariadne/tests -p 'test_*.py'
+PYTHONPATH=.:agent:pipelines/single_paper:pipelines/merge \
+  python -m unittest discover -s ariadne/tests -p 'test_*.py'
 ```
 
 | Directory | Contents |
@@ -139,7 +137,6 @@ PYTHONPATH=ariadne:agent:pipelines/single_paper:pipelines/merge \
 | `pipelines/clean_claims/` | Paper-to-claims extraction |
 | `pipelines/single_paper/` | Single-paper Gaia IR processing |
 | `pipelines/merge/` | Cross-paper merging, answer layer, and rendering |
-| `outputs/aircraft/final/` | Offline aircraft example |
-| `outputs/physics/final/` | Reviewed superconductivity example |
+| `examples/aircraft/` | Inputs for the offline aircraft example |
 
 Extracted from [Gaia IR](https://github.com/CatherineWuleyan/gaia-ir). The compiler dependency is pinned to `gaia-lang==0.5.0a7`. A license has not yet been specified.

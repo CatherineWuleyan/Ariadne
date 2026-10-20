@@ -1,6 +1,7 @@
 {
-  "pipeline_id": "pipeline-merge-step4",
-  "version": "0.6.0",
+  "pipeline_id": "pipeline-merge-step5",
+  "version": "0.7.0",
+  "view_adapter": "pipeline_merge.view:MergeViewAdapter",
   "stages": [
     {
       "name": "step0_select_scope",
@@ -8,14 +9,10 @@
       "options": {
         "mode": "bootstrap",
         "scope": {
-          "domain": "lottery-ticket-hypothesis",
+          "domain": "research-domain",
           "selection": [
-            "papers:paper_1032903864883347458",
-            "papers:paper_867750889056633390",
-            "papers:paper_867752822639165809",
-            "papers:paper_867757662605934651",
-            "papers:paper_867760083600146646",
-            "papers:paper_867771291879342656"
+            "papers:paper_a",
+            "papers:paper_b"
           ]
         }
       }
@@ -44,6 +41,13 @@
       "name": "step4_formalize_integration",
       "plugin": "pipeline_merge.step4:Step4FormalizeIntegrationPlugin",
       "options": {}
+    },
+    {
+      "name": "step5_compile_gaia_ir",
+      "plugin": "pipeline_merge.step5:Step5CompileMergedGaiaIRPlugin",
+      "options": {
+        "compiler_plugin": "pipeline_harness.domain.compiler:Gaia05OfficialCompilerTool"
+      }
     }
   ]
 }

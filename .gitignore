@@ -4,7 +4,13 @@
 *.pem
 *.key
 config.local.json
-# Runtime and development artifacts
+# Runtime data and generated outputs
+/outputs/
+/data/
+/dist/
+**/claim_cleaner/data/
+pipelines/clean_claims/data/
+# Environments, build products, and caches
 .venv*/
 venv/
 __pycache__/
@@ -13,7 +19,4 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 node_modules/
-outputs/ariadne_runs/
-pipelines/clean_claims/data/
-**/claim_cleaner/data/
-dist/
+*.log

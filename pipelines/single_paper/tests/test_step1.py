@@ -35,7 +35,7 @@ class Step1Tests(unittest.TestCase):
                 {"path": "paper_text.md", "kind": "source.paper_text", "media_type": "text/markdown"},
                 {"path": "claims_final.json", "kind": CLAIMS_FINAL_KIND, "media_type": "application/json"},
             ]})
-            pipeline = json.loads((Path(__file__).parents[1] / "pipeline.step1.json").read_text(encoding="utf-8"))
+            pipeline = json.loads((Path(__file__).parents[1] / "tests" / "fixtures" / "pipeline.step1.json").read_text(encoding="utf-8"))
             store = RunStore.create(root / "runs", pipeline, input_manifest=root / "manifest.json")
             self.assertEqual("succeeded", run_pipeline(store.run_dir).status)
             formalization_ref = next(ref for ref in store.load_artifacts() if ref.kind == "formalization")
@@ -119,7 +119,7 @@ class Step1Tests(unittest.TestCase):
                 {"path": "paper_text.md", "kind": "source.paper_text", "media_type": "text/markdown"},
                 {"path": "claims_final.json", "kind": CLAIMS_FINAL_KIND, "media_type": "application/json"},
             ]})
-            pipeline = json.loads((Path(__file__).parents[1] / "pipeline.step1.json").read_text(encoding="utf-8"))
+            pipeline = json.loads((Path(__file__).parents[1] / "tests" / "fixtures" / "pipeline.step1.json").read_text(encoding="utf-8"))
             store = RunStore.create(root / "runs", pipeline, input_manifest=root / "manifest.json")
             self.assertEqual("succeeded", run_pipeline(store.run_dir).status)
             formalization_ref = next(ref for ref in store.load_artifacts() if ref.kind == "formalization")
@@ -154,7 +154,7 @@ class Step1Tests(unittest.TestCase):
                 {"path": "paper_text.md", "kind": "source.paper_text", "media_type": "text/markdown"},
                 {"path": "claims_final.json", "kind": CLAIMS_FINAL_KIND, "media_type": "application/json"},
             ]})
-            pipeline = json.loads((Path(__file__).parents[1] / "pipeline.step1.json").read_text(encoding="utf-8"))
+            pipeline = json.loads((Path(__file__).parents[1] / "tests" / "fixtures" / "pipeline.step1.json").read_text(encoding="utf-8"))
             store = RunStore.create(root / "runs", pipeline, input_manifest=root / "manifest.json")
             self.assertEqual("failed", run_pipeline(store.run_dir).status)
 
@@ -175,7 +175,7 @@ class Step1Tests(unittest.TestCase):
                 {"path": "paper_text.md", "kind": "source.paper_text", "media_type": "text/markdown"},
                 {"path": "claims_final.json", "kind": CLAIMS_FINAL_KIND, "media_type": "application/json"},
             ]})
-            pipeline = json.loads((Path(__file__).parents[1] / "pipeline.step1.json").read_text(encoding="utf-8"))
+            pipeline = json.loads((Path(__file__).parents[1] / "tests" / "fixtures" / "pipeline.step1.json").read_text(encoding="utf-8"))
             store = RunStore.create(root / "runs", pipeline, input_manifest=root / "manifest.json")
             self.assertEqual("succeeded", run_pipeline(store.run_dir).status)
             formalization_ref = next(ref for ref in store.load_artifacts() if ref.kind == "formalization")
@@ -201,7 +201,7 @@ class Step1Tests(unittest.TestCase):
                 {"path": "paper_text.md", "kind": "source.paper_text", "media_type": "text/markdown"},
                 {"path": "claims_final.json", "kind": CLAIMS_FINAL_KIND, "media_type": "application/json"},
             ]})
-            pipeline = json.loads((Path(__file__).parents[1] / "pipeline.step1.json").read_text(encoding="utf-8"))
+            pipeline = json.loads((Path(__file__).parents[1] / "tests" / "fixtures" / "pipeline.step1.json").read_text(encoding="utf-8"))
             store = RunStore.create(root / "runs", pipeline, input_manifest=root / "manifest.json")
             self.assertEqual("failed", run_pipeline(store.run_dir).status)
 

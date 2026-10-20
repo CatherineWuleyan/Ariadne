@@ -4,13 +4,13 @@
 
 从研究问题出发，沿着证据读论文。
 
-<a href="README.md"><img src="ariadne/docs/images/language-zh.svg" alt="简体中文 · 切换至 English" width="208" height="38"></a>
+<a href="README.md"><img src="docs/images/language-zh.svg" alt="简体中文 · 切换至 English" width="208" height="38"></a>
 
 </div>
 
 Ariadne 检索 Bohrium LKM 中的论文，提取主张，并将不同论文的主张连接成可交互的推理图。输入一个问题后，可以查看候选答案、追溯它们的前提，以及证据尚未覆盖的部分。
 
-![飞机仿真设计问题图](ariadne/docs/images/aircraft-question-graph.png)
+![飞机仿真设计问题图](docs/images/aircraft-question-graph.png)
 
 [开始使用](#开始使用) · [示例](#示例) · [配置](#配置) · [工作原理](#工作原理)
 
@@ -22,7 +22,7 @@ Ariadne 检索 Bohrium LKM 中的论文，提取主张，并将不同论文的�
 git clone https://github.com/CatherineWuleyan/ariadne.git
 cd ariadne
 ./install.sh
-./ariadne/run.sh demo
+./run.sh demo
 ```
 
 在浏览器中打开命令打印的 HTML 路径即可。图的数据已嵌入文件，无需启动服务器。
@@ -31,12 +31,12 @@ cd ariadne
 
 ```bash
 npm install -g bohr-cli
-./ariadne/run.sh config init
-./ariadne/run.sh auth bohr
-./ariadne/run.sh doctor
+./run.sh config init
+./run.sh auth bohr
+./run.sh doctor
 
-./ariadne/run.sh ask "怎么完成飞机的仿真设计？" --top-k 2 --dry-run
-./ariadne/run.sh ask "怎么完成飞机的仿真设计？" --top-k 2 --no-fulltext --yes
+./run.sh ask "怎么完成飞机的仿真设计？" --top-k 2 --dry-run
+./run.sh ask "怎么完成飞机的仿真设计？" --top-k 2 --no-fulltext --yes
 ```
 
 `--dry-run` 检查配置并打印计划，不发起付费调用。`--yes` 授权本次运行中的计费 LKM 调用。检索、补建论文图、解析全文和模型调用可能分别计费，以服务商当前价格为准。建议先用两篇论文检查结果，再扩大范围。
@@ -51,13 +51,12 @@ npm install -g bohr-cli
 
 红色大节点是候选答案，绿色连线表示对答案的支持，虚线保留其他关系类型。点击节点可以查看主张和来源，点击答案可以追溯其前提。
 
-[交互图](outputs/aircraft/final/domain_viewer_question.html) · [推理路径](outputs/aircraft/final/ALL_CHAINS_TO_ROOTS.md) · [答案数据](outputs/aircraft/final/answer_layer.json)
 
 ### 4Hₐ-NbSe₂ 的对破缺机制
 
 **在块体 4Hₐ-NbSe₂ 中，哪条对破缺通道决定面内上临界场？**
 
-![面内上临界场的证据图](ariadne/docs/images/physics-question-graph.png)
+![面内上临界场的证据图](docs/images/physics-question-graph.png)
 
 这份复核示例包含 18 篇论文、500 条主张。完整图有 654 个节点和 1,298 条边，初始视图聚焦于显式回答层。
 
@@ -66,20 +65,19 @@ npm install -g bohr-cli
 
 两个答案相容。尚未解决的是：解释实测场强是否必须引入 Ising 保护。跨材料类比仍标记为类比，不充当该化合物的直接证据。
 
-[交互图](outputs/physics/final/domain_graph_full.reviewed.html) · [复核答案数据](outputs/physics/final/answer_layer.reviewed.json)
 
-这两个示例均为冻结产物。飞机示例可离线重跑回答层；物理示例展示的是复核后的图，不是一次新的在线运行。GitHub 会将 HTML 显示为源码，请下载或克隆仓库后在本地打开。
+飞机示例使用随仓库提供的输入重新生成交互图和推理路径。物理配图展示复核过的案例，不代表一次新的在线运行。
 
 ## 配置
 
 ```bash
-./ariadne/run.sh config init
-./ariadne/run.sh config show
-./ariadne/run.sh config test --api
-./ariadne/run.sh auth status
+./run.sh config init
+./run.sh config show
+./run.sh config test --api
+./run.sh auth status
 ```
 
-配置保存在 `~/.config/ariadne/config.json`，字段可参考[配置样例](ariadne/config.example.json)。环境变量覆盖配置文件，命令行参数覆盖两者。
+配置保存在 `~/.config/ariadne/config.json`，字段可参考[配置样例](config.example.json)。环境变量覆盖配置文件，命令行参数覆盖两者。
 
 | 字段 | 用途 |
 | --- | --- |
@@ -96,9 +94,9 @@ npm install -g bohr-cli
 常用命令：
 
 ```bash
-./ariadne/run.sh ask --help
-./ariadne/run.sh ask "研究问题" --papers papers.json --top-k 2
-./ariadne/run.sh ask "研究问题" --no-lkm-extract --top-k 2 --yes
+./run.sh ask --help
+./run.sh ask "研究问题" --papers papers.json --top-k 2
+./run.sh ask "研究问题" --no-lkm-extract --top-k 2 --yes
 ```
 
 `--papers` 可以用本地图文件与文本替代在线检索；仅提供 LKM 编号的条目仍会在线获取论文图。`--no-lkm-extract` 关闭缺图补建。
@@ -126,8 +124,8 @@ npm install -g bohr-cli
 
 ```bash
 source .venv/bin/activate
-PYTHONPATH=ariadne:agent:pipelines/single_paper:pipelines/merge \
-  python -m unittest discover -s ariadne/ariadne/tests -p 'test_*.py'
+PYTHONPATH=.:agent:pipelines/single_paper:pipelines/merge \
+  python -m unittest discover -s ariadne/tests -p 'test_*.py'
 ```
 
 | 目录 | 内容 |
@@ -137,7 +135,6 @@ PYTHONPATH=ariadne:agent:pipelines/single_paper:pipelines/merge \
 | `pipelines/clean_claims/` | 从论文中提取主张 |
 | `pipelines/single_paper/` | 单篇论文的 Gaia IR 处理 |
 | `pipelines/merge/` | 跨论文合并、回答层和渲染 |
-| `outputs/aircraft/final/` | 离线飞机示例 |
-| `outputs/physics/final/` | 复核后的超导物理示例 |
+| `examples/aircraft/` | 离线飞机示例的输入 |
 
 本项目从 [Gaia IR](https://github.com/CatherineWuleyan/gaia-ir) 提取，编译器依赖固定为 `gaia-lang==0.5.0a7`。仓库暂未指定许可证。
