@@ -319,7 +319,9 @@ def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], 
         missing = [cid for cid in sample if cid not in by_id]
         if missing:
             raise AriadneError(f"sample ids not in the view: {missing[:3]}")
-        chosen = sample[:limit_claims]
+        # An explicit sample is used as given: silently truncating it to
+        # limit_claims made a 311-claim run report numbers from 20 claims.
+        chosen = list(sample)
     else:
         baseline = baseline_links(answer_layer)
         linked = sorted({cid for (_, cid) in baseline})

@@ -126,6 +126,27 @@ class MetricTests(unittest.TestCase):
         self.assertEqual(result["agreement"], 0.5)
 
 
+class SampleTests(unittest.TestCase):
+    def test_an_explicit_sample_is_not_truncated(self) -> None:
+        # A 311-claim run once reported numbers from 20 claims because the
+        # default limit silently applied to an explicit sample.
+        def call(prompt: str) -> dict:
+            return {"relation": "none"}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            view_path = Path(tmp) / "view.json"
+            layer_path = Path(tmp) / "layer.json"
+            view_path.write_text(json.dumps(view()), encoding="utf-8")
+            layer_path.write_text(json.dumps(with_links()), encoding="utf-8")
+            report = run(view_path, layer_path, call_json=call, protocols=["claim_all"],
+                         sample=["knowledge:papers:paper_a::claim_1",
+                                 "knowledge:papers:paper_a::claim_2",
+                                 "knowledge:papers:paper_b::claim_1"],
+                         limit_claims=2, workers=1)
+        self.assertEqual(report["claim_count"], 3)
+        self.assertEqual(report["protocols"]["claim_all"]["calls"], 3)
+
+
 class RunTests(unittest.TestCase):
     def test_two_protocols_run_and_are_compared(self) -> None:
         seen: list[str] = []
