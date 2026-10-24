@@ -93,3 +93,34 @@ class GitStateTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class InputDigestTests(unittest.TestCase):
+    def test_relative_and_absolute_paths_are_hashed_the_same(self) -> None:
+        from ariadne.full import _input_digests
+
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            graph = run_dir / "01_retrieval" / "graph.json"
+            graph.parent.mkdir(parents=True)
+            graph.write_text('{"nodes": []}', encoding="utf-8")
+            text = run_dir / "01_retrieval" / "ocr.md"
+            text.write_text("# paper", encoding="utf-8")
+
+            relative = _input_digests(
+                [{"lkm_id": "p1", "graph_path": "01_retrieval/graph.json",
+                  "ocr_path": "01_retrieval/ocr.md"}], run_dir)
+            absolute = _input_digests(
+                [{"lkm_id": "p1", "graph_path": str(graph), "ocr_path": str(text)}], run_dir)
+            expected_graph_digest = file_digest(graph)
+
+        self.assertEqual(relative, absolute)
+        self.assertEqual(relative["papers"]["p1"]["graph_sha256"], expected_graph_digest)
+        self.assertEqual(len(relative["corpus_sha256"]), 64)
+
+    def test_missing_input_is_reported_as_none(self) -> None:
+        from ariadne.full import _input_digests
+
+        with tempfile.TemporaryDirectory() as tmp:
+            digests = _input_digests([{"lkm_id": "p1", "graph_path": "absent.json"}], Path(tmp))
+        self.assertIsNone(digests["papers"]["p1"]["graph_sha256"])
