@@ -15,7 +15,17 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from .config import Config, Runtime, resolve_runtime
-from .util import AriadneError, REPO, python_bin, read_json, run, stage_log, write_json
+from .util import (
+    AriadneError,
+    REPO,
+    map_ordered,
+    parallel_workers,
+    python_bin,
+    read_json,
+    run,
+    stage_log,
+    write_json,
+)
 
 EMPTY_INSTANCE_OUTPUTS = frozenset({
     "instance_target_positions.json",
@@ -205,7 +215,8 @@ def run_one(paper: Mapping[str, Any], stage_dir: Path, pipeline_dir: Path,
 
 
 def run_all(papers: Iterable[Mapping[str, Any]], stage_dir: Path, run_root: Path,
-            runtime: Runtime | None = None, min_papers: int = 2, reuse: bool = True
+            runtime: Runtime | None = None, min_papers: int = 2, reuse: bool = True,
+            workers: int | None = None
             ) -> list[dict[str, Any]]:
     if runtime is None:
         runtime = resolve_runtime(Config.load())
@@ -233,23 +244,32 @@ def run_all(papers: Iterable[Mapping[str, Any]], stage_dir: Path, run_root: Path
     module = _load_module(pipeline_dir / "run_full_pipeline.py")
     module.PROJECT_ROOT = pipeline_dir
     module.DATA_DIR = pipeline_data
-    results = []
+    # Papers are independent: each one only reads its own graph/text and writes
+    # its own data/<pid>/ directory, so they can run at the same time. 14 steps
+    # at ~40s each made this the slowest stage by far.
+    ordered = list(papers)
+    workers = parallel_workers(workers, ceiling=len(ordered))
+    results: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
-    for paper in papers:
-        try:
-            args = (paper, stage_dir, pipeline_dir, module, run_root, python)
-            results.append(run_one(*args) if reuse else run_one(*args, reuse=False))
-        except AriadneError as exc:
-            failures.append({
-                "lkm_id": paper.get("lkm_id"),
-                "title": paper.get("title"),
-                "error": str(exc)[:2000],
-            })
-            print(
-                f"[paper2ir] skipped {paper.get('lkm_id')}: "
-                f"{str(exc).splitlines()[0][:180]}",
-                flush=True,
-            )
+
+    def attempt(paper: Mapping[str, Any]) -> dict[str, Any]:
+        args = (paper, stage_dir, pipeline_dir, module, run_root, python)
+        return run_one(*args) if reuse else run_one(*args, reuse=False)
+
+    if workers > 1 and len(ordered) > 1:
+        print(f"[paper2ir] {len(ordered)} papers, {workers} in parallel", flush=True)
+    results, errors = map_ordered(attempt, ordered, workers)
+    for paper, exc in errors:
+        failures.append({
+            "lkm_id": paper.get("lkm_id"),
+            "title": paper.get("title"),
+            "error": str(exc)[:2000],
+        })
+        print(
+            f"[paper2ir] skipped {paper.get('lkm_id')}: "
+            f"{str(exc).splitlines()[0][:180]}",
+            flush=True,
+        )
     write_json(
         stage_dir / "papers.json",
         {"papers": results, "failures": failures},

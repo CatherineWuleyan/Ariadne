@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -32,7 +33,7 @@ from typing import Any, Iterable, Mapping
 
 from . import sources as literature
 from .config import Config, Runtime, bohr_command, resolve_runtime
-from .util import AriadneError, REPO, read_json, run, stage_log, write_json
+from .util import AriadneError, REPO, parallel_workers, read_json, run, stage_log, write_json
 
 BOHR_TIMEOUT = 300
 PDF_TIMEOUT = 900
@@ -406,7 +407,7 @@ def _candidate_audit(candidate: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def search_many(queries: list[dict[str, Any]], per_query: int, run_dir: Path,
-                runtime: Runtime, *, enrich: Any = None
+                runtime: Runtime, *, enrich: Any = None, workers: int | None = None
                 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Run every planned query and merge the ranked paper candidates.
 
@@ -416,14 +417,35 @@ def search_many(queries: list[dict[str, Any]], per_query: int, run_dir: Path,
     """
     candidates: dict[str, dict[str, Any]] = {}
     audits: list[dict[str, Any]] = []
-    for index, item in enumerate(queries):
+    # Every query is an independent LKM call writing its own raw/log file, so
+    # they can run at once. Results are merged in query order to stay
+    # deterministic.
+    jobs = [(index, item) for index, item in enumerate(queries)
+            if str(item.get("query") or "").strip()]
+    outcomes: dict[int, tuple[list[dict[str, Any]], str]] = {}
+    workers = parallel_workers(workers, ceiling=len(jobs))
+    if workers > 1 and len(jobs) > 1:
+        print(f"[retrieve] {len(jobs)} searches, {workers} in parallel", flush=True)
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(
+                    _search_one, str(item.get("query") or "").strip(), index,
+                    per_query, run_dir, runtime, fatal=False,
+                    raw_name=f"search_raw_{index:02d}.json",
+                ): index
+                for index, item in jobs
+            }
+            for future in as_completed(futures):
+                outcomes[futures[future]] = future.result()
+    else:
+        for index, item in jobs:
+            outcomes[index] = _search_one(
+                str(item.get("query") or "").strip(), index, per_query, run_dir,
+                runtime, fatal=False, raw_name=f"search_raw_{index:02d}.json",
+            )
+    for index, item in jobs:
+        records, error = outcomes[index]
         query = str(item.get("query") or "").strip()
-        if not query:
-            continue
-        records, error = _search_one(
-            query, index, per_query, run_dir, runtime,
-            fatal=False, raw_name=f"search_raw_{index:02d}.json",
-        )
         audits.append({
             "index": index,
             "query": query,
@@ -1428,6 +1450,13 @@ def _extract_graph(record: Mapping[str, Any], dest: Path, run_dir: Path,
 EXTRACTION_WORKERS = 3
 
 
+def _extraction_workers(ready: int) -> int:
+    """Extraction default stays at 3; ARIADNE_WORKERS can raise or lower it."""
+    configured = os.environ.get("ARIADNE_WORKERS", "").strip()
+    base = int(configured) if configured.isdigit() else EXTRACTION_WORKERS
+    return max(1, min(base, ready))
+
+
 def _probe_priority(candidate: Mapping[str, Any]) -> tuple[float, float]:
     """Relevance first, with a small independent-agreement tie-breaker."""
     corroboration = min(int(candidate.get("corroboration") or 0), 2)
@@ -1557,11 +1586,11 @@ def probe_and_select(
     if ready:
         print(
             f"[retrieve] building {len(ready)} missing graph(s) with "
-            f"bohr lkm extract ({min(EXTRACTION_WORKERS, len(ready))} workers)",
+            f"bohr lkm extract ({_extraction_workers(len(ready))} workers)",
             flush=True,
         )
         with ThreadPoolExecutor(
-            max_workers=min(EXTRACTION_WORKERS, len(ready))
+            max_workers=_extraction_workers(len(ready))
         ) as pool:
             futures = {}
             for candidate, pdf, pid in ready:
@@ -1671,7 +1700,7 @@ def probe_and_select(
     audit["filled"] = filled
     audit["extract_attempts"] = extraction_attempts
     audit["extracted"] = extracted
-    audit["extraction_workers"] = EXTRACTION_WORKERS
+    audit["extraction_workers"] = _extraction_workers(len(ready)) if ready else EXTRACTION_WORKERS
     selection_path = run_dir / "01_retrieval" / "selection.json"
     write_json(selection_path, audit)
     if len(selected) < int(min_papers):

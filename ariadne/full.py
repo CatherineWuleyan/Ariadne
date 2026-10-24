@@ -1,6 +1,8 @@
 """End-to-end Ariadne run: question -> LKM -> paper2ir -> single -> merge -> HTML/MD."""
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
 import time
 from datetime import datetime, timezone
@@ -17,7 +19,15 @@ from .config import (
     resolve_runtime,
 )
 from .render import install_outputs, render_outputs
-from .util import AriadneError, REPO, new_run_dir, read_json, write_json
+from .util import (
+    AriadneError,
+    REPO,
+    file_digest,
+    git_state,
+    new_run_dir,
+    read_json,
+    write_json,
+)
 
 REQUIRED_FILES = frozenset({
     "agent/pipeline_harness/__init__.py",
@@ -256,6 +266,45 @@ def _print_plan(question: str, runtime: Runtime, top_k: int,
     print("  no files were written (--dry-run)")
 
 
+def _reproducibility(runtime: Runtime) -> dict[str, Any]:
+    """Record what produced this run, and what is deliberately not pinned."""
+    return {
+        "code": {"version": __version__, **git_state()},
+        "model": {
+            "model": runtime.model,
+            "merge_model": runtime.merge_model,
+            "base_url": runtime.model_base_url,
+            "temperature": None,
+            "temperature_note": (
+                "The bundled steps do not pin a temperature, so two runs on the "
+                "same commit are different samples, not reruns."
+            ),
+        },
+        "python": python_version(runtime.python),
+        "inputs": {},
+        "prompt_versions": {},
+    }
+
+
+def _input_digests(papers: list[Mapping[str, Any]], run_dir: Path) -> dict[str, Any]:
+    """Hash the exact graph and text each paper was processed from."""
+    per_paper: dict[str, dict[str, str | None]] = {}
+    for paper in papers:
+        pid = str(paper.get("lkm_id") or "")
+        paths = {}
+        for key, field in (("graph_sha256", "graph_path"), ("text_sha256", "ocr_path")):
+            value = paper.get(field)
+            path = Path(str(value)) if value else None
+            if path is not None and not path.is_absolute():
+                path = run_dir / path
+            paths[key] = file_digest(path) if path is not None else None
+        per_paper[pid] = paths
+    combined = hashlib.sha256(
+        json.dumps(per_paper, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
+    return {"papers": per_paper, "corpus_sha256": combined}
+
+
 def run_full(
     question: str,
     *,
@@ -316,6 +365,7 @@ def run_full(
         "runtime": runtime.summary(),
         "retrieval": retrieval_options,
         "preflight": details,
+        "reproducibility": _reproducibility(runtime),
         "stages": {},
         "outputs": {},
     }
@@ -345,6 +395,7 @@ def run_full(
             papers=0,
         )
         record["stages"]["01_retrieval"]["papers"] = len(papers)
+        record["reproducibility"]["inputs"] = _input_digests(papers, run_dir)
         record["stages"]["01_retrieval"]["path"] = str(
             run_dir / "01_retrieval" / "papers.json"
         )
@@ -395,7 +446,13 @@ def run_full(
         answer, view_model = merge.extract_answer_layer(
             Path(merged["view_model"]), run_dir / "05_outputs"
         )
-        roots = len(read_json(answer).get("roots") or [])
+        layer = read_json(answer)
+        generation = layer.get("generation") or {}
+        record["reproducibility"]["prompt_versions"] = {
+            "question_answer": generation.get("prompt_version"),
+            "question_answer_model": generation.get("model"),
+        }
+        roots = len(layer.get("roots") or [])
         record["stages"]["04_merge"]["run_dir"] = merged["run_dir"]
         record["stages"]["04_merge"]["roots"] = roots
         print(f"[merge] {roots} answer roots", flush=True)
@@ -418,6 +475,14 @@ def run_full(
         record["status"] = "complete"
         record["finished_at"] = _utcnow()
         write_json(run_dir / "run.json", record)
+    except KeyboardInterrupt:
+        # Ctrl-C is not an Exception, so without this a cancelled run stays
+        # "running" forever and no later reader can tell it apart from a live one.
+        record["status"] = "interrupted"
+        record["finished_at"] = _utcnow()
+        write_json(run_dir / "run.json", record)
+        print(f"\nAriadne interrupted; state saved in {run_dir / 'run.json'}", flush=True)
+        raise
     except Exception as exc:
         record["status"] = "failed"
         record["error"] = str(exc)[:4000]

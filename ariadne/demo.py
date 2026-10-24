@@ -1,12 +1,27 @@
 """Offline demo: run the question layer on the frozen aircraft graph."""
 from __future__ import annotations
 
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .config import Config, Runtime, resolve_runtime
 from .render import install_outputs, render_outputs
-from .util import AriadneError, DEFAULT_CONFIG, REPO, new_run_dir, python_bin, read_json, run, stage_log, write_json
+from .util import (
+    AriadneError,
+    DEFAULT_CONFIG,
+    REPO,
+    file_digest,
+    git_state,
+    new_run_dir,
+    python_bin,
+    read_json,
+    run,
+    stage_log,
+    write_json,
+)
 
 
 def _resolve(value: str) -> Path:
@@ -22,6 +37,8 @@ def run_demo(out: Path | None = None, config_path: Path | None = None,
     config_path = config_path or DEFAULT_CONFIG
     config = read_json(config_path)
     question = str(config["question_zh"])
+    started = time.monotonic()
+    started_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     run_dir = new_run_dir(question, out)
     stage = run_dir / "04_question"
     stage.mkdir(parents=True, exist_ok=True)
@@ -49,10 +66,24 @@ def run_demo(out: Path | None = None, config_path: Path | None = None,
     installed = install_outputs(rendered, run_dir)
     write_json(run_dir / "run.json", {
         "product": "ariadne",
+        "version": __version__,
         "mode": "demo",
+        "status": "complete",
+        "started_at": started_at,
+        "finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "question": {"zh": question, "en": config["question_en"], "domain": config["domain"]},
         "config": str(config_path),
         "runtime": runtime.summary(),
+        "reproducibility": {
+            "code": {"version": __version__, **git_state()},
+            "inputs": {
+                "view_sha256": file_digest(view),
+                "edge_roles_sha256": file_digest(roles),
+                "fixture_sha256": file_digest(fixture),
+            },
+            "model": {"model": None, "note": "demo reuses the frozen answer fixture; no model call"},
+        },
+        "stages": {"04_question": {"seconds": round(time.monotonic() - started, 1)}},
         "outputs": {
             "viewer": installed["html"],
             "chains": installed["markdown"],

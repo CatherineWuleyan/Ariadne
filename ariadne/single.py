@@ -5,7 +5,17 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from .config import Config, Runtime, resolve_runtime
-from .util import AriadneError, REPO, harness_env, python_bin, run, stage_log, write_json
+from .util import (
+    AriadneError,
+    REPO,
+    harness_env,
+    map_ordered,
+    parallel_workers,
+    python_bin,
+    run,
+    stage_log,
+    write_json,
+)
 
 
 def _run_dir(stdout: str) -> str:
@@ -67,14 +77,26 @@ def run_one(paper: Mapping[str, Any], stage_dir: Path, run_root: Path,
 
 
 def run_all(papers: Iterable[Mapping[str, Any]], stage_dir: Path, run_root: Path,
-            runtime: Runtime | None = None) -> list[dict[str, Any]]:
+            runtime: Runtime | None = None, workers: int | None = None
+            ) -> list[dict[str, Any]]:
     if runtime is None:
         runtime = resolve_runtime(Config.load())
     runtime.apply_env()
     stage_dir.mkdir(parents=True, exist_ok=True)
     python = runtime.python or python_bin()
-    results = []
-    for paper in papers:
-        results.append(run_one(paper, stage_dir, run_root, python))
+    # Each paper gets its own harness run directory and its own export folder,
+    # so the papers can be processed concurrently.
+    ordered = list(papers)
+    workers = parallel_workers(workers, ceiling=len(ordered))
+    if workers > 1 and len(ordered) > 1:
+        print(f"[single] {len(ordered)} papers, {workers} in parallel", flush=True)
+    results, errors = map_ordered(
+        lambda paper: run_one(paper, stage_dir, run_root, python), ordered, workers
+    )
+    if errors:
+        # Unlike paper2ir, merge cannot proceed with a missing package, so the
+        # first failure still stops the stage -- with the paper it belongs to.
+        paper, exc = errors[0]
+        raise AriadneError(f"{paper.get('lkm_id')}: {exc}")
     write_json(stage_dir / "packages.json", {"packages": results})
     return results

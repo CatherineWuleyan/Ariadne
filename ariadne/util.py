@@ -1,12 +1,14 @@
 """Small shared utilities: paths, env, subprocess logging, run directories."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -170,6 +172,102 @@ def run_interactive(
 
 def which(name: str) -> str | None:
     return shutil.which(name)
+
+
+def git_state(root: Path | None = None) -> dict[str, Any]:
+    """Identify the code that produced a run.
+
+    A run.json without this cannot answer "why did the graph change?" once the
+    checkout moves on. Missing git (a tarball install) is reported, not guessed.
+    """
+    base = str(root or REPO)
+    state: dict[str, Any] = {"available": False, "commit": None, "dirty": None, "describe": None}
+    try:
+        head = subprocess.run(
+            ["git", "-C", base, "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        if head.returncode != 0:
+            return state
+        state["commit"] = head.stdout.strip()
+        status = subprocess.run(
+            ["git", "-C", base, "status", "--porcelain"],
+            capture_output=True, text=True, timeout=20, check=False,
+        )
+        state["dirty"] = bool(status.stdout.strip()) if status.returncode == 0 else None
+        describe = subprocess.run(
+            ["git", "-C", base, "describe", "--tags", "--always", "--dirty"],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+        state["describe"] = describe.stdout.strip() if describe.returncode == 0 else None
+        state["available"] = True
+    except (OSError, subprocess.SubprocessError):
+        return state
+    return state
+
+
+DEFAULT_WORKERS = 4
+
+
+def parallel_workers(explicit: int | None = None, ceiling: int | None = None) -> int:
+    """How many independent jobs to run at once.
+
+    Papers, queries and extractions are independent; running them one at a time
+    was the dominant cost. ``ARIADNE_WORKERS`` tunes it without a code change,
+    and ``ceiling`` keeps small batches from starting idle workers.
+    """
+    raw: int | None = explicit
+    if raw is None:
+        env = os.environ.get("ARIADNE_WORKERS", "").strip()
+        raw = int(env) if env.isdigit() else DEFAULT_WORKERS
+    workers = max(1, int(raw))
+    if ceiling is not None:
+        workers = min(workers, max(1, int(ceiling)))
+    return workers
+
+
+def map_ordered(func: Any, items: Iterable[Any], workers: int | None = None
+                ) -> tuple[list[Any], list[tuple[Any, BaseException]]]:
+    """Apply ``func`` to every item, optionally at the same time.
+
+    Returns ``(results, failures)`` with results in the input order, so a caller
+    that fans out independent work still produces deterministic output. Failures
+    are returned instead of raised: one bad paper or query must not abort the
+    batch. ``workers <= 1`` runs the plain sequential path.
+    """
+    ordered = list(items)
+    count = parallel_workers(workers, ceiling=len(ordered))
+    results: list[Any] = []
+    failures: list[tuple[Any, BaseException]] = []
+    if count <= 1 or len(ordered) <= 1:
+        for item in ordered:
+            try:
+                results.append(func(item))
+            except Exception as exc:  # noqa: BLE001 - reported to the caller
+                failures.append((item, exc))
+        return results, failures
+    completed: list[tuple[int, Any]] = []
+    with ThreadPoolExecutor(max_workers=count) as pool:
+        futures = {pool.submit(func, item): index for index, item in enumerate(ordered)}
+        for future in as_completed(futures):
+            index = futures[future]
+            try:
+                completed.append((index, future.result()))
+            except Exception as exc:  # noqa: BLE001 - reported to the caller
+                failures.append((ordered[index], exc))
+    results = [result for _, result in sorted(completed)]
+    return results, failures
+
+
+def file_digest(path: Path) -> str | None:
+    """sha256 of a file, or None when it is absent."""
+    if not path.is_file():
+        return None
+    hasher = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 
 def stage_log(run_dir: Path, name: str) -> Path:

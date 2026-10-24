@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -305,6 +307,27 @@ class SelectionTest(unittest.TestCase):
 
 
 class SearchManyHookTest(unittest.TestCase):
+    def test_parallel_searches_keep_query_order_in_the_audit(self) -> None:
+        # Completion order is reversed on purpose: the audit must still follow
+        # the query order, or selection.json becomes non-reproducible.
+        def slow_search(query, index, top_k, run_dir, runtime, **kwargs):
+            time.sleep(0.05 * (3 - index))
+            return ([{"lkm_id": str(index + 1), "title": f"Paper {index}",
+                      "doi": f"10.1/{index}", "search_score": 0.5}], "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            runtime = _runtime(root)
+            with mock.patch("ariadne.retrieval._search_one", side_effect=slow_search), \
+                    mock.patch.dict(os.environ, {"ARIADNE_WORKERS": "3"}):
+                candidates, audits = retrieval.search_many(
+                    [{"query": "q0"}, {"query": "q1"}, {"query": "q2"}],
+                    5, root, runtime,
+                )
+        self.assertEqual([audit["index"] for audit in audits], [0, 1, 2])
+        self.assertEqual([audit["query"] for audit in audits], ["q0", "q1", "q2"])
+        self.assertEqual(len(candidates), 3)
+
     def test_enrich_runs_before_ranking_and_shows_in_audit(self) -> None:
         def fake_search(query, index, top_k, run_dir, runtime, **kwargs):
             return ([{"lkm_id": "1", "title": "Aircraft Design Survey",
