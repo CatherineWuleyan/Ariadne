@@ -7,6 +7,7 @@ import json
 import sys
 import urllib.error
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -343,6 +344,58 @@ def cmd_demo(args: argparse.Namespace) -> int:
     result = run_demo(Path(args.out) if args.out else None, runtime=runtime)
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_support(args: argparse.Namespace) -> int:
+    from .support import build_candidate, run_support
+
+    runtime = resolve_runtime(Config.load(args.config), agent_env_path=AGENT_ENV)
+    candidate = build_candidate(
+        args.candidate, code=args.code, title_zh=args.title_zh,
+        title_en=args.title_en, scope=args.scope,
+    )
+    question = {"zh": args.question, "en": args.question} if args.question else None
+    expand_with = None
+    if args.expand:
+        base = Path(args.runs_dir) if args.runs_dir else (
+            Path(args.out) if args.out else Path("outputs/support_runs")
+        )
+        stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+        expand_with = {
+            "run_dir": base / f"expand_{stamp}",
+            "max_papers": args.expand,
+            "query": args.query,
+            "yes": args.yes,
+        }
+    report = run_support(
+        Path(args.view), candidate, question=question,
+        out=Path(args.out) if args.out else None, runtime=runtime,
+        expand_with=expand_with,
+    )
+    if args.json:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        links = report["links"]
+        print(f"\ncandidate {candidate['code']}: {report['status']}")
+        print(f"  support / oppose / bounds: {len(links['support'])} / "
+              f"{len(links['oppose'])} / {len(links['bounds'])}")
+        print(f"  verdict: {report['verdict']['class']} — {report['verdict']['label']}")
+        scope = report["scope"]
+        print(f"  scope: {scope['node_count']} nodes, {scope['edge_count']} edges, "
+              f"{scope['claims_offered_to_judge']} claims judged")
+        retrieval = scope.get("retrieval")
+        if scope.get("searched") and isinstance(retrieval, dict):
+            print(f"  searched LKM: yes — query {retrieval['query']!r}, "
+                  f"{retrieval['papers_used']}/{retrieval['papers_requested']} papers, "
+                  f"+{retrieval['nodes_added']} nodes, "
+                  f"~{retrieval['estimated_cost_cny']} CNY")
+        else:
+            print("  searched LKM: no — absence here is not absence in the literature")
+        if report["next"]["retrieval_recommended"]:
+            print(f"  next: {report['next']['how']}")
+        if args.out:
+            print(f"\n  report: {Path(args.out) / 'support.md'}")
     return 0
 
 
@@ -844,6 +897,29 @@ def build_parser() -> argparse.ArgumentParser:
     _add_config_flag(demo)
     demo.add_argument("--json", action="store_true")
     demo.set_defaults(func=cmd_demo)
+
+    support = sub.add_parser(
+        "support",
+        help="link one new candidate to an existing graph, without retrieving",
+    )
+    support.add_argument("--view", required=True, help="frozen view model to judge against")
+    support.add_argument("--candidate", required=True, help="the candidate statement")
+    support.add_argument("--code", default="C1", help="short id for the candidate (default C1)")
+    support.add_argument("--title-zh", default="", help="optional Chinese title")
+    support.add_argument("--title-en", default="", help="optional English title")
+    support.add_argument("--scope", default="", help="when the candidate is meant to apply")
+    support.add_argument("--question", default="", help="question the candidate answers")
+    support.add_argument(
+        "--expand", nargs="?", type=int, const=4, default=None, metavar="N",
+        help="also search LKM for related papers (default 4) and judge their graph nodes",
+    )
+    support.add_argument("--query", default=None, help="override the expansion query")
+    support.add_argument("--yes", action="store_true", help="approve billable LKM calls for --expand")
+    support.add_argument("--runs-dir", default=None, help="where expansion logs and graphs go")
+    support.add_argument("--out", help="write support.json and support.md here")
+    _add_config_flag(support)
+    support.add_argument("--json", action="store_true")
+    support.set_defaults(func=cmd_support)
 
     doctor = sub.add_parser("doctor", help="check local prerequisites and configuration")
     _add_config_flag(doctor)

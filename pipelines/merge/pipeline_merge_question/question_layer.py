@@ -320,6 +320,32 @@ CLAIMS={json.dumps(digest['claims'], ensure_ascii=False, sort_keys=True)}
 """
 
 
+def _seed_overlap(seeds: list[str], statement: str, view: Mapping[str, Any]) -> dict[str, Any]:
+    """Lexical agreement between a root's statement and the seeds it cites."""
+    by_id = {str(node.get("id")): node for node in view.get("nodes") or []}
+    statement_tokens = tokens(statement)
+    overlaps: list[float] = []
+    for seed in seeds:
+        node = by_id.get(seed)
+        if node is None:
+            continue
+        seed_tokens = tokens(node_text(node))
+        if not seed_tokens or not statement_tokens:
+            overlaps.append(0.0)
+            continue
+        overlaps.append(len(statement_tokens & seed_tokens) / max(1, len(seed_tokens)))
+    if not overlaps:
+        return {"mean": 0.0, "min": 0.0, "max": 0.0, "seeds_measured": 0,
+                "seeds_with_overlap": 0}
+    return {
+        "mean": round(sum(overlaps) / len(overlaps), 3),
+        "min": round(min(overlaps), 3),
+        "max": round(max(overlaps), 3),
+        "seeds_measured": len(overlaps),
+        "seeds_with_overlap": sum(1 for value in overlaps if value > 0),
+    }
+
+
 def _fallback_seeds(root: Mapping[str, Any], view: Mapping[str, Any], limit: int = 5) -> list[str]:
     query = tokens(" ".join(str(root.get(key) or "") for key in ("title_en", "title_zh", "statement", "criteria")))
     scored = []
@@ -376,6 +402,11 @@ def generate_roots(
         seeds = [str(item) for item in raw.get("seed_claim_ids") or [] if str(item) in known]
         if not seeds:
             seeds = _fallback_seeds(raw, view)
+        # Seeds are written by the same call that wrote the statement, so citing
+        # them proves nothing by itself. Measure the lexical overlap and record
+        # it: a root that names six seeds of which none share a term with its own
+        # statement is a root whose grounding should be read, not counted.
+        seed_overlap = _seed_overlap(seeds, statement, view)
         title_zh = str(raw.get("title_zh") or raw.get("title") or "").strip()
         title_en = str(raw.get("title_en") or raw.get("title") or code).strip()
         roots.append({
@@ -388,6 +419,7 @@ def generate_roots(
             "scope": str(raw.get("scope") or "").strip(),
             "criteria": str(raw.get("criteria") or "").strip(),
             "seed_claim_ids": list(dict.fromkeys(seeds))[:8],
+            "seed_overlap": seed_overlap,
         })
     if not roots:
         raise ValueError("root generation returned no usable answer")
@@ -512,20 +544,21 @@ def _normalize_links(
     raw_links = response.get("links") if isinstance(response, Mapping) else None
     if not isinstance(raw_links, list):
         return []
-    links: list[dict[str, str]] = []
-    seen_claims: set[str] = set()
+    # Collect first, decide after. Keeping only the first link per claim made the
+    # outcome depend on the order the judge happened to emit, which is neither
+    # meaningful nor reproducible.
+    collected: list[dict[str, str]] = []
     for raw in raw_links:
         if not isinstance(raw, Mapping):
             continue
         claim_id = str(raw.get("claim_id") or raw.get("id") or "")
         relation = str(raw.get("relation") or "").strip().lower()
-        if claim_id not in allowed or relation not in LINK_RELATIONS or claim_id in seen_claims:
+        if claim_id not in allowed or relation not in LINK_RELATIONS:
             continue
         reason = re.sub(r"\s+", " ", str(raw.get("reason") or "")).strip()
         if not reason:
             continue
-        seen_claims.add(claim_id)
-        links.append({
+        collected.append({
             "claim_id": claim_id,
             "relation": relation,
             "reason": reason[:300],
@@ -533,10 +566,18 @@ def _normalize_links(
     # A support and an oppose on the same claim means the judge did not decide;
     # keep neither rather than drawing a contradictory pair.
     by_claim: dict[str, set[str]] = defaultdict(set)
-    for link in links:
+    for link in collected:
         by_claim[link["claim_id"]].add(link["relation"])
     conflicting = {claim for claim, rels in by_claim.items() if len(rels) > 1}
-    return [link for link in links if link["claim_id"] not in conflicting][:12]
+    kept: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for link in collected:
+        key = (link["claim_id"], link["relation"])
+        if link["claim_id"] in conflicting or key in seen:
+            continue
+        seen.add(key)
+        kept.append(link)
+    return kept[:12]
 
 
 def link_roots(
@@ -1001,6 +1042,7 @@ def evaluate(view: Mapping[str, Any], answer_layer: Mapping[str, Any]) -> dict[s
             "chain_node_count": len(root_chain_nodes),
             "direct_ids": sorted(support | boundaries | opposes),
             "statement": root.get("statement"),
+            "seed_overlap": root.get("seed_overlap"),
         })
     linked_or_chained = linked | chain_nodes
     linked_or_chained_with_exploratory = linked_or_chained | exploratory_nodes
@@ -1087,9 +1129,15 @@ def evaluation_markdown(result: Mapping[str, Any], answer_layer: Mapping[str, An
             f"({root.get('exploratory_node_count')} nodes)",
             f"- Boundary: {root.get('boundary_count')} · Oppose: {root.get('oppose_count')}",
             f"- Chain nodes: {root.get('chain_node_count')}",
-            f"- Statement: {root.get('statement')}",
-            "",
         ])
+        seed_overlap = root.get("seed_overlap") or {}
+        if seed_overlap.get("seeds_measured"):
+            lines.append(
+                f"- Seed agreement: {seed_overlap.get('seeds_with_overlap')}/"
+                f"{seed_overlap.get('seeds_measured')} seeds share terms with the "
+                f"statement (mean {seed_overlap.get('mean')})"
+            )
+        lines.extend([f"- Statement: {root.get('statement')}", ""])
     lines.extend([
         "## Reading the numbers",
         "",

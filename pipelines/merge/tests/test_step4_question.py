@@ -107,3 +107,34 @@ assert.ok(Math.abs(transform.y + centerY * transform.k - (rect.top + rect.height
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SeedOverlapTests(unittest.TestCase):
+    """A root citing seeds that say nothing about its statement should show it."""
+
+    def _view(self, nodes):
+        return {"nodes": nodes, "edges": []}
+
+    @staticmethod
+    def _node(node_id, text):
+        return {"id": node_id, "kind": "claim", "summary": text,
+                "details": {"content": text}}
+
+    def test_overlap_is_measured_per_seed(self) -> None:
+        from pipeline_merge_question.question_layer import _seed_overlap
+
+        view = self._view([
+            self._node("a", "Calibration against measured flight data reduced prediction error."),
+            self._node("b", "Cockpit display layout affects pilot workload."),
+        ])
+        measured = _seed_overlap(["a", "b"], "Calibration against measured flight data", view)
+        self.assertEqual(measured["seeds_measured"], 2)
+        self.assertEqual(measured["seeds_with_overlap"], 1)
+        self.assertGreater(measured["max"], measured["min"])
+
+    def test_unknown_seed_ids_are_not_measured(self) -> None:
+        from pipeline_merge_question.question_layer import _seed_overlap
+
+        measured = _seed_overlap(["missing"], "anything at all", self._view([]))
+        self.assertEqual(measured["seeds_measured"], 0)
+        self.assertEqual(measured["mean"], 0.0)
