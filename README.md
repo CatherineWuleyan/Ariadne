@@ -107,6 +107,8 @@ Configuration is stored in `~/.config/ariadne/config.json`. Use [the example](co
 | `runtime.python` | Interpreter for pipeline subprocesses |
 | `retrieval.max_extractions` | Limit on missing paper graphs to build |
 
+`ARIADNE_WORKERS` (default 4) sets how many papers, LKM searches and graph extractions run at once. Papers and queries are independent, so this only changes wall-clock time; set it to 1 to reproduce the old sequential order exactly.
+
 For shell or CI use, set `DEEPSEEK_API_KEY` (or `OPENAI_API_KEY`) and `BOHR_ACCESS_KEY`. Set `ARIADNE_MODEL_BASE_URL`, `ARIADNE_MODEL`, and `ARIADNE_MERGE_MODEL` for a different compatible endpoint. DeepSeek is the tested default. Single-paper and merge processing require a chat-completions endpoint.
 
 Useful commands:
@@ -132,19 +134,25 @@ The repository includes the Ariadne CLI, the Gaia pipeline harness, and the thre
 | --- | --- |
 | `domain_viewer_question.html` | Interactive graph with embedded data |
 | `ALL_CHAINS_TO_ROOTS.md` | Multi-step paths, with relation types and Mermaid diagrams |
-| `run.json` | Run metadata, stage timing, and output locations |
+| `run.json` | Run metadata, stage timing, output locations, and a `reproducibility` block: git commit and dirty flag, python version, model names, sha256 of every input graph and text, and prompt versions |
 | `01_retrieval/selection.json` | Selected papers and retrieval decisions, for live runs |
 | `logs/` | Stage logs |
 
 Relations retain their types: deduction, inference, analogy, bounds, and same-paper reading sequences have different roles. Only deduction relations are eligible to form deductive chains. Candidate answers and visible paths are starting points for examining the evidence; their presence alone does not establish a conclusion.
 
+`run.json` is the answer to "why did this graph change?". It records the commit that produced the run, whether the checkout was dirty, the hash of every input graph and text, and the prompt version of the answer layer. The one thing it cannot record is a sampling temperature: the bundled steps do not pin one, so two runs on the same commit are different samples rather than reruns. That field says `null` on purpose.
+
+Parallelism is per stage, not per run: papers, LKM queries and extractions are independent and run concurrently (`ARIADNE_WORKERS`, default 4), while the three pipelines themselves stay sequential because each one consumes the previous one's output. Results are still emitted in input order, so `selection.json` and the chain export are reproducible.
+
 ## Development
 
+One command runs every suite plus the offline demo, and it is the same command CI runs:
+
 ```bash
-source .venv/bin/activate
-PYTHONPATH=.:agent:pipelines/single_paper:pipelines/merge \
-  python -m unittest discover -s ariadne/tests -p 'test_*.py'
+bash scripts/check.sh
 ```
+
+It exports the right `PYTHONPATH`, runs each suite in its own pytest process (several suites share test file basenames, so collecting them together makes pytest import the wrong module), then runs `ariadne demo` into a temporary directory and asserts that the run record is complete and carries a code fingerprint. No network, no API key, no LKM call.
 
 | Directory | Contents |
 | --- | --- |
