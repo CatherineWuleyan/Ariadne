@@ -63,6 +63,34 @@ class Paper2IRRetryTest(unittest.TestCase):
         second_env = runner.call_args_list[1].kwargs["env"]
         self.assertEqual(second_env["DEEPSEEK_MODEL"], "deepseek-v4-flash")
 
+    def test_cache_rejects_changed_inputs_and_pipeline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stage = root / "outputs/ariadne_runs/run_x/02_paper2ir"
+            cached = stage / "data/paper-1/claims_final.json"
+            cached.parent.mkdir(parents=True)
+            cached.write_text('{"claim": []}\n')
+            inputs = root / "inputs"
+            inputs.mkdir()
+            pipeline = root / "pipeline"
+            pipeline.mkdir()
+            (stage / "pipeline").mkdir()
+            for folder in (inputs, cached.parent):
+                (folder / "graph.json").write_text('{"nodes": []}')
+                (folder / "ocr.md").write_text("original")
+            for folder in (pipeline, stage / "pipeline"):
+                (folder / "step.py").write_text("# original")
+            with mock.patch("ariadne.paper2ir.REPO", root):
+                self.assertEqual(paper2ir._find_cached_claims(
+                    "paper-1", inputs=inputs, pipeline=pipeline), cached)
+                (inputs / "ocr.md").write_text("revised")
+                self.assertIsNone(paper2ir._find_cached_claims(
+                    "paper-1", inputs=inputs, pipeline=pipeline))
+                (inputs / "ocr.md").write_text("original")
+                (pipeline / "step.py").write_text("# revised")
+                self.assertIsNone(paper2ir._find_cached_claims(
+                    "paper-1", inputs=inputs, pipeline=pipeline))
+
 
 class PublicDependenciesTest(unittest.TestCase):
     def test_required_files_exist(self) -> None:

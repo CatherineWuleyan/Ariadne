@@ -25,6 +25,7 @@ from .config import (
 )
 from .demo import run_demo
 from .full import REQUIRED_FILES, run_full
+from .sources import DEFAULT_SOURCE_LIST
 from .util import AriadneError, DEFAULT_CONFIG, REPO, VENV_PY, read_json, run, run_interactive
 
 
@@ -70,6 +71,20 @@ def _retrieval_config(config: Config) -> dict[str, Any]:
         "min_relevance": float(config.get("retrieval.min_relevance", 0.2)),
         "use_lkm_extract": bool(config.get("retrieval.use_lkm_extract", True)),
         "max_extractions": int(config.get("retrieval.max_extractions", 3)),
+        "cross_check": bool(config.get("retrieval.cross_check", True)),
+        "cross_check_sources": str(
+            config.get(
+                "retrieval.cross_check_sources",
+                DEFAULT_SOURCE_LIST,
+            )
+        ),
+        "min_corroboration": int(config.get("retrieval.min_corroboration", 1)),
+        "external_discovery": bool(
+            config.get("retrieval.external_discovery", False)
+        ),
+        "external_candidates": int(
+            config.get("retrieval.external_candidates", 4)
+        ),
     }
 
 
@@ -121,6 +136,17 @@ def _print_config_summary(runtime: Runtime) -> None:
     _print_kv("LKM extract fallback",
               f"on (max {retrieval['max_extractions']})"
               if retrieval["use_lkm_extract"] else "off")
+    _print_kv(
+        "independent cross-check",
+        f"on ({retrieval['cross_check_sources']}; min "
+        f"{retrieval['min_corroboration']} source(s))"
+        if retrieval["cross_check"] else "off",
+    )
+    _print_kv(
+        "external discovery",
+        f"on (max {retrieval['external_candidates']})"
+        if retrieval["external_discovery"] else "off",
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -245,6 +271,18 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     _print_kv("LKM extract fallback",
               f"on (max {retrieval['max_extractions']})"
               if retrieval["use_lkm_extract"] else "off")
+    _print_kv(
+        "independent cross-check",
+        f"on ({retrieval['cross_check_sources']}; min "
+        f"{retrieval['min_corroboration']} source(s))"
+        if retrieval["cross_check"] else "off",
+        ok=bool(retrieval["cross_check"]),
+    )
+    _print_kv(
+        "external discovery",
+        f"on (max {retrieval['external_candidates']})"
+        if retrieval["external_discovery"] else "off",
+    )
     print("\nBohr")
     _print_kv("cli", checks["bohr"]["cli"] or "not found", ok=bool(checks["bohr"]["cli"]))
     if checks["bohr"]["version"]:
@@ -325,6 +363,8 @@ def cmd_ask(args: argparse.Namespace) -> int:
     )
     runtime.apply_env()
     if args.mode == "demo":
+        if args.library or args.documents:
+            raise AriadneError("--library and --documents require --mode full")
         demo = read_json(DEFAULT_CONFIG)
         if args.question.strip() != demo["question_zh"]:
             print("demo uses the frozen aircraft graph; the configured question is: "
@@ -332,7 +372,16 @@ def cmd_ask(args: argparse.Namespace) -> int:
             print("Use --mode full for a new question.", file=sys.stderr)
         result = run_demo(Path(args.out) if args.out else None, runtime=runtime)
     else:
-        result = run_full(
+        library_options = {}
+        runner = run_full
+        if args.library or args.documents:
+            from .library import run_library
+            runner = run_library
+            library_options = {
+                "library": Path(args.library).expanduser() if args.library else None,
+                "documents": [Path(p).expanduser() for p in (args.documents or [])],
+            }
+        result = runner(
             args.question,
             out=Path(args.out) if args.out else None,
             top_k=args.top_k,
@@ -349,6 +398,10 @@ def cmd_ask(args: argparse.Namespace) -> int:
             use_query_planner=args.use_query_planner,
             use_lkm_extract=args.use_lkm_extract,
             max_extractions=args.max_extractions,
+            cross_check=args.cross_check,
+            min_corroboration=args.min_corroboration,
+            external_discovery=args.external_discovery,
+            **library_options,
         )
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -749,6 +802,9 @@ def build_parser() -> argparse.ArgumentParser:
     ask.add_argument("--top-k", type=int, default=8,
                      help="number of papers to select; not answer roots (default 8)")
     ask.add_argument("--papers", help="offline paper spec (JSON) instead of LKM search")
+    ask.add_argument("--library", help="personal knowledge library directory; reuse evidence before LKM search")
+    ask.add_argument("--documents", nargs="+", metavar="PATH", action="extend",
+                     help="selected PDF/Markdown files to upload to LKM (Markdown is converted to PDF)")
     ask.add_argument("--question-en", help="English question for the answer layer")
     ask.add_argument("--domain", help="domain label for root generation")
     ask.add_argument("--max-roots", type=int, default=5, help="candidate answers")
@@ -770,6 +826,14 @@ def build_parser() -> argparse.ArgumentParser:
                      help="do not build graphs with bohr lkm extract")
     ask.add_argument("--max-extractions", type=int,
                      help="max papers to graph via bohr lkm extract")
+    ask.add_argument("--no-cross-check", dest="cross_check",
+                     action="store_false", default=None,
+                     help="skip verification against independent literature sources")
+    ask.add_argument("--min-corroboration", type=int,
+                     help="independent sources needed to prefer a paper (default: config)")
+    ask.add_argument("--external-discovery", dest="external_discovery",
+                     action="store_true", default=None,
+                     help="also consider papers found by independent sources but missed by LKM")
     _add_model_overrides(ask)
     _add_config_flag(ask)
     ask.add_argument("--json", action="store_true")

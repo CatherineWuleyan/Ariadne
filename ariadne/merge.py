@@ -21,29 +21,33 @@ def _selection(packages: Iterable[Mapping[str, Any]]) -> tuple[list[dict[str, st
     for package in packages:
         base = Path(str(package["package_dir"]))
         for filename, kind in KINDS.items():
-            path = base / filename
+            key = {"gaia.ir": "gaia_ir", "formalization": "formalization", "knowledge.index": "knowledge_index"}[kind]
+            path = Path(str(package.get(key) or base / filename))
             if not path.is_file():
+                if kind != "gaia.ir":
+                    continue  # Gaia IR is required; authoring context/index are optional.
                 raise AriadneError(f"missing {path}; single stage incomplete")
             artifacts.append({"path": str(path), "kind": kind, "media_type": "application/json"})
-        formalization = read_json(base / "formalization.json")
-        pkg = formalization.get("package") or {}
-        name = f"{pkg.get('namespace')}:{pkg.get('name')}"
-        if not pkg.get("namespace") or not pkg.get("name"):
-            raise AriadneError(f"no package identity in {base / 'formalization.json'}")
+        ir_path = Path(str(package.get("gaia_ir") or base / "gaia.ir.json"))
+        ir = read_json(ir_path)
+        name = f"{ir.get('namespace')}:{ir.get('package_name')}"
+        if not ir.get("namespace") or not ir.get("package_name"):
+            raise AriadneError(f"no package identity in {ir_path}")
         selection.append(name)
     return artifacts, selection
 
 
 def build_pipeline(stage_dir: Path, question: str, question_en: str,
-                   domain: str, max_roots: int, selection: list[str]) -> Path:
+                   domain: str, max_roots: int, selection: list[str], *,
+                   mode: str = "bootstrap", scope_domain: str | None = None) -> Path:
     source = REPO / "pipelines" / "merge" / "pipeline.question.json"
     config = read_json(source)
     for stage in config.get("stages") or []:
         name = stage.get("name")
         if name == "step0_select_scope":
             stage["options"] = {
-                "mode": "bootstrap",
-                "scope": {"domain": domain, "selection": selection},
+                "mode": mode,
+                "scope": {"domain": scope_domain or domain, "selection": selection},
             }
         elif name == "step6_question_answer_layer":
             options = dict(stage.get("options") or {})
@@ -68,18 +72,23 @@ def run_question_pipeline(
     domain: str,
     max_roots: int,
     runtime: Runtime | None = None,
+    mode: str = "bootstrap",
+    selection: list[str] | None = None,
+    scope_domain: str | None = None,
 ) -> dict[str, Any]:
     if runtime is None:
         runtime = resolve_runtime(Config.load())
     runtime.apply_env()
     python = runtime.python or python_bin()
     stage_dir.mkdir(parents=True, exist_ok=True)
-    artifacts, selection = _selection(packages)
-    if len(selection) < 2:
+    artifacts, identities = _selection(packages)
+    selection = identities if selection is None else selection
+    if len(identities) < 2 and mode == "bootstrap":
         raise AriadneError("merge needs at least two paper packages; retrieve more papers")
     manifest = stage_dir / "inputs.json"
     write_json(manifest, {"artifacts": artifacts})
-    config = build_pipeline(stage_dir, question, question_en, domain, max_roots, selection)
+    config = build_pipeline(stage_dir, question, question_en, domain, max_roots, selection,
+                            mode=mode, scope_domain=scope_domain)
     log = stage_log(stage_dir, "merge")
     print(f"[merge] {len(selection)} packages", flush=True)
     init = run(
@@ -95,6 +104,10 @@ def run_question_pipeline(
         [python, "-m", "pipeline_harness", "run", "--run", str(run_dir)],
         env=harness_env(), log=log, timeout=14400,
     )
+    if read_json(run_dir / "run.json").get("status") != "succeeded":
+        raise AriadneError(f"merge did not succeed: {run_dir}")
+    run([python, "-m", "pipeline_harness", "check", "--run", str(run_dir)],
+        env=harness_env(), log=log, timeout=600)
     view = run(
         [python, "-m", "pipeline_harness", "view", "--run", str(run_dir)],
         env=harness_env(), log=log, timeout=1200,

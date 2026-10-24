@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from .config import Config, Runtime, resolve_runtime
-from .util import AriadneError, REPO, python_bin, run, stage_log, write_json
+from .util import AriadneError, REPO, python_bin, read_json, run, stage_log, write_json
 
 EMPTY_INSTANCE_OUTPUTS = frozenset({
     "instance_target_positions.json",
@@ -55,8 +55,39 @@ def _load_module(path: Path):
     return module
 
 
-def _find_cached_claims(pid: str) -> Path | None:
-    """Reuse claims from an earlier Ariadne run for the same LKM paper."""
+def _find_cached_claims(pid: str, *, inputs: Path | None = None,
+                        pipeline: Path | None = None,
+                        current_model: tuple[str, str] | None = None) -> Path | None:
+    """Find claims; production callers must match source bytes and pipeline code.
+
+    An ID identifies a paper, not a particular version of its text or graph.
+    Legacy entries without the inputs/code needed to establish equality miss.
+    """
+    def usable(path: Path) -> bool:
+        if not path.is_file() or path.stat().st_size <= 10:
+            return False
+        if inputs is None:
+            return True
+        try:
+            read_json(path)
+            if current_model is not None:
+                prior = read_json(path.parents[3] / "run.json")
+                model = (prior.get("runtime") or {}).get("model") or {}
+                if prior.get("status") != "complete" or (model.get("model"), model.get("base_url")) != current_model:
+                    return False
+            if any((path.parent / name).read_bytes() != (inputs / name).read_bytes()
+                   for name in ("graph.json", "ocr.md")):
+                return False
+            if pipeline is not None:
+                previous = path.parents[2] / "pipeline"
+                for source in pipeline.rglob("*"):
+                    relative = source.relative_to(pipeline)
+                    if source.is_file() and "data" not in relative.parts and "__pycache__" not in relative.parts:
+                        if (previous / relative).read_bytes() != source.read_bytes():
+                            return False
+            return True
+        except (OSError, ValueError):
+            return False
     runs = REPO / "outputs" / "ariadne_runs"
     if runs.is_dir():
         paths = sorted(
@@ -64,10 +95,10 @@ def _find_cached_claims(pid: str) -> Path | None:
             key=lambda item: item.stat().st_mtime, reverse=True,
         )
         for path in paths:
-            if path.is_file() and path.stat().st_size > 10:
+            if usable(path):
                 return path
     legacy = REPO / "pipelines" / "clean_claims" / "data" / pid / "claims_final.json"
-    if legacy.is_file() and legacy.stat().st_size > 10:
+    if usable(legacy):
         return legacy
     return None
 
@@ -108,7 +139,7 @@ def _run_step(script: Path, pid: str, pipeline_dir: Path, python: str,
 
 
 def run_one(paper: Mapping[str, Any], stage_dir: Path, pipeline_dir: Path,
-            module: Any, run_root: Path, python: str) -> dict[str, Any]:
+            module: Any, run_root: Path, python: str, *, reuse: bool = True) -> dict[str, Any]:
     pid = str(paper["lkm_id"])
     stage_dir = stage_dir.resolve()
     pipeline_dir = pipeline_dir.resolve()
@@ -125,8 +156,10 @@ def run_one(paper: Mapping[str, Any], stage_dir: Path, pipeline_dir: Path,
 
     log = stage_log(stage_dir, f"paper2ir_{pid}")
     claims = paper_dir / "claims_final.json"
-    if not (claims.is_file() and claims.stat().st_size > 10):
-        cached = _find_cached_claims(pid)
+    if reuse and not (claims.is_file() and claims.stat().st_size > 10):
+        cached = _find_cached_claims(pid, inputs=paper_dir, pipeline=pipeline_dir,
+                                     current_model=(os.environ.get("DEEPSEEK_MODEL", ""),
+                                                    os.environ.get("DEEPSEEK_BASE_URL", "")))
         if cached is not None:
             shutil.copyfile(cached, claims)
             print(
@@ -172,7 +205,7 @@ def run_one(paper: Mapping[str, Any], stage_dir: Path, pipeline_dir: Path,
 
 
 def run_all(papers: Iterable[Mapping[str, Any]], stage_dir: Path, run_root: Path,
-            runtime: Runtime | None = None, min_papers: int = 2
+            runtime: Runtime | None = None, min_papers: int = 2, reuse: bool = True
             ) -> list[dict[str, Any]]:
     if runtime is None:
         runtime = resolve_runtime(Config.load())
@@ -204,9 +237,8 @@ def run_all(papers: Iterable[Mapping[str, Any]], stage_dir: Path, run_root: Path
     failures: list[dict[str, Any]] = []
     for paper in papers:
         try:
-            results.append(run_one(
-                paper, stage_dir, pipeline_dir, module, run_root, python
-            ))
+            args = (paper, stage_dir, pipeline_dir, module, run_root, python)
+            results.append(run_one(*args) if reuse else run_one(*args, reuse=False))
         except AriadneError as exc:
             failures.append({
                 "lkm_id": paper.get("lkm_id"),

@@ -83,6 +83,27 @@ class ConfigFileTest(unittest.TestCase):
         with self.assertRaises(Exception):
             config.set("retrieval.queries", "many")
 
+    def test_cross_check_config_is_validated(self) -> None:
+        config = Config.load(self.path)
+        self.assertTrue(config.get("retrieval.cross_check"))
+        self.assertEqual(config.get("retrieval.min_corroboration"), 1)
+        config.set("retrieval.cross_check_sources",
+                   "openalex, arxiv,openalex")
+        config.set("retrieval.external_discovery", "yes")
+        config.set("retrieval.min_corroboration", "2")
+        config.set("retrieval.external_candidates", "3")
+        config.save()
+        reloaded = Config.load(self.path)
+        self.assertEqual(reloaded.get("retrieval.cross_check_sources"),
+                         "openalex,arxiv")
+        self.assertTrue(reloaded.get("retrieval.external_discovery"))
+        self.assertEqual(reloaded.get("retrieval.min_corroboration"), 2)
+        self.assertEqual(reloaded.get("retrieval.external_candidates"), 3)
+        with self.assertRaises(Exception):
+            config.set("retrieval.cross_check_sources", "openalex,typo")
+        with self.assertRaises(Exception):
+            config.set("retrieval.min_corroboration", "9")
+
     def test_mask_never_reveals_secret(self) -> None:
         self.assertEqual(mask_secret(""), "")
         self.assertEqual(mask_secret("short"), "********")

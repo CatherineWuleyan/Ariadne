@@ -30,6 +30,7 @@ from urllib.parse import quote, urljoin
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from . import sources as literature
 from .config import Config, Runtime, bohr_command, resolve_runtime
 from .util import AriadneError, REPO, read_json, run, stage_log, write_json
 
@@ -43,6 +44,12 @@ DEFAULT_MIN_PAPERS = 2
 DEFAULT_MIN_GRAPH_NODES = 3
 DEFAULT_MIN_RELEVANCE = 0.2
 DEFAULT_MAX_EXTRACTIONS = 5
+DEFAULT_CROSS_CHECK = True
+DEFAULT_CROSS_SOURCES = literature.DEFAULT_SOURCE_LIST
+DEFAULT_MIN_CORROBORATION = 1
+DEFAULT_CROSS_QUERIES = literature.DEFAULT_CROSS_QUERIES
+DEFAULT_LOOKUP_BUDGET = 4
+CROSS_SOURCE_WEIGHT = 1.0
 _RELEVANCE_PHRASES = (
     "knowledge graph", "knowledge graphs", "knowledge model", "knowledge base",
     "graph reasoning", "experiment design", "experimental design",
@@ -111,6 +118,8 @@ def _paper_id(value: Any, key: str = "") -> str:
     raw = str(value or key or "")
     if raw.startswith("paper:"):
         raw = raw.split(":", 1)[1]
+    if re.fullmatch(r"local_[0-9a-f]{24}", raw):
+        return raw
     match = re.search(r"(\d{6,})", raw)
     return match.group(1) if match else raw
 
@@ -320,6 +329,9 @@ def _candidate_rank(candidate: Mapping[str, Any]) -> float:
     nodes = min(int(candidate.get("node_count") or 0), 60) / 60.0
     conclusions = min(int(candidate.get("conclusion_count") or 0), 10) / 10.0
     relevance = min(max(_float(candidate.get("relevance")), 0.0), 1.0)
+    # Independent agreement is capped at two extra sources: it should break
+    # ties and lift corroborated papers, not drown out query/graph evidence.
+    corroboration = min(int(candidate.get("corroboration") or 0), 2)
     return (
         2.0 * hits
         + 1.5 * early
@@ -327,6 +339,7 @@ def _candidate_rank(candidate: Mapping[str, Any]) -> float:
         + 2.0 * relevance
         + 1.0 * nodes
         + 0.5 * conclusions
+        + CROSS_SOURCE_WEIGHT * corroboration
     )
 
 
@@ -369,11 +382,16 @@ def _candidate_audit(candidate: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "lkm_id": record.get("lkm_id") or "",
         "title": record.get("title") or "",
+        "doi": record.get("doi") or "",
+        "source": record.get("source") or "",
         "query_positions": list(candidate.get("query_positions") or []),
         "best_rank": candidate.get("best_rank"),
         "search_score": round(_float(candidate.get("search_score")), 6),
         "relevance": round(_float(candidate.get("relevance")), 4),
         "rank_score": round(_float(candidate.get("rank_score")), 4),
+        "corroboration": int(candidate.get("corroboration") or 0),
+        "cross_check": dict(candidate.get("cross_check") or {}),
+        "discovered_by": list(candidate.get("discovered_by") or []),
         "node_count": int(candidate.get("node_count") or 0),
         "conclusion_count": int(candidate.get("conclusion_count") or 0),
         "skip_reason": candidate.get("skip_reason") or "",
@@ -388,8 +406,14 @@ def _candidate_audit(candidate: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def search_many(queries: list[dict[str, Any]], per_query: int, run_dir: Path,
-                runtime: Runtime) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Run every planned query and merge the ranked paper candidates."""
+                runtime: Runtime, *, enrich: Any = None
+                ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Run every planned query and merge the ranked paper candidates.
+
+    ``enrich`` is an optional callback that annotates the merged candidate
+    mapping in place (cross-source verification does this) before relevance
+    scoring and ranking, so the resulting order uses the extra evidence.
+    """
     candidates: dict[str, dict[str, Any]] = {}
     audits: list[dict[str, Any]] = []
     for index, item in enumerate(queries):
@@ -454,6 +478,8 @@ def search_many(queries: list[dict[str, Any]], per_query: int, run_dir: Path,
 
     for candidate in candidates.values():
         candidate["relevance"] = _relevance(candidate.get("record") or {}, queries)
+    if enrich is not None:
+        enrich(candidates)
     ordered = sorted(candidates.values(), key=_candidate_rank, reverse=True)
     for candidate in ordered:
         candidate["rank_score"] = round(_candidate_rank(candidate), 4)
@@ -465,6 +491,188 @@ def search_many(queries: list[dict[str, Any]], per_query: int, run_dir: Path,
         },
     )
     return ordered, audits
+
+
+# --------------------------------------------------------------------------- #
+# independent-source cross-validation
+# --------------------------------------------------------------------------- #
+
+def _cross_status(count: int) -> str:
+    if count >= 2:
+        return "multi_source"
+    if count == 1:
+        return "single_source"
+    return "unverified"
+
+
+def _apply_cross_match(candidate: dict[str, Any], match: Mapping[str, str],
+                       *, lookup_used: bool = False) -> None:
+    candidate["corroboration"] = len(match)
+    candidate["verified_sources"] = sorted(match)
+    candidate["cross_check"] = {
+        "sources": sorted(match),
+        "matched_by": dict(sorted(match.items())),
+        "corroboration": len(match),
+        "status": _cross_status(len(match)),
+        "lookup_used": bool(lookup_used),
+    }
+
+
+def _external_candidate(record: literature.SourceRecord,
+                        source_names: Iterable[str]) -> dict[str, Any]:
+    """Turn an independently discovered paper into a normal candidate."""
+    sources = sorted(set(source_names))
+    normalized = {
+        "lkm_id": "",
+        "title": record.title,
+        "doi": record.doi,
+        "arxiv": record.arxiv or None,
+        "abstract": record.abstract,
+        "authors": record.authors,
+        "source": "external",
+        "graph_path": None,
+        "ocr_path": None,
+        "pdf_path": None,
+        "pdf_url": record.pdf_url,
+        "search_score": 0.0,
+    }
+    return {
+        "record": normalized,
+        "query_positions": [],
+        "best_rank": None,
+        "search_score": 0.0,
+        "external": True,
+        "discovered_by": sources,
+        "corroboration": len(sources),
+        "verified_sources": sources,
+        "cross_check": {
+            "sources": sources,
+            "matched_by": {name: "discovery" for name in sources},
+            "corroboration": len(sources),
+            "status": "multi_source",
+            "lookup_used": False,
+            "discovered": True,
+        },
+        "relevance": 0.0,
+    }
+
+
+def cross_check_candidates(
+    candidates: dict[str, dict[str, Any]],
+    queries: list[dict[str, Any]],
+    run_dir: Path,
+    *,
+    source_names: str = DEFAULT_CROSS_SOURCES,
+    per_query: int = DEFAULT_PER_QUERY,
+    min_corroboration: int = DEFAULT_MIN_CORROBORATION,
+    discover: bool = False,
+    discovery_limit: int = 4,
+    lookup_budget: int = DEFAULT_LOOKUP_BUDGET,
+) -> dict[str, Any]:
+    """Annotate candidates with agreement from independent literature sources.
+
+    The candidate mapping is mutated: every entry gains ``corroboration``,
+    ``verified_sources`` and ``cross_check``.  With ``discover=True`` papers
+    that several independent sources agree on but LKM missed are appended.
+    """
+    names = literature.resolve_source_names(source_names)
+    index, audit = literature.collect(
+        queries, per_query=per_query, source_names=names, run_dir=run_dir,
+        max_queries=DEFAULT_CROSS_QUERIES,
+    )
+    audit["min_corroboration"] = int(min_corroboration)
+    if not audit.get("enabled"):
+        return audit
+
+    for candidate in candidates.values():
+        record = candidate.get("record") or {}
+        _apply_cross_match(candidate, index.match(
+            doi=record.get("doi"),
+            title=record.get("title"),
+            arxiv=record.get("arxiv"),
+        ))
+
+    # Query-level search cannot guarantee that a candidate appears in the top
+    # results of every source; resolve the strongest unverified DOIs directly.
+    pending = sorted(
+        (
+            candidate for candidate in candidates.values()
+            if candidate.get("corroboration") == 0
+            and (candidate.get("record") or {}).get("doi")
+        ),
+        key=_candidate_rank, reverse=True,
+    )[:max(0, int(lookup_budget))]
+    if pending:
+        records, lookups = literature.lookup_many(
+            [(candidate["record"] or {}).get("doi") for candidate in pending],
+            source_names=names, limit=len(pending),
+        )
+        index.extend(records)
+        for candidate in pending:
+            record = candidate.get("record") or {}
+            _apply_cross_match(candidate, index.match(
+                doi=record.get("doi"),
+                title=record.get("title"),
+                arxiv=record.get("arxiv"),
+            ), lookup_used=True)
+        audit["lookups"] = lookups
+
+    added: list[dict[str, Any]] = []
+    if discover:
+        known_dois = [
+            (candidate.get("record") or {}).get("doi")
+            for candidate in candidates.values()
+        ]
+        known_arxiv = [
+            (candidate.get("record") or {}).get("arxiv")
+            for candidate in candidates.values()
+        ]
+        known_titles = [
+            (candidate.get("record") or {}).get("title")
+            for candidate in candidates.values()
+        ]
+        for item in index.discover(
+            exclude_dois=known_dois,
+            exclude_arxiv=known_arxiv,
+            exclude_titles=known_titles,
+            min_sources=2,
+            limit=discovery_limit,
+        ):
+            record = item["record"]
+            key = "external:" + _dedupe_key(record.as_dict())
+            if key in candidates:
+                continue
+            entry = _external_candidate(record, item["sources"])
+            candidates[key] = entry
+            known_dois.append(record.doi)
+            known_arxiv.append(record.arxiv)
+            known_titles.append(record.title)
+            added.append({
+                "key": key,
+                "title": record.title,
+                "doi": record.doi,
+                "sources": item["sources"],
+            })
+    audit["discovery"] = {
+        "requested": bool(discover),
+        "added": len(added),
+        "papers": added,
+    }
+    audit["candidates"] = [
+        {
+            "key": key,
+            "lkm_id": (candidate.get("record") or {}).get("lkm_id") or "",
+            "title": (candidate.get("record") or {}).get("title") or "",
+            "doi": (candidate.get("record") or {}).get("doi") or "",
+            "sources": list((candidate.get("cross_check") or {}).get("sources") or []),
+            "status": (candidate.get("cross_check") or {}).get("status") or "",
+            "corroboration": int(candidate.get("corroboration") or 0),
+            "external": bool(candidate.get("external")),
+        }
+        for key, candidate in candidates.items()
+    ]
+    write_json(run_dir / "01_retrieval" / "sources.json", audit)
+    return audit
 
 
 # --------------------------------------------------------------------------- #
@@ -638,7 +846,12 @@ def _local_paper_id(paper: Mapping[str, Any]) -> str:
     stem = Path(raw_path).stem
     if re.fullmatch(r"\d{6,}", stem):
         return stem
-    digest = hashlib.sha1(raw_path.encode("utf-8")).hexdigest()[:10]
+    # External records have no local path; their DOI or title keeps the id
+    # stable across runs and distinct from every other paper.
+    identity = (
+        raw_path or str(paper.get("doi") or "") or str(paper.get("title") or "")
+    )
+    digest = hashlib.sha1(identity.encode("utf-8")).hexdigest()[:10]
     return f"local_{digest}"
 
 
@@ -1100,7 +1313,7 @@ def _extract_graph(record: Mapping[str, Any], dest: Path, run_dir: Path,
     ``bohr lkm extract`` takes a local PDF; the graph is requested with
     ``--format graph`` so its nodes/edges match ``bohr lkm graph``.
     """
-    pid = str(record.get("lkm_id") or "paper")
+    pid = _local_paper_id(record)
     extract_dir = run_dir / "01_retrieval" / "extract" / pid
     extract_dir.mkdir(parents=True, exist_ok=True)
     if pdf is None:
@@ -1215,6 +1428,15 @@ def _extract_graph(record: Mapping[str, Any], dest: Path, run_dir: Path,
 EXTRACTION_WORKERS = 3
 
 
+def _probe_priority(candidate: Mapping[str, Any]) -> tuple[float, float]:
+    """Relevance first, with a small independent-agreement tie-breaker."""
+    corroboration = min(int(candidate.get("corroboration") or 0), 2)
+    return (
+        _float(candidate.get("relevance")) + 0.1 * corroboration,
+        _candidate_rank(candidate),
+    )
+
+
 def probe_and_select(
     candidates: list[dict[str, Any]],
     run_dir: Path,
@@ -1225,6 +1447,7 @@ def probe_and_select(
     min_papers: int = DEFAULT_MIN_PAPERS,
     min_graph_nodes: int = DEFAULT_MIN_GRAPH_NODES,
     min_relevance: float = DEFAULT_MIN_RELEVANCE,
+    min_corroboration: int = 0,
     use_lkm_extract: bool = True,
     max_extractions: int = DEFAULT_MAX_EXTRACTIONS,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
@@ -1237,13 +1460,14 @@ def probe_and_select(
     pending: list[dict[str, Any]] = []
     extraction_attempts = 0
     extracted = 0
+    external_candidates = 0
     audit: dict[str, Any] = {"probed": 0, "candidates": [], "selected": []}
 
     # Probe topical candidates first.  A broad paper can hit several queries
     # without being about the requested topic; relevance decides probe order.
     probe_order = sorted(
         candidates,
-        key=lambda item: (_float(item.get("relevance")), _candidate_rank(item)),
+        key=_probe_priority,
         reverse=True,
     )
     # Probe the first batch for comparison; if it does not yield enough
@@ -1253,6 +1477,20 @@ def probe_and_select(
     audit["max_probe"] = max_probe
     for candidate in probe_order[:max_probe]:
         record = candidate.get("record") or {}
+        if record.get("source") == "external":
+            # Independent sources only provide metadata: there is no LKM graph
+            # to probe, so the paper goes straight to the PDF/extract path.
+            candidate = dict(candidate)
+            candidate["record"] = record
+            candidate["graph_source"] = "external"
+            candidate["skip_reason"] = "external"
+            external_candidates += 1
+            if use_lkm_extract and _can_extract(record):
+                pending.append(candidate)
+            elif use_lkm_extract:
+                candidate["extract_skip_reason"] = "no_pdf"
+            all_candidates.append(candidate)
+            continue
         pid = record.get("lkm_id") or _local_paper_id(record)
         if not pid:
             continue
@@ -1292,7 +1530,7 @@ def probe_and_select(
     # extraction budget.
     ready: list[tuple[dict[str, Any], Path, str]] = []
     pending.sort(
-        key=lambda item: (_float(item.get("relevance")), _candidate_rank(item)),
+        key=_probe_priority,
         reverse=True,
     )
     for candidate in pending:
@@ -1383,22 +1621,33 @@ def probe_and_select(
     available.sort(key=_candidate_rank, reverse=True)
     for candidate in available:
         candidate["rank_score"] = round(_candidate_rank(candidate), 4)
+    corroboration_floor = max(0, int(min_corroboration))
     preferred = [
         candidate for candidate in available
         if _float(candidate.get("relevance")) >= float(min_relevance)
+        and int(candidate.get("corroboration") or 0) >= corroboration_floor
     ]
-    pool = preferred if len(preferred) >= int(min_papers) else available
+    relevant = [
+        candidate for candidate in available
+        if _float(candidate.get("relevance")) >= float(min_relevance)
+    ]
+    if len(preferred) >= int(min_papers):
+        pool, pool_tier = preferred, 1
+    elif len(relevant) >= int(min_papers):
+        # Cross-check APIs are best effort: when they are all rate-limited,
+        # fall back to relevance instead of failing the run.
+        pool, pool_tier = relevant, 2
+    else:
+        pool, pool_tier = available, 3
     selected = list(pool[:int(top_k)])
     fill_floor = max(0.05, float(min_relevance) * 0.5)
     filled = 0
     if len(selected) < int(top_k):
         # Fill to top-k, but never with clearly off-topic papers.
-        chosen = {
-            (candidate.get("record") or {}).get("lkm_id") or ""
-            for candidate in selected
-        }
+        chosen = {_local_paper_id(candidate.get("record") or {})
+                  for candidate in selected}
         for candidate in available:
-            pid = (candidate.get("record") or {}).get("lkm_id") or ""
+            pid = _local_paper_id(candidate.get("record") or {})
             if pid in chosen:
                 continue
             if _float(candidate.get("relevance")) < fill_floor:
@@ -1409,10 +1658,14 @@ def probe_and_select(
             if len(selected) >= int(top_k):
                 break
     audit["selected"] = [
-        (candidate.get("record") or {}).get("lkm_id") or "" for candidate in selected
+        _local_paper_id(candidate.get("record") or {}) for candidate in selected
     ]
     audit["available"] = len(available)
     audit["preferred"] = len(preferred)
+    audit["relevant"] = len(relevant)
+    audit["pool_tier"] = pool_tier
+    audit["corroboration_floor"] = corroboration_floor
+    audit["external_candidates"] = external_candidates
     audit["min_relevance"] = float(min_relevance)
     audit["fill_floor"] = fill_floor
     audit["filled"] = filled
@@ -1584,6 +1837,8 @@ def materialise_selected(selected: list[dict[str, Any]], run_dir: Path,
                 "graph_source": candidate.get("graph_source") or "native",
                 "extract_task_id": candidate.get("extract_task_id") or "",
                 "extract_status": candidate.get("extract_status") or "",
+                "cross_check": dict(candidate.get("cross_check") or {}),
+                "discovered_by": list(candidate.get("discovered_by") or []),
             },
         })
         items = (graph.get("data") or {}).get("papers") or []
@@ -1601,6 +1856,149 @@ def materialise_selected(selected: list[dict[str, Any]], run_dir: Path,
 # --------------------------------------------------------------------------- #
 # public entry point
 # --------------------------------------------------------------------------- #
+
+def validate_documents(paths: Iterable[Path]) -> list[Path]:
+    """Validate every selected file before uploading any of them."""
+    selected = []
+    for value in paths:
+        path = Path(value).expanduser().resolve()
+        if not path.is_file() or path.suffix.lower() not in {".pdf", ".md", ".markdown"}:
+            raise AriadneError(f"document must be a readable PDF or Markdown file: {path}")
+        if not path.stat().st_size or path.stat().st_size > 64 * 1024 * 1024:
+            raise AriadneError(f"document must be nonempty and at most 64 MiB: {path}")
+        try:
+            if path.suffix.lower() == ".pdf":
+                from pypdf import PdfReader
+                reader = PdfReader(path)
+                if reader.is_encrypted or not 0 < len(reader.pages) <= 50:
+                    raise AriadneError(f"LKM needs an unencrypted PDF of at most 50 pages: {path}")
+            else:
+                path.read_text(encoding="utf-8")
+                import reportlab  # noqa: F401 - fail before upload if converter is absent
+        except ImportError as exc:
+            raise AriadneError("Document import needs `pip install -r ariadne/requirements.txt`.") from exc
+        except AriadneError:
+            raise
+        except Exception as exc:
+            raise AriadneError(f"cannot read document {path}: {exc}") from exc
+        if path not in selected:
+            selected.append(path)
+    return selected
+
+
+def markdown_pdf(source: Path, destination: Path) -> Path:
+    """A text-preserving PDF transport for LKM, never a rendered HTML fetch.
+
+    Keep Markdown/math source verbatim and use a CJK font for Chinese text.
+    The original Markdown, rather than this transport, feeds paper2ir.
+    """
+    from itertools import groupby
+    from xml.sax.saxutils import escape
+    import reportlab
+    from pypdf import PdfReader
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.pagesizes import A4
+    font = "STSong-Light"
+    if font not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(UnicodeCIDFont(font))
+    latin = "AriadneVera"
+    if latin not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(TTFont(latin, str(Path(reportlab.__file__).parent / "fonts" / "Vera.ttf")))
+    latin_glyphs = pdfmetrics.getFont(latin).face.charToGlyph
+
+    def font_for(char: str) -> str:
+        if char.isspace() or ord(char) in latin_glyphs:
+            return latin
+        try:
+            char.encode("gb2312")
+        except UnicodeEncodeError as exc:
+            raise AriadneError(
+                f"Markdown contains an unsupported PDF character U+{ord(char):04X}: {source}"
+            ) from exc
+        return font
+
+    style = ParagraphStyle("source", fontName=latin, fontSize=10, leading=15,
+                           wordWrap="CJK", splitLongWords=True)
+    text = source.read_text(encoding="utf-8")
+    for char in set(text):
+        font_for(char)  # Reject unsupported glyphs before creating a transport.
+    story = []
+    for line in text.splitlines():
+        if line.strip():
+            # Chunk very long lines to keep ReportLab paragraphs splittable.
+            for start in range(0, len(line), 2000):
+                # Embed Latin/scientific glyphs; the CID font alone silently
+                # changes characters such as Å, ² and ³ in PDF text extraction.
+                markup = "".join(
+                    f'<font name="{name}">{escape("".join(chars))}</font>'
+                    for name, chars in groupby(line[start:start + 2000], key=font_for)
+                )
+                story.append(Paragraph(markup, style))
+        else:
+            story.append(Spacer(1, 7))
+    if not any(line.strip() for line in text.splitlines()):
+        raise AriadneError(f"Markdown document has no text: {source}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    SimpleDocTemplate(str(destination), pagesize=A4, leftMargin=40, rightMargin=40,
+                      topMargin=40, bottomMargin=40).build(story)
+    validate_documents([destination])
+    extracted = "".join(page.extract_text() or "" for page in PdfReader(destination).pages)
+    if re.sub(r"\s+", "", extracted) != re.sub(r"\s+", "", text):
+        destination.unlink(missing_ok=True)
+        raise AriadneError(f"Markdown PDF conversion changed text; document was not uploaded: {source}")
+    return destination
+
+
+def import_documents(paths: Iterable[Path], run_dir: Path, runtime: Runtime,
+                     *, cached: Iterable[Mapping[str, Any]] = ()) -> list[dict[str, Any]]:
+    """Upload only explicitly selected files using the existing LKM extractor."""
+    selected = validate_documents(paths)
+    result = []
+    by_id = {str(item["lkm_id"]): item for item in cached}
+    # Convert/check all transports first so a bad later document cannot cause
+    # earlier documents to be uploaded in a partially invalid batch.
+    prepared = []
+    for source in selected:
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        pid = "local_" + digest[:24]
+        out = run_dir / "01_retrieval" / "papers" / pid
+        previous = by_id.get(pid)
+        if previous and Path(str(previous.get("graph_path", ""))).is_file():
+            result.append(dict(previous))
+            continue
+        out.mkdir(parents=True, exist_ok=True)
+        transport = out / "source.pdf"
+        snapshot = transport if source.suffix.lower() == ".pdf" else out / "source.md"
+        shutil.copyfile(source, snapshot)
+        if hashlib.sha256(snapshot.read_bytes()).hexdigest() != digest:
+            raise AriadneError(f"selected document changed while being prepared: {source}; retry")
+        if source.suffix.lower() != ".pdf":
+            markdown_pdf(snapshot, transport)
+        prepared.append((source, snapshot, transport, out, pid, digest))
+    for source, snapshot, transport, out, pid, source_digest in prepared:
+        record = {"lkm_id": pid, "title": source.stem, "pdf_path": str(transport),
+                  "source": "document", "source_path": str(source),
+                  "document_sha256": source_digest}
+        path, graph, metadata = _extract_graph(record, out / "graph.json", run_dir,
+                                               runtime, pdf=transport)
+        if source.suffix.lower() != ".pdf":
+            (out / "ocr.md").write_text(snapshot.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            from pypdf import PdfReader
+            text = "\n\n".join(page.extract_text() or "" for page in PdfReader(transport).pages)
+            if text.strip():
+                (out / "ocr.md").write_text(text, encoding="utf-8")
+            else:
+                _fetch_text(record, graph, out / "ocr.md", run_dir, runtime, fulltext=False)
+        record.update(metadata)
+        record.update(graph_path=str(path), ocr_path=str(out / "ocr.md"))
+        result.append(record)
+    return result
+
 
 def retrieve(
     question: str,
@@ -1621,6 +2019,11 @@ def retrieve(
     use_query_planner: bool = True,
     use_lkm_extract: bool = True,
     max_extractions: int = DEFAULT_MAX_EXTRACTIONS,
+    cross_check: bool = DEFAULT_CROSS_CHECK,
+    cross_check_sources: str = DEFAULT_CROSS_SOURCES,
+    min_corroboration: int = DEFAULT_MIN_CORROBORATION,
+    external_discovery: bool = False,
+    external_candidates: int = 4,
 ) -> list[dict[str, Any]]:
     runtime = _runtime_or_resolve(runtime)
     if paper_spec is not None:
@@ -1644,7 +2047,70 @@ def retrieve(
         + " | ".join(item["query"] for item in queries),
         flush=True,
     )
-    candidates, search_audit = search_many(queries, per_query, run_dir, runtime)
+
+    cross_audit: dict[str, Any] = {"enabled": False}
+    enrich = None
+    if cross_check:
+        def enrich(candidates: dict[str, dict[str, Any]]) -> None:
+            started = time.monotonic()
+            print(
+                "[retrieve] cross-checking against independent sources: "
+                f"{cross_check_sources}",
+                flush=True,
+            )
+            try:
+                cross_audit.update(cross_check_candidates(
+                    candidates, queries, run_dir,
+                    source_names=cross_check_sources,
+                    per_query=per_query,
+                    min_corroboration=min_corroboration,
+                    discover=external_discovery,
+                    discovery_limit=external_candidates,
+                ))
+            except Exception as exc:  # noqa: BLE001 - never block retrieval
+                cross_audit.update({
+                    "enabled": False,
+                    "error": f"{type(exc).__name__}: {str(exc)[:300]}",
+                })
+                print(
+                    "[retrieve] independent-source cross-check unavailable "
+                    f"({str(exc)[:160]}); continuing with LKM only",
+                    flush=True,
+                )
+                return
+            cross_audit["seconds"] = round(time.monotonic() - started, 1)
+            if cross_audit.get("enabled"):
+                entries = cross_audit.get("candidates") or []
+                confirmed = sum(
+                    1 for entry in entries if entry.get("corroboration")
+                )
+                print(
+                    f"[retrieve] cross-check: {confirmed}/{len(entries)} "
+                    "candidates confirmed by independent sources"
+                    + (
+                        f", +{cross_audit['discovery']['added']} discovered"
+                        if (cross_audit.get("discovery") or {}).get("added")
+                        else ""
+                    ),
+                    flush=True,
+                )
+                failures = [
+                    source for source in cross_audit.get("sources") or []
+                    if source.get("error")
+                ]
+                if failures:
+                    print(
+                        "[retrieve] cross-check source(s) unavailable: "
+                        + "; ".join(
+                            f"{item['name']} ({str(item['error'])[:70]})"
+                            for item in failures
+                        ),
+                        flush=True,
+                    )
+
+    candidates, search_audit = search_many(
+        queries, per_query, run_dir, runtime, enrich=enrich
+    )
     selected, selection_audit = probe_and_select(
         candidates, run_dir, runtime,
         top_k=top_k,
@@ -1652,6 +2118,9 @@ def retrieve(
         min_papers=min_papers,
         min_graph_nodes=min_graph_nodes,
         min_relevance=min_relevance,
+        min_corroboration=(
+            int(min_corroboration) if cross_audit.get("enabled") else 0
+        ),
         use_lkm_extract=use_lkm_extract,
         max_extractions=max_extractions,
     )
@@ -1662,10 +2131,19 @@ def retrieve(
         "planner": planner,
         "queries": queries,
         "search": search_audit,
+        "cross_check": cross_audit,
+        "cross_check_sources": cross_check_sources,
+        "min_corroboration": int(min_corroboration),
+        "external_discovery": bool(external_discovery),
+        "external_candidates": int(external_candidates),
         "candidates": selection_audit.get("candidates") or [],
         "selected": selection_audit.get("selected") or [],
         "available": selection_audit.get("available", 0),
         "preferred": selection_audit.get("preferred", 0),
+        "relevant": selection_audit.get("relevant", 0),
+        "pool_tier": selection_audit.get("pool_tier", 0),
+        "corroboration_floor": selection_audit.get("corroboration_floor", 0),
+        "external_candidate_count": selection_audit.get("external_candidates", 0),
         "filled": selection_audit.get("filled", 0),
         "fill_floor": selection_audit.get("fill_floor", 0.0),
         "min_relevance": selection_audit.get("min_relevance", min_relevance),
@@ -1692,6 +2170,8 @@ def retrieve(
             "top_k": int(top_k),
             "queries": queries,
             "planner": planner,
+            "cross_check": str(run_dir / "01_retrieval" / "sources.json")
+            if cross_audit.get("enabled") else "",
         },
     )
     return papers

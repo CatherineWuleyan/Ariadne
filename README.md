@@ -36,7 +36,9 @@ Ariadne provides the evidence graph and reasoning paths. The researcher uses the
 
 This case organizes the evidence for choosing modeling and validation steps in an aircraft simulation workflow. The five candidate answers cover conceptual design, multidisciplinary optimization, flight dynamics, model correction, and hardware-in-the-loop validation.
 
-The bundled inputs cover 13 papers, 311 claims, and 258 relations. The offline demo produces 107 multi-step paths to the candidate answers, so a researcher can inspect the reasoning behind each part of the workflow.
+The bundled inputs cover 13 papers, 311 claims, and 223 edges. The offline demo exports 107 paths to the candidate answers: 7 same-paper reading sequences and 100 `infer` exploratory paths. **It produces zero typed support chains** -- deduction is the only chainable relation type, and this graph has none. That is the honest state of the demo, not a rendering bug.
+
+The candidate answers are labelled by how much of their support comes from a second paper: R1 and R2 are `multi-paper` (7+3 and 5+3 claims), while R3-R5 are `single-paper core` (7+1, 9+1, 8+1). Every root records `support_paper_counts`, so the split can be checked rather than inferred.
 
 The red nodes are candidate answers. Green links support an answer; dashed links show other relation types. Select a node to inspect its claim and source, or select an answer to follow its premises.
 

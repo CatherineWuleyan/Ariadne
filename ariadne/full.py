@@ -114,7 +114,11 @@ def _retrieval_options(runtime: Runtime, *, max_queries: int | None = None,
                        candidate_limit: int | None = None,
                        use_query_planner: bool | None = None,
                        use_lkm_extract: bool | None = None,
-                       max_extractions: int | None = None) -> dict[str, Any]:
+                       max_extractions: int | None = None,
+                       cross_check: bool | None = None,
+                       min_corroboration: int | None = None,
+                       external_discovery: bool | None = None
+                       ) -> dict[str, Any]:
     config = runtime.config
     return {
         "max_queries": int(
@@ -140,6 +144,27 @@ def _retrieval_options(runtime: Runtime, *, max_queries: int | None = None,
         "max_extractions": int(
             max_extractions if max_extractions is not None
             else config.get("retrieval.max_extractions", 5)
+        ),
+        "cross_check": bool(
+            config.get("retrieval.cross_check", True)
+            if cross_check is None else cross_check
+        ),
+        "cross_check_sources": str(
+            config.get(
+                "retrieval.cross_check_sources",
+                retrieval.DEFAULT_CROSS_SOURCES,
+            )
+        ),
+        "min_corroboration": int(
+            min_corroboration if min_corroboration is not None
+            else config.get("retrieval.min_corroboration", 1)
+        ),
+        "external_discovery": bool(
+            config.get("retrieval.external_discovery", False)
+            if external_discovery is None else external_discovery
+        ),
+        "external_candidates": int(
+            config.get("retrieval.external_candidates", 4)
         ),
     }
 
@@ -212,6 +237,17 @@ def _print_plan(question: str, runtime: Runtime, top_k: int,
             cost = calls * 0.05 + extraction_calls * 1.0
             print(f"  billable:  up to ~{cost:.2f} CNY "
                   f"({calls} LKM calls + {extraction_calls} extractions)")
+            if options.get("cross_check"):
+                print(
+                    "  cross-check: "
+                    f"{options.get('cross_check_sources') or '(none)'}, "
+                    f">= {options.get('min_corroboration', 1)} independent "
+                    "source(s), "
+                    + (
+                        f"discover up to {options.get('external_candidates', 4)}"
+                        if options.get("external_discovery") else "no discovery"
+                    )
+                )
     else:
         print(f"  retrieval: offline spec {paper_spec}")
     print(f"  stages:    retrieval -> paper2ir -> single -> merge -> render")
@@ -238,6 +274,9 @@ def run_full(
     use_query_planner: bool | None = None,
     use_lkm_extract: bool | None = None,
     max_extractions: int | None = None,
+    cross_check: bool | None = None,
+    min_corroboration: int | None = None,
+    external_discovery: bool | None = None,
 ) -> dict[str, Any]:
     if runtime is None:
         runtime = resolve_runtime(Config.load(), yes=yes)
@@ -247,7 +286,9 @@ def run_full(
     retrieval_options = _retrieval_options(
         runtime, max_queries=max_queries, candidate_limit=candidate_limit,
         use_query_planner=use_query_planner, use_lkm_extract=use_lkm_extract,
-        max_extractions=max_extractions,
+        max_extractions=max_extractions, cross_check=cross_check,
+        min_corroboration=min_corroboration,
+        external_discovery=external_discovery,
     )
 
     details = _preflight(runtime, paper_spec)

@@ -1,2 +1,6 @@
 gaia-lang==0.5.0a7
 jsonschema>=4.21
+
+# Document import (--documents): PDF/Markdown transport for LKM extraction.
+reportlab>=4.2
+pypdf>=5.0

@@ -32,6 +32,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
+from .sources import DEFAULT_SOURCE_LIST, SOURCE_NAMES
 from .util import (
     AriadneError,
     REPO,
@@ -77,6 +78,11 @@ DEFAULTS: dict[str, Any] = {
         "min_relevance": 0.2,
         "use_lkm_extract": True,
         "max_extractions": 5,
+        "cross_check": True,
+        "cross_check_sources": DEFAULT_SOURCE_LIST,
+        "min_corroboration": 1,
+        "external_discovery": False,
+        "external_candidates": 4,
     },
 }
 
@@ -85,6 +91,8 @@ BOOL_KEYS = frozenset({
     "bohr.auto_approve_spend",
     "retrieval.use_query_planner",
     "retrieval.use_lkm_extract",
+    "retrieval.cross_check",
+    "retrieval.external_discovery",
 })
 INT_KEYS = frozenset({
     "retrieval.queries",
@@ -93,6 +101,8 @@ INT_KEYS = frozenset({
     "retrieval.min_papers",
     "retrieval.min_graph_nodes",
     "retrieval.max_extractions",
+    "retrieval.min_corroboration",
+    "retrieval.external_candidates",
 })
 FLOAT_KEYS = frozenset({"retrieval.min_relevance"})
 INT_RANGES = {
@@ -102,6 +112,8 @@ INT_RANGES = {
     "retrieval.min_papers": (2, 20),
     "retrieval.min_graph_nodes": (1, 100),
     "retrieval.max_extractions": (0, 10),
+    "retrieval.min_corroboration": (0, 4),
+    "retrieval.external_candidates": (0, 12),
 }
 KNOWN_KEYS = frozenset({
     "model.provider",
@@ -124,6 +136,11 @@ KNOWN_KEYS = frozenset({
     "retrieval.min_relevance",
     "retrieval.use_lkm_extract",
     "retrieval.max_extractions",
+    "retrieval.cross_check",
+    "retrieval.cross_check_sources",
+    "retrieval.min_corroboration",
+    "retrieval.external_discovery",
+    "retrieval.external_candidates",
 })
 PROVIDERS = frozenset({"deepseek", "openai-compatible"})
 PAYMENT_SOURCES = frozenset({"", "photon", "balance"})
@@ -353,6 +370,18 @@ def coerce_value(key: str, value: Any) -> Any:
         if text not in PAYMENT_SOURCES:
             raise AriadneError("bohr.payment_source must be empty, photon, or balance")
         return text
+    if key == "retrieval.cross_check_sources":
+        names = [
+            part.strip() for part in str(value).split(",") if part.strip()
+        ]
+        unknown = [name for name in names if name not in SOURCE_NAMES]
+        if unknown:
+            raise AriadneError(
+                "retrieval.cross_check_sources has unknown source(s): "
+                + ", ".join(unknown)
+                + "\nknown sources: " + ", ".join(SOURCE_NAMES)
+            )
+        return ",".join(dict.fromkeys(names))
     if key == "runtime.python":
         text = str(value).strip()
         return str(Path(text).expanduser()) if text else ""
