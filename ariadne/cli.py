@@ -399,6 +399,48 @@ def cmd_support(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_controls(args: argparse.Namespace) -> int:
+    from . import controls as controls_module
+
+    view = read_json(Path(args.view))
+    answer_layer = read_json(Path(args.answer_layer))
+    roots = controls_module.candidate_roots(answer_layer)
+    if args.preview:
+        physics = read_json(Path(args.physics_view)) if args.physics_view else None
+        print(controls_module.preview(view, roots, physics_view=physics))
+        return 0
+
+    from .support import native_imports
+
+    question_layer, _ = native_imports()
+    runtime = resolve_runtime(Config.load(args.config), agent_env_path=AGENT_ENV)
+    runtime.apply_env()
+    calls = len(roots) * 3 + 2 * len(roots)
+    print(f"controls: {len(roots)} roots, {calls} model calls (temperature 0)", flush=True)
+    report = controls_module.run(
+        Path(args.view), Path(args.answer_layer),
+        call_json=question_layer._post_json,
+        out=Path(args.out) if args.out else None,
+        physics_view_path=Path(args.physics_view) if args.physics_view else None,
+    )
+    if args.json:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        summary = report["summary"]
+        print(f"  reproduction (same pool): mean link Jaccard "
+              f"{summary['reproduce_jaccard_mean']}")
+        print(f"  representation: {summary['representation_changed_or_dropped']} of "
+              f"{summary['representation_before']} links changed or disappeared")
+        print(f"  negation: {summary['negations_with_surviving_support']} of "
+              f"{summary['negations_total']} still received support")
+        print(f"  controls: {summary['control_links_total']} links to "
+              f"{summary['controls_injected_per_root']} irrelevant claims "
+              f"(FP rate {summary['control_false_positive_rate']})")
+        if args.out:
+            print(f"\n  report: {Path(args.out) / 'controls.md'}")
+    return 0
+
+
 def cmd_ask(args: argparse.Namespace) -> int:
     config = Config.load(args.config)
     overrides = {
@@ -921,6 +963,20 @@ def build_parser() -> argparse.ArgumentParser:
     _add_config_flag(support)
     support.add_argument("--json", action="store_true")
     support.set_defaults(func=cmd_support)
+
+    controls = sub.add_parser(
+        "controls",
+        help="run the link-judge controls (reproduce, representation, negation, negatives)",
+    )
+    controls.add_argument("--view", required=True, help="view model the links were judged on")
+    controls.add_argument("--answer-layer", required=True, help="answer layer with stored links")
+    controls.add_argument("--physics-view", help="second view used for cross-domain negatives")
+    controls.add_argument("--preview", action="store_true",
+                          help="print the constructions only; no model call")
+    controls.add_argument("--out", help="write controls.json and controls.md here")
+    _add_config_flag(controls)
+    controls.add_argument("--json", action="store_true")
+    controls.set_defaults(func=cmd_controls)
 
     doctor = sub.add_parser("doctor", help="check local prerequisites and configuration")
     _add_config_flag(doctor)

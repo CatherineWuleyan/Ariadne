@@ -274,10 +274,12 @@ def _reproducibility(runtime: Runtime) -> dict[str, Any]:
             "model": runtime.model,
             "merge_model": runtime.merge_model,
             "base_url": runtime.model_base_url,
-            "temperature": None,
+            "temperature": 0,
             "temperature_note": (
-                "The bundled steps do not pin a temperature, so two runs on the "
-                "same commit are different samples, not reruns."
+                "Every model call site pins temperature 0. A repeat on the same "
+                "commit and inputs should reproduce unless the provider itself is "
+                "nondeterministic, so repeating a run measures infrastructure noise, "
+                "not model variance."
             ),
         },
         "python": python_version(runtime.python),

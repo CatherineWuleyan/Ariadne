@@ -155,7 +155,7 @@ The repository includes the Ariadne CLI, the Gaia pipeline harness, and the thre
 
 Relations retain their types: deduction, inference, analogy, bounds, and same-paper reading sequences have different roles. Only deduction relations are eligible to form deductive chains. Candidate answers and visible paths are starting points for examining the evidence; their presence alone does not establish a conclusion.
 
-`run.json` is the answer to "why did this graph change?". It records the commit that produced the run, whether the checkout was dirty, the hash of every input graph and text, and the prompt version of the answer layer. The one thing it cannot record is a sampling temperature: the bundled steps do not pin one, so two runs on the same commit are different samples rather than reruns. That field says `null` on purpose.
+`run.json` is the answer to "why did this graph change?". It records the commit that produced the run, whether the checkout was dirty, the hash of every input graph and text, the prompt version of the answer layer, and the sampling temperature. Every model call site pins temperature 0, so a repeat on the same commit and inputs should reproduce; if it does not, the difference is the provider's, not yours. That is also why repeating a run is a weak way to check a judgment: it measures infrastructure noise, not model bias.
 
 Parallelism is per stage, not per run: papers, LKM queries and extractions are independent and run concurrently (`ARIADNE_WORKERS`, default 4), while the three pipelines themselves stay sequential because each one consumes the previous one's output. Results are still emitted in input order, so `selection.json` and the chain export are reproducible.
 
