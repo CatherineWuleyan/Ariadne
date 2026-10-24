@@ -911,7 +911,8 @@ def build_parser() -> argparse.ArgumentParser:
     support.add_argument("--question", default="", help="question the candidate answers")
     support.add_argument(
         "--expand", nargs="?", type=int, const=4, default=None, metavar="N",
-        help="also search LKM for related papers (default 4) and judge their graph nodes",
+        help="also search LKM for related papers (default 4) and judge their graph nodes; "
+             "the overlay applies to this judgment only and is not written into the view",
     )
     support.add_argument("--query", default=None, help="override the expansion query")
     support.add_argument("--yes", action="store_true", help="approve billable LKM calls for --expand")

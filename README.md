@@ -92,7 +92,9 @@ retry if nothing supports it. The report says what it covered:
 So `unresolved_in_graph` means "not in this graph", never "not true". Add
 `--expand 4 --yes` to search LKM for related papers first (billable: one search
 plus one graph call per paper); the report then says how many papers were usable
-and what it cost.
+and what it cost. That overlay is used for this one judgment and is **not**
+written back into the view -- building a graph that contains retrieved papers is
+a different operation.
 
 ## Setup
 
