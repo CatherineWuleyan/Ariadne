@@ -143,6 +143,21 @@ class RunSupportTests(unittest.TestCase):
         self.assertIn("absence here", text + report["scope"]["retrieval"])
 
 
+class FailureModeTests(unittest.TestCase):
+    def test_model_failure_is_a_clean_error_not_a_traceback(self) -> None:
+        from ariadne.util import AriadneError
+
+        def explode(prompt: str) -> dict:
+            raise RuntimeError("DeepSeek request failed after 5 attempts: HTTP 401")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            view_path = Path(tmp) / "view.json"
+            view_path.write_text(json.dumps(toy_view()), encoding="utf-8")
+            with self.assertRaises(AriadneError) as caught:
+                run_support(view_path, build_candidate("anything"), call_json=explode)
+        self.assertIn("model call failed", str(caught.exception))
+
+
 class ExpansionTests(unittest.TestCase):
     """Expansion fetches graphs only; it must not silently spend or mutate."""
 

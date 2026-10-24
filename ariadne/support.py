@@ -242,10 +242,15 @@ def run_support(
             query=expand_with.get("query"), yes=bool(expand_with.get("yes")),
         )
     roots = [dict(candidate)]
-    links_by_root, raw_calls = question_layer.link_roots(
-        working_view, asked, roots, call_json=call_json,
-        broaden_retry=bool(broaden_retry),
-    )
+    try:
+        links_by_root, raw_calls = question_layer.link_roots(
+            working_view, asked, roots, call_json=call_json,
+            broaden_retry=bool(broaden_retry),
+        )
+    except RuntimeError as exc:
+        # The judge raises RuntimeError on an HTTP failure; a missing or wrong key
+        # should read as one, not as a traceback in the middle of a report.
+        raise AriadneError(f"model call failed: {exc}") from exc
     links = links_by_root.get(str(candidate["code"]), [])
     expanded_ids = {str(node.get("id")) for node in (working_view.get("nodes") or [])
                     if (node.get("details") or {}).get("origin") == "lkm_expand"}

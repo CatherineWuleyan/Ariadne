@@ -57,129 +57,82 @@ The unresolved issue is whether Ising protection is necessary to explain the mea
 
 The aircraft demo rebuilds the graph and reasoning paths from the bundled inputs. The physics image illustrates a previously reviewed case; it is not a fresh live run.
 
-## Get started
+## Quick start
 
-You need Python 3.11 or later. Live questions also require a Bohrium account and an OpenAI-compatible model endpoint. The offline demo requires neither account nor API key.
+Three commands, in order. The first two give you a graph; the third tests a
+candidate against one.
 
 ```bash
-git clone https://github.com/CatherineWuleyan/Ariadne.git
-cd Ariadne
 ./install.sh
-./run.sh demo
+
+# 1. a graph to work with: bundled example (free), your own files, or retrieval
+./run.sh demo --out outputs/demo
+./run.sh ask "How is aircraft simulation design done?" --top-k 2 --yes
+./run.sh ask "..." --papers my-papers.json          # local PDF / Markdown / graph
+
+# 2. test a candidate against that graph
+./run.sh support --view outputs/demo/04_question/domain_view_question.json \
+  --candidate "Calibrate the aerodynamic model against measured flight-test deltas." \
+  --out outputs/support/calibration
 ```
 
-Open the HTML path printed by the demo in your browser. It includes the graph data and needs no server.
+`ask` writes the same file at `<RUN>/05_outputs/domain_view_question.json`. That
+view is the only input `support` needs.
 
-For a live question, install the Bohr CLI and configure your accounts:
+`support` judges the candidate against claims already in the graph. It makes no
+LKM calls and never edits the view -- one model call per candidate, plus one
+retry if nothing supports it. The report says what it covered:
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `supported`, `contradicted`, or `unresolved_in_graph` |
+| `scope.searched` | `false` unless you passed `--expand` |
+| `scope.claims_offered_to_judge` | how many claims the judge actually saw |
+
+So `unresolved_in_graph` means "not in this graph", never "not true". Add
+`--expand 4 --yes` to search LKM for related papers first (billable: one search
+plus one graph call per paper); the report then says how many papers were usable
+and what it cost.
+
+## Setup
+
+Requirements: Python 3.11+, and for live questions a Bohrium account and an
+OpenAI-compatible model endpoint. `demo` and `support` need neither.
 
 ```bash
 npm install -g bohr-cli
 ./run.sh config init
 ./run.sh auth bohr
 ./run.sh doctor
-
-./run.sh ask "How should aircraft simulation design be carried out?" \
-  --top-k 2 --dry-run
-./run.sh ask "How should aircraft simulation design be carried out?" \
-  --top-k 2 --no-fulltext --yes
 ```
 
-`--dry-run` checks the setup and prints the plan without paid calls. `--yes` authorizes billable LKM calls for that run. LKM retrieval, optional graph extraction, PDF parsing, and model calls can incur charges; check your providers' current rates. Start with two papers to inspect the result before increasing the scope.
+`--dry-run` prints the plan and the upper-bound cost without calling anything;
+`--yes` authorizes billable LKM calls for one run. Start with `--top-k 2` before
+scaling up. `--no-lkm-extract` skips building missing graphs, and
+`--no-fulltext` skips PDF parsing.
 
 ## Configuration
 
-```bash
-./run.sh config init
-./run.sh config show
-./run.sh config test --api
-./run.sh auth status
-```
-
-Configuration is stored in `~/.config/ariadne/config.json`. Use [the example](config.example.json) as a reference. Environment variables override the file; command-line flags override both.
+Configuration lives in `~/.config/ariadne/config.json`; environment variables
+override it, and flags override both. See [the example](config.example.json).
 
 | Setting | Purpose |
 | --- | --- |
-| `model.api_key` | Your model provider's key |
-| `model.base_url` | OpenAI-compatible API base URL |
-| `model.model` | Model for claim extraction and single-paper processing |
-| `model.merge_model` | Model for graph merging and candidate answers |
-| `bohr.profile` | Bohr profile; empty uses the active profile |
-| `runtime.python` | Interpreter for pipeline subprocesses |
-| `retrieval.max_extractions` | Limit on missing paper graphs to build |
+| `model.api_key` | model provider key |
+| `model.base_url` | OpenAI-compatible base URL |
+| `model.model` | claim extraction and single-paper processing |
+| `model.merge_model` | merging and candidate answers |
+| `bohr.profile` | Bohr profile; empty uses the active one |
+| `runtime.python` | interpreter for pipeline subprocesses |
+| `retrieval.max_extractions` | cap on missing graphs to build |
 
-`ARIADNE_WORKERS` (default 4) sets how many papers, LKM searches and graph extractions run at once. Papers and queries are independent, so this only changes wall-clock time; set it to 1 to reproduce the old sequential order exactly.
+`ARIADNE_WORKERS` (default 4) sets how many papers, searches and extractions run
+at once; it only changes wall-clock time. Set it to 1 for the old sequential
+order. For CI, set `DEEPSEEK_API_KEY` (or `OPENAI_API_KEY`) and `BOHR_ACCESS_KEY`
+instead of a config file.
 
-For shell or CI use, set `DEEPSEEK_API_KEY` (or `OPENAI_API_KEY`) and `BOHR_ACCESS_KEY`. Set `ARIADNE_MODEL_BASE_URL`, `ARIADNE_MODEL`, and `ARIADNE_MERGE_MODEL` for a different compatible endpoint. DeepSeek is the tested default. Single-paper and merge processing require a chat-completions endpoint.
-
-Useful commands:
-
-```bash
-./run.sh ask --help
-./run.sh ask "Your research question" --papers papers.json --top-k 2
-./run.sh ask "Your research question" --no-lkm-extract --top-k 2 --yes
-```
-
-`--papers` accepts local graph and text paths in place of live search. Entries with only an LKM ID still fetch their graph. `--no-lkm-extract` disables building missing graphs.
-
-## Frozen graphs and new candidates
-
-Two entry points, kept deliberately separate because one is free and the other
-costs money.
-
-### 1. Build or load a frozen graph
-
-A frozen graph is a `view_model.json` with an `answer_layer`. You can get one
-three ways:
-
-| How | Command | Cost |
-| --- | --- | --- |
-| Bundled example | `./run.sh demo --out outputs/demo` | free |
-| Your own papers or graphs | `./run.sh ask "<question>" --papers my-papers.json --top-k 2 --yes` | LKM graph calls only |
-| Live retrieval | `./run.sh ask "<question>" --top-k 2 --yes` | LKM search + graph + model |
-
-`--papers` accepts a JSON spec of local `graph_path` / `ocr_path` files, or LKM
-ids, so "upload" and "retrieve" end in the same artifact: a run directory with
-`05_outputs/domain_view_question.json` (or `04_question/` for `demo`). That file
-is what the next step reads.
-
-### 2. Attach a candidate to it
-
-```bash
-./run.sh support \
-  --view outputs/demo/domain_view_question.json \
-  --candidate "Calibrate the aerodynamic model against measured flight-test deltas." \
-  --out outputs/support/calibration
-```
-
-This judges the candidate against the claims already in the view and writes
-`support.json` plus `support.md`. It never calls LKM and never modifies the view:
-a graph is evidence, and attaching a candidate must not rewrite it.
-
-Add `--expand[N]` to search LKM for related papers first (default 4 papers, max
-6). Expansion fetches **graphs only** -- no paper2ir, single or merge -- so the
-added nodes are raw LKM graph nodes marked `origin: lkm_expand`, and every link
-says whether it came from the existing `graph` or from `retrieval`:
-
-```bash
-./run.sh support --view outputs/demo/domain_view_question.json \
-  --candidate "Calibrate the aerodynamic model against measured flight-test deltas." \
-  --expand 4 --yes --out outputs/support/calibration-expanded
-```
-
-Expansion is billable (one search plus one graph call per paper, ~0.05 CNY each)
-and refuses to run without `--yes`. The estimate is printed before any call and
-recorded afterwards in `scope.retrieval.estimated_cost_cny`.
-
-Every report states its own scope instead of implying one:
-
-- `status`: `supported`, `contradicted`, or `unresolved_in_graph`;
-- `scope.searched`: whether LKM was searched at all;
-- `scope.claims_offered_to_judge`: how many claims the judge actually saw;
-- `next.retrieval_recommended`: true only when nothing was searched.
-
-So `unresolved_in_graph` means "not in this graph", never "not true". Without
-`--expand` the report says `searched: false` and names the node count; with
-`--expand` it says how many papers were usable and what the search cost.
+`--papers` takes a JSON spec of local `graph_path` / `ocr_path` files or LKM ids,
+so uploading and retrieving end in the same artifact.
 
 ## How it works
 
