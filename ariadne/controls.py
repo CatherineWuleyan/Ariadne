@@ -391,38 +391,48 @@ def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], 
           for code in swapped_links
       }
 
-    # Arm 3: negated candidates against the same evidence.
+    # Arm 3: the same evidence against a negated statement.
+    #
+    # The earlier version mutated only `statement`, leaving `criteria` and
+    # `scope` from the original route. That produced a self-contradictory
+    # candidate ("do not use HIL" / "evidence would be a HIL system"), and the
+    # judge's reasoning trace spent 42k characters on the contradiction before
+    # following `criteria` instead of `statement`. Both sides of the comparison
+    # now drop `criteria` and `scope`, so the statement's polarity is the only
+    # difference between the two prompts.
+    negation_rows = []
     by_target: dict[str, list[dict[str, str]]] = {}
     for item in NEGATIONS:
         by_target.setdefault(item["target"], []).append(item)
-    negation_rows = []
+
+    def judge_one(root: Mapping[str, Any]) -> list[dict[str, str]]:
+        pool = question_layer.candidate_pool(view, root)
+        response = call_json(question_layer.build_link_prompt(question, root, pool))
+        return question_layer._normalize_links(response, root, pool)
+
     for root in (candidates if "negation" in selected else []):
+        bare = {k: v for k, v in root.items() if k not in {"links", "stats"}}
+        bare["criteria"] = ""
+        bare["scope"] = ""
+        base_links = judge_one(bare)
+        base_counts = _count_relations(base_links)
         for item in by_target.get(str(root["code"]), []):
-            # The negated candidate must look exactly like a normal one: the
-            # statement is the manipulation, the identity is not. A code of
-            # "R1-N1" or an id containing "negation" would hand the judge the
-            # answer, so every arm reuses the ordinary root identity.
-            negated = dict(root)
-            negated.update({
-                "id": str(root.get("id") or "answer:r1"),
-                "code": str(root.get("code") or "R1"),
+            probe_root = dict(bare)
+            probe_root.update({
                 "statement": item["statement"],
                 "title_en": item["statement"][:64],
                 "title_zh": item["statement"][:24],
             })
-            # Same corpus, same view; only the candidate statement changes.
-            pool = question_layer.candidate_pool(view, negated)
-            response = call_json(question_layer.build_link_prompt(question, negated, pool))
-            links = question_layer._normalize_links(response, negated, pool)
+            links = judge_one(probe_root)
             counts = _count_relations(links)
-            base = _count_relations(reproduced.get(str(root["code"]), []))
             negation_rows.append({
                 "negation": item["code"],
                 "target": str(root["code"]),
                 "kind": item["kind"],
-                "support_before": base["support"],
+                "baseline_mode": "statement only (criteria and scope blanked)",
+                "support_before": base_counts["support"],
                 "support_after": counts["support"],
-                "oppose_before": base["oppose"],
+                "oppose_before": base_counts["oppose"],
                 "oppose_after": counts["oppose"],
                 "bounds_after": counts["bounds"],
                 "support_survived": counts["support"] > 0,
