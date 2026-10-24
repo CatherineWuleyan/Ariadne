@@ -322,9 +322,14 @@ def preview(view: Mapping[str, Any], candidates: list[Mapping[str, Any]],
     return "\n".join(lines)
 
 
+ALL_ARMS = ("reproduce", "representation", "negation", "controls", "stability")
+
+
 def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], Any],
         out: Path | None = None, physics_view_path: Path | None = None,
-        in_domain: int = 20, cross_domain: int = 10) -> dict[str, Any]:
+        in_domain: int = 20, cross_domain: int = 10,
+        arms: Iterable[str] | None = None, repeat: int = 5,
+        probe: str | None = None) -> dict[str, Any]:
     """Run all four arms. ``call_json`` is injected so it can be tested offline."""
     question_layer = native_imports()
     view = read_json(Path(view_path))
@@ -340,8 +345,13 @@ def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], 
     def judge(roots: list[Mapping[str, Any]], working_view: Mapping[str, Any]):
         return question_layer.link_roots(working_view, question, roots, call_json=call_json)
 
+    selected = set(ALL_ARMS if arms is None else arms)
+    unknown = selected - set(ALL_ARMS)
+    if unknown:
+        raise AriadneError(f"unknown arm(s): {', '.join(sorted(unknown))}")
     report: dict[str, Any] = {
         "schema": SCHEMA,
+        "arms_requested": sorted(selected),
         "schema_version": SCHEMA_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "view": str(Path(view_path).resolve()),
@@ -352,40 +362,53 @@ def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], 
     }
 
     # Arm 1: same pool, same temperature. Reproducibility, not accuracy.
-    reproduced, _ = judge(candidates, view)
-    report["arms"]["reproduce"] = {
-        code: _compare_links(baseline_links[code], reproduced.get(code, []))
-        for code in baseline_links
-    }
+    # The negation and controls arms compare against this baseline, so it runs
+    # whenever either of them is requested.
+    if not selected:
+        raise AriadneError("select at least one arm")
+    needs_baseline = bool(selected & {"reproduce", "negation", "controls", "representation"})
+    reproduced: dict[str, list[dict[str, str]]] = {}
+    if needs_baseline:
+        reproduced, _ = judge(candidates, view)
+    if needs_baseline:
+        report["arms"]["reproduce"] = {
+            code: _compare_links(baseline_links[code], reproduced.get(code, []))
+            for code in baseline_links
+        }
 
-    # Arm 2: same claims, richer representation.
-    swapped_pools = {str(c["code"]): expanded_pool(view, c) for c in candidates}
-    swapped_links: dict[str, list[dict[str, str]]] = {}
-    for root in candidates:
-        code = str(root["code"])
-        response = call_json(question_layer.build_link_prompt(
-            question, root, swapped_pools[code]))
-        swapped_links[code] = question_layer._normalize_links(
-            response, root, swapped_pools[code])
-    report["arms"]["representation"] = {
-        code: _compare_links(reproduced.get(code, []), swapped_links.get(code, []))
-        for code in swapped_links
-    }
+    if "representation" in selected:
+      # Arm 2: same claims, richer representation.
+      swapped_pools = {str(c["code"]): expanded_pool(view, c) for c in candidates}
+      swapped_links: dict[str, list[dict[str, str]]] = {}
+      for root in candidates:
+          code = str(root["code"])
+          response = call_json(question_layer.build_link_prompt(
+              question, root, swapped_pools[code]))
+          swapped_links[code] = question_layer._normalize_links(
+              response, root, swapped_pools[code])
+      report["arms"]["representation"] = {
+          code: _compare_links(reproduced.get(code, []), swapped_links.get(code, []))
+          for code in swapped_links
+      }
 
     # Arm 3: negated candidates against the same evidence.
     by_target: dict[str, list[dict[str, str]]] = {}
     for item in NEGATIONS:
         by_target.setdefault(item["target"], []).append(item)
     negation_rows = []
-    for root in candidates:
+    for root in (candidates if "negation" in selected else []):
         for item in by_target.get(str(root["code"]), []):
+            # The negated candidate must look exactly like a normal one: the
+            # statement is the manipulation, the identity is not. A code of
+            # "R1-N1" or an id containing "negation" would hand the judge the
+            # answer, so every arm reuses the ordinary root identity.
             negated = dict(root)
             negated.update({
-                "id": f"negation:{item['code'].lower()}",
-                "code": item["code"],
+                "id": str(root.get("id") or "answer:r1"),
+                "code": str(root.get("code") or "R1"),
                 "statement": item["statement"],
-                "title_en": item["code"],
-                "title_zh": item["code"],
+                "title_en": item["statement"][:64],
+                "title_zh": item["statement"][:24],
             })
             # Same corpus, same view; only the candidate statement changes.
             pool = question_layer.candidate_pool(view, negated)
@@ -408,15 +431,18 @@ def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], 
     report["arms"]["negation"] = negation_rows
 
     # Arm 4: established-irrelevant claims inside the pool.
-    controls, control_meta = in_domain_controls(view)
-    if physics_view_path is not None and Path(physics_view_path).is_file():
+    if "controls" not in selected:
+        controls, control_meta = [], []
+    else:
+        controls, control_meta = in_domain_controls(view)
+    if controls and physics_view_path is not None and Path(physics_view_path).is_file():
         extra, extra_meta = cross_domain_controls(read_json(Path(physics_view_path)))
         controls += extra
         control_meta += extra_meta
     control_ids = {str(item["id"]) for item in controls}
     control_tier = {str(item["id"]): item["tier"] for item in control_meta}
     control_rows = []
-    for root in candidates:
+    for root in (candidates if controls else []):
         code = str(root["code"])
         pool = question_layer.candidate_pool(view, root) + controls
         response = call_json(question_layer.build_link_prompt(question, root, pool))
@@ -443,6 +469,48 @@ def run(view_path: Path, answer_layer_path: Path, *, call_json: Callable[[str], 
             ],
         })
     report["arms"]["controls"] = control_rows
+
+    # Arm 5: the same prompt, repeated. Temperature 0 is not a promise of one
+    # answer, so measure the variance directly instead of assuming it away.
+    if "stability" in selected:
+        if probe:
+            target = next((item for item in NEGATIONS if item["code"] == probe), None)
+            if target is None:
+                raise AriadneError(f"unknown stability probe: {probe}")
+        else:
+            target = next((item for item in NEGATIONS
+                           if item["target"] == report["roots"][0]), NEGATIONS[0])
+        root = next(r for r in candidates if str(r["code"]) == target["target"])
+        probe = dict(root)
+        probe.update({
+            "statement": target["statement"],
+            "title_en": target["statement"][:64],
+            "title_zh": target["statement"][:24],
+        })
+        probe_pool = question_layer.candidate_pool(view, probe)
+        probe_prompt = question_layer.build_link_prompt(question, probe, probe_pool)
+        runs = []
+        for index in range(max(1, int(repeat))):
+            links = question_layer._normalize_links(
+                call_json(probe_prompt), probe, probe_pool)
+            counts = _count_relations(links)
+            runs.append({"run": index + 1, **counts, "total": len(links)})
+        supports = [row["support"] for row in runs]
+        report["arms"]["stability"] = {
+            "probe": {
+                "against": target["target"],
+                "negation": target["code"],
+                "statement": target["statement"],
+            },
+            "repeat": len(runs),
+            "runs": runs,
+            "support_counts": supports,
+            "support_outcomes": sorted(set(supports)),
+            "support_range": [min(supports), max(supports)],
+            "polarity_flips": sum(
+                1 for before, after in zip(supports, supports[1:]) if (before > 0) != (after > 0)
+            ),
+        }
     report["summary"] = _summary(report)
 
     if out is not None:
@@ -506,6 +574,8 @@ def _summary(report: Mapping[str, Any]) -> dict[str, Any]:
             / max(1, sum(row["controls_injected"] for row in controls)), 3),
         "control_links_total": sum(row["control_links"] for row in controls),
         "controls_injected_per_root": controls[0]["controls_injected"] if controls else 0,
+        "stability_support_counts": (arms.get("stability") or {}).get("support_counts"),
+        "stability_polarity_flips": (arms.get("stability") or {}).get("polarity_flips"),
     }
 
 
@@ -560,5 +630,18 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         lines.append(f"| {row['root']} | {row['controls_injected']} | {row['control_links']} | "
                      f"{relations['support']} / {relations['oppose']} / {relations['bounds']} | "
                      f"{row['false_positive_rate']} | {row['real_links']} vs {row['real_links_baseline']} |")
+    stability = arms.get("stability") or {}
+    if stability:
+        lines += ["", "## Stability (same prompt, repeated)", "",
+                  f"- probe: `{stability['probe']['negation']}` against "
+                  f"{stability['probe']['against']}, repeated {stability['repeat']} times",
+                  f"- support counts: {stability['support_counts']}",
+                  f"- range: {stability['support_range']}, polarity changes between "
+                  f"consecutive runs: {stability['polarity_flips']}",
+                  "", "| run | support | oppose | bounds | total |",
+                  "| ---: | ---: | ---: | ---: | ---: |"]
+        for row in stability["runs"]:
+            lines.append(f"| {row['run']} | {row['support']} | {row['oppose']} | "
+                         f"{row['bounds']} | {row['total']} |")
     lines.append("")
     return "\n".join(lines)

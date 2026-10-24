@@ -415,13 +415,27 @@ def cmd_controls(args: argparse.Namespace) -> int:
     question_layer, _ = native_imports()
     runtime = resolve_runtime(Config.load(args.config), agent_env_path=AGENT_ENV)
     runtime.apply_env()
-    calls = len(roots) * 3 + 2 * len(roots)
-    print(f"controls: {len(roots)} roots, {calls} model calls (temperature 0)", flush=True)
+    arms = {item.strip() for item in str(args.arms).split(",") if item.strip()}
+    baseline = len(roots) if arms & {"reproduce", "negation", "controls", "representation"} else 0
+    extra = 0
+    if "representation" in arms:
+        extra += len(roots)
+    if "negation" in arms:
+        extra += 2 * len(roots)
+    if "controls" in arms:
+        extra += len(roots)
+    if "stability" in arms:
+        extra += int(args.repeat)
+    print(f"controls: arms {', '.join(sorted(arms))} | {baseline + extra} model calls "
+          f"at temperature 0", flush=True)
     report = controls_module.run(
         Path(args.view), Path(args.answer_layer),
         call_json=question_layer._post_json,
         out=Path(args.out) if args.out else None,
         physics_view_path=Path(args.physics_view) if args.physics_view else None,
+        arms=arms,
+        repeat=int(args.repeat),
+        probe=args.probe,
     )
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -971,6 +985,12 @@ def build_parser() -> argparse.ArgumentParser:
     controls.add_argument("--view", required=True, help="view model the links were judged on")
     controls.add_argument("--answer-layer", required=True, help="answer layer with stored links")
     controls.add_argument("--physics-view", help="second view used for cross-domain negatives")
+    controls.add_argument("--arms", default="reproduce,negation",
+                          help="comma list of reproduce,representation,negation,controls "
+                               "(default reproduce,negation)")
+    controls.add_argument("--probe", help="negation code the stability arm repeats, e.g. R5-N1")
+    controls.add_argument("--repeat", type=int, default=5,
+                          help="how many times the stability arm repeats one prompt")
     controls.add_argument("--preview", action="store_true",
                           help="print the constructions only; no model call")
     controls.add_argument("--out", help="write controls.json and controls.md here")

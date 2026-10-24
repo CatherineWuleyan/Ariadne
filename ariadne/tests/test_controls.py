@@ -121,7 +121,7 @@ class RunTests(unittest.TestCase):
             return {"root_id": "R1", "links": links_by_root.get("R1", [])}
         return call
 
-    def test_run_produces_all_four_arms(self) -> None:
+    def test_run_produces_every_arm(self) -> None:
         support = {"claim_id": "knowledge:papers:paper_a::claim_1",
                    "relation": "support", "reason": "same calibration"}
         with tempfile.TemporaryDirectory() as tmp:
@@ -134,10 +134,45 @@ class RunTests(unittest.TestCase):
                          out=Path(tmp))
             self.assertTrue((Path(tmp) / "controls.md").is_file())
         self.assertEqual(set(report["arms"]),
-                         {"reproduce", "representation", "negation", "controls"})
+                         {"reproduce", "representation", "negation", "controls", "stability"})
         self.assertEqual(len(report["arms"]["negation"]), 2)
-        self.assertIn("controls_injected", report["arms"]["controls"][0])
+        # The toy view has none of the vetted control codes, so the controls arm
+        # reports no rows rather than inventing a rate from zero injections.
+        self.assertEqual(report["arms"]["controls"], [])
         self.assertIn("summary", report)
+
+    def test_negated_candidate_identity_does_not_leak(self) -> None:
+        # If the judge can see "negation" in the id or code, the measured effect
+        # is inflated: it would be reacting to the label, not the statement.
+        prompts: list[str] = []
+
+        def capture(prompt: str) -> dict:
+            prompts.append(prompt)
+            return {"root_id": "R1", "links": []}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            view_path = Path(tmp) / "view.json"
+            layer_path = Path(tmp) / "answer_layer.json"
+            view_path.write_text(json.dumps(view()), encoding="utf-8")
+            layer_path.write_text(json.dumps(answer_layer()), encoding="utf-8")
+            run(view_path, layer_path, call_json=capture, arms={"negation"})
+        joined = "\n".join(prompts)
+        self.assertNotIn("negation", joined.lower())
+        self.assertNotIn("-N1", joined)
+        self.assertNotIn("-N2", joined)
+
+    def test_stability_arm_repeats_one_prompt_and_reports_the_spread(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            view_path = Path(tmp) / "view.json"
+            layer_path = Path(tmp) / "answer_layer.json"
+            view_path.write_text(json.dumps(view()), encoding="utf-8")
+            layer_path.write_text(json.dumps(answer_layer()), encoding="utf-8")
+            report = run(view_path, layer_path, call_json=self._fake_judge({"R1": []}),
+                         arms={"stability"}, repeat=3)
+        stability = report["arms"]["stability"]
+        self.assertEqual(len(stability["runs"]), 3)
+        self.assertEqual(stability["support_counts"], [0, 0, 0])
+        self.assertEqual(stability["polarity_flips"], 0)
 
     def test_summary_counts_surviving_negation_support(self) -> None:
         support = {"claim_id": "knowledge:papers:paper_a::claim_1",
