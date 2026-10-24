@@ -40,7 +40,9 @@ def fingerprint(runtime: Runtime) -> str:
                     and not {"data", "__pycache__", "tests"}.intersection(path.relative_to(folder).parts)):
                 hasher.update(str(path.relative_to(REPO)).encode())
                 hasher.update(path.read_bytes())
-    hasher.update((REPO / "weekly_reports/export_single_artifacts.py").read_bytes())
+    # The single-paper exporter lives inside pipelines/single_paper, so the loop
+    # above already covers it. It used to be hashed separately from
+    # weekly_reports/, which does not exist in this repository.
     hasher.update(json.dumps({"model": runtime.model, "merge_model": runtime.merge_model,
                               "base_url": runtime.model_base_url}, sort_keys=True).encode())
     compiler = run([runtime.python, "-c",
