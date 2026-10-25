@@ -86,6 +86,15 @@ def main() -> int:
                         help="typed edge roles; only chainable/deduction roles form support chains")
     parser.add_argument("--template", type=Path, default=HERE / "viewer_question.html")
     parser.add_argument("--no-viewer", action="store_true")
+    parser.add_argument(
+        "--link-protocol", choices=list(ql.LINK_PROTOCOL_CHOICES), default=None,
+        help="routed (default): one call per claim, every candidate in context; "
+             "budget: legacy per-candidate ten-link protocol",
+    )
+    parser.add_argument("--no-multi-route", action="store_true",
+                        help="skip the second-opinion pass that revisits neighbouring routes")
+    parser.add_argument("--link-workers", type=int, default=None,
+                        help=f"concurrent link calls (default {ql.LINK_WORKERS_DEFAULT}, env ARIADNE_LINK_WORKERS)")
     args = parser.parse_args()
 
     view = read_json(args.view)
@@ -130,6 +139,9 @@ def main() -> int:
         )
         links_by_root, link_audit = ql.link_roots(
             view, question, roots, call_json=_post_json,
+            protocol=args.link_protocol,
+            multi_route=not args.no_multi_route,
+            workers=args.link_workers,
         )
 
     answer_layer = ql.build_answer_layer(view, question, roots, links_by_root, edge_roles=edge_roles)

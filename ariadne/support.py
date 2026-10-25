@@ -243,9 +243,14 @@ def run_support(
         )
     roots = [dict(candidate)]
     try:
+        # One candidate means no competing route, so the routed protocol has
+        # nothing to discriminate against and degenerates into per-pair judging
+        # (measured precision 0.55 in that setting). This command therefore keeps
+        # the legacy budget protocol: it is the cheap single-candidate check, and
+        # `ariadne ask` is the path that uses routing.
         links_by_root, raw_calls = question_layer.link_roots(
             working_view, asked, roots, call_json=call_json,
-            broaden_retry=bool(broaden_retry),
+            broaden_retry=bool(broaden_retry), protocol="budget",
         )
     except RuntimeError as exc:
         # The judge raises RuntimeError on an HTTP failure; a missing or wrong key
