@@ -44,11 +44,14 @@ ANSWER_TYPES = {"method_route", "modeling_choice", "design_decision", "validatio
 LINK_RELATIONS = {"support", "oppose", "bounds"}
 # How the claims are put to the judge.
 #   routed: one call per claim, every candidate in context. The claim is asked
-#           to pick the route it bears on. Measured: this collapses multi-route
-#           assignment for ordinary candidates (0 of 219 in the aircraft graph)
-#           but NOT for near-opposite ones -- a claim still landed on both a
-#           route and its negation in 4 of 15 cases. Competition is a nudge, so
-#           the count is reported rather than assumed.
+#           to pick the route it bears on.
+#           Measured with a route and its negation in the same candidate set:
+#           the model linked the same claim to both, but as support for one and
+#           OPPOSE for the other, and never supported two candidates at once.
+#           Seeing the opposite is what lets it fix the polarity -- judged alone,
+#           the negated route collected 7 of 9 supports instead. The audit keeps
+#           both counts apart: same claim on several routes, and same claim
+#           *supporting* several.
 #   budget: legacy -- one call per candidate, bounded pool, at most ten links.
 #           Kept so frozen runs and old configurations stay reproducible.
 LINK_PROTOCOL = "routed"
@@ -839,9 +842,14 @@ def link_roots_routed(
             for code, value in picked.items():
                 decisions[(code, routed_id)] = value
     assigned: Counter[str] = Counter(claim_id for (_, claim_id) in decisions)
+    supported: Counter[str] = Counter(
+        claim_id for (_, claim_id), value in decisions.items()
+        if value["relation"] == "support"
+    )
     calls.append({"stage": "route", "claims": len(claims),
                   "workers": worker_count, "decisions": len(decisions),
                   "claims_routed_to_several": sum(1 for n in assigned.values() if n > 1),
+                  "claims_supporting_several": sum(1 for n in supported.values() if n > 1),
                   "claims_routed_to_nothing": len(claims) - len(assigned)})
 
     if multi_route and decisions:

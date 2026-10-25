@@ -68,9 +68,26 @@ class RoutedProtocolTests(unittest.TestCase):
         routed = {item["claim_id"] for items in links.values() for item in items}
         self.assertEqual(len(routed), len(pooled & claims))
 
-    def test_audit_reports_multi_assignment_and_silence(self) -> None:
-        # The protocol must not pretend competition is enforced: when a claim is
-        # routed to two candidates, that is counted and visible.
+    def test_audit_separates_routing_from_supporting(self) -> None:
+        # A claim may legitimately land on two routes with opposite polarity.
+        # That is different from supporting two routes, and the audit must not
+        # conflate them -- counting them together once made a correct answer look
+        # like a failure.
+        def judge(prompt: str) -> dict:
+            return {"links": [
+                {"candidate": "R1", "relation": "support", "reason": "a"},
+                {"candidate": "R2", "relation": "oppose", "reason": "b"},
+            ]}
+
+        _, calls = ql.link_roots_routed(view(), {"zh": "", "en": ""}, ROOTS,
+                                       call_json=judge, multi_route=False, workers=1)
+        audit = calls[0]
+        self.assertGreater(audit["claims_routed_to_several"], 0)
+        self.assertEqual(audit["claims_supporting_several"], 0,
+                         "support for one route and opposition to another is not a conflict")
+        self.assertGreaterEqual(audit["claims_routed_to_nothing"], 0)
+
+    def test_supporting_two_routes_is_counted(self) -> None:
         def judge(prompt: str) -> dict:
             return {"links": [
                 {"candidate": "R1", "relation": "support", "reason": "a"},
@@ -79,10 +96,7 @@ class RoutedProtocolTests(unittest.TestCase):
 
         _, calls = ql.link_roots_routed(view(), {"zh": "", "en": ""}, ROOTS,
                                        call_json=judge, multi_route=False, workers=1)
-        audit = calls[0]
-        self.assertGreater(audit["claims_routed_to_several"], 0)
-        self.assertGreaterEqual(audit["claims_routed_to_nothing"], 0)
-        self.assertEqual(audit["claims"], audit["claims_routed_to_several"] + audit["claims_routed_to_nothing"])
+        self.assertGreater(calls[0]["claims_supporting_several"], 0)
 
     def test_empty_answer_means_no_link(self) -> None:
         def judge(prompt: str) -> dict:
