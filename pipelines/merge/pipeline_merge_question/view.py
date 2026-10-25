@@ -177,6 +177,43 @@ class MergeViewAdapter:
         for ref in artifacts:
             if ref.kind == "formalization" and ref.producer_stage == _INTEGRATION_STAGE:
                 integration_doc = _read_json(store, ref)
+        compiled_integration_ref = None
+        if integration_doc is None:
+            # Step 6 (and a fork from Step 5) receives only the compiler's
+            # checkpoint, not Step 4's authoring snapshot. The compiled IR is
+            # sufficient to recover the same nodes and named strategies.
+            compiled_refs = [ref for ref in artifacts if ref.kind == "gaia.ir"
+                             and ref.producer_stage == "step5_compile_gaia_ir"]
+            if len(compiled_refs) > 1:
+                raise ValueError("question graph requires one compiled integration")
+            if compiled_refs:
+                compiled_integration_ref = compiled_refs[0]
+                compiled = _read_json(store, compiled_integration_ref)
+                public = [item for item in compiled.get("knowledges", [])
+                          if not _is_helper(item["id"])
+                          and (item.get("metadata") or {}).get("visibility") != "formal_internal"]
+                bindings = {item["id"]: (item.get("metadata") or {}).get("source_knowledge_id", item["id"])
+                            for item in public}
+                integration_doc = {
+                    "knowledges": {
+                        bindings[item["id"]]: {
+                            "type": item["type"], "content": {"canonical": item.get("content")},
+                            "metadata": dict(item.get("metadata") or {}),
+                        } for item in public
+                    },
+                    "graph": {
+                        "operators": [
+                            {**item, "type": item.get("operator") or item.get("type"),
+                             "variables": [bindings.get(qid, qid) for qid in item.get("variables", [])]}
+                            for item in compiled.get("operators", [])
+                        ],
+                        "strategies": [
+                            {**item, "premises": [bindings.get(qid, qid) for qid in item.get("premises", [])],
+                             "conclusion": bindings.get(item.get("conclusion"), item.get("conclusion"))}
+                            for item in compiled.get("strategies", [])
+                        ],
+                    },
+                }
         # Step 3's proposals retain the reasoning type/expression of each
         # cross-paper weakpoint.  Step 4 can compile only the Gaia strategy
         # types; special_case/reproduces/bounds are kept as typed display links
@@ -215,6 +252,8 @@ class MergeViewAdapter:
         edges: list[JSONDict] = []
         search_documents: list[JSONDict] = []
         source_artifacts: list[str] = []
+        if compiled_integration_ref is not None:
+            source_artifacts.append(compiled_integration_ref.artifact_id)
         emitted: set[str] = set()
         scheme = _LabelScheme()
         input_packages = {
