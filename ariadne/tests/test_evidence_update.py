@@ -1,5 +1,9 @@
-import copy, importlib.util, json, pathlib, sys, unittest
-REPO=pathlib.Path('/Users/catherinewu/Documents/gaia-ir');sys.path.insert(0,str(REPO/'ariadne'))
+import copy, importlib.util, json, os, pathlib, sys, unittest
+# The checkout this file lives in; nothing below may depend on the author's machine.
+REPO=pathlib.Path(__file__).resolve().parents[2];sys.path.insert(0,str(REPO/'ariadne'))
+# A reviewed physics graph is not shipped here. Point ARIADNE_PHYSICS_GRAPH at one
+# to run the integration test; otherwise it skips instead of failing.
+PHYSICS=pathlib.Path(os.environ.get('ARIADNE_PHYSICS_GRAPH',str(REPO/'outputs/physics/final/graph_with_answer.reviewed.json')))
 local=pathlib.Path(__file__).with_name('evidence_update.py');path=local if local.exists() else pathlib.Path(__file__).parents[1]/'evidence_update.py'
 spec=importlib.util.spec_from_file_location('ariadne.evidence_update',path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 def node(i,summary=None,entity=None,role=None):return {'id':i,'entity_id':entity or i,'summary':summary or i,'details':{'theory_kind':role} if role else {}}
@@ -27,8 +31,9 @@ class UpdateTests(unittest.TestCase):
   g=graph();g['edges']+=[edge('bridge','a')];self.assertEqual(m.prepare_update(g,[{'op':'replace','id':'a','text':'new'}])['affected_roots'],['answer'])
  def test_missing_dependency_audited(self):
   g=graph();g['nodes'][2]['details']['premises']=['missing'];self.assertTrue(m.prepare_update(g,[])['dependency_issues'])
+ @unittest.skipUnless(PHYSICS.is_file(),f'no reviewed graph at {PHYSICS}; set ARIADNE_PHYSICS_GRAPH')
  def test_actual_physics_impact_from_edges(self):
-  g=json.loads((REPO/'outputs/physics/final/graph_with_answer.reviewed.json').read_text());u=m.prepare_update(g,[{'op':'remove','id':'knowledge:papers:paper_db13a75e::claim_4'}]);self.assertEqual(set(u['affected_roots']),{'theory:R1','theory:R2'});self.assertIn('theory:M2',u['invalidated_ids']);self.assertTrue(u['impact_paths']['theory:R2']);self.assertFalse(set(u['invalidated_ids']) & {n['id'] for n in u['working_view']['nodes']})
+  g=json.loads(PHYSICS.read_text());u=m.prepare_update(g,[{'op':'remove','id':'knowledge:papers:paper_db13a75e::claim_4'}]);self.assertEqual(set(u['affected_roots']),{'theory:R1','theory:R2'});self.assertIn('theory:M2',u['invalidated_ids']);self.assertTrue(u['impact_paths']['theory:R2']);self.assertFalse(set(u['invalidated_ids']) & {n['id'] for n in u['working_view']['nodes']})
  def test_bad_judgments_rejected(self):
   r={'question_id':'answer','status':'unknown','answer':None,'premises':[],'provenance':[],'evidence_path':[],'conditions':[{'key':'reason','value':'缺证据'},{'key':'updated_conclusion','value':'尚不能确认'}]};m.validate_judgment(r,[{'id':'a'}],'answer');r['provenance']=['invented']
   with self.assertRaises(ValueError):m.validate_judgment(r,[{'id':'a'}],'answer')
