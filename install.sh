@@ -58,9 +58,9 @@ fi
 
 "$PY" - <<'PY'
 import sys
-if sys.version_info < (3, 11):
+if sys.version_info < (3, 12):
     raise SystemExit(
-        "Ariadne requires Python 3.11+; found %s.%s" % sys.version_info[:2]
+        "Ariadne requires Python 3.12+; found %s.%s" % sys.version_info[:2]
     )
 print("[install] python:", sys.executable)
 PY

@@ -59,7 +59,7 @@ Ariadne 提供证据图和推理路径，研究者据此作出判断。
 
 ## 开始使用
 
-需要 Python 3.11 或更高版本。在线运行还需要 Bohrium 账户和兼容 OpenAI 接口的模型服务；离线示例不需要账户或密钥。
+需要 Python 3.12 或更高版本（固定的 Gaia IR 编译器要求 3.12+）。在线运行还需要 Bohrium 账户和兼容 OpenAI 接口的模型服务；离线示例不需要账户或密钥。
 
 ```bash
 git clone https://github.com/CatherineWuleyan/Ariadne.git

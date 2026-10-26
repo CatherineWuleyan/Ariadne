@@ -98,7 +98,7 @@ a different operation.
 
 ## Setup
 
-Requirements: Python 3.11+, and for live questions a Bohrium account and an
+Requirements: Python 3.12+ (the pinned Gaia IR compiler needs it), and for live questions a Bohrium account and an
 OpenAI-compatible model endpoint. `demo` and `support` need neither.
 
 ```bash
